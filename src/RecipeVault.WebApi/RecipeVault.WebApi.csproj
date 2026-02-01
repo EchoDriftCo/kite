@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <DocumentationFile>bin\RecipeVault.WebApi.xml</DocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <NoWarn>$(NoWarn),1573,1591,1712,CA1822,CA1848</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Cortside.AspNetCore" Version="8.0.317" />
+    <PackageReference Include="Cortside.AspNetCore.Common" Version="8.0.317" />
+    <PackageReference Include="Cortside.AspNetCore.Swagger" Version="8.0.317" />
+    <PackageReference Include="Cortside.Common.BootStrap" Version="8.0.478" />
+    <PackageReference Include="Cortside.Common.Hosting" Version="8.0.478" />
+    <PackageReference Include="Cortside.Health" Version="8.0.111" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.14" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Serilog" Version="4.2.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Enrichers.AspNetCore" Version="1.0.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RecipeVault.BootStrap\RecipeVault.BootStrap.csproj" />
+    <ProjectReference Include="..\RecipeVault.Configuration\RecipeVault.Configuration.csproj" />
+    <ProjectReference Include="..\RecipeVault.Facade\RecipeVault.Facade.csproj" />
+    <ProjectReference Include="..\RecipeVault.Health\RecipeVault.Health.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="*.json">
+      <TransformOnBuild>true</TransformOnBuild>
+    </Content>
+  </ItemGroup>
+</Project>

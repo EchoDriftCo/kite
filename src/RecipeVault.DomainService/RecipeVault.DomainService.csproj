@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <CopyDocumentationFileToOutputDirectory>false</CopyDocumentationFileToOutputDirectory>
+    <NoWarn>$(NoWarn),1573,1591,1712,CA1848</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Cortside.Common.Logging" Version="8.0.478" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RecipeVault.Data\RecipeVault.Data.csproj" />
+    <ProjectReference Include="..\RecipeVault.Domain\RecipeVault.Domain.csproj" />
+    <ProjectReference Include="..\RecipeVault.Dto\RecipeVault.Dto.csproj" />
+    <ProjectReference Include="..\RecipeVault.Exceptions\RecipeVault.Exceptions.csproj" />
+  </ItemGroup>
+</Project>

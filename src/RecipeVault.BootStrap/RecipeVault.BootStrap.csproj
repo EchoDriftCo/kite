@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <CopyDocumentationFileToOutputDirectory>false</CopyDocumentationFileToOutputDirectory>
+    <NoWarn>$(NoWarn),1573,1591,1712</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Cortside.Common.BootStrap" Version="8.0.478" />
+    <PackageReference Include="DistributedLock.Postgres" Version="1.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RecipeVault.Data\RecipeVault.Data.csproj" />
+    <ProjectReference Include="..\RecipeVault.DomainService\RecipeVault.DomainService.csproj" />
+    <ProjectReference Include="..\RecipeVault.Facade\RecipeVault.Facade.csproj" />
+  </ItemGroup>
+</Project>

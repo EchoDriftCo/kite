@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <CopyDocumentationFileToOutputDirectory>false</CopyDocumentationFileToOutputDirectory>
+    <NoWarn>$(NoWarn),1573,1591,1712,CA1822,CA1848</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="DistributedLock.Core" Version="1.0.8" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RecipeVault.DomainService\RecipeVault.DomainService.csproj" />
+    <ProjectReference Include="..\RecipeVault.Dto\RecipeVault.Dto.csproj" />
+  </ItemGroup>
+</Project>
