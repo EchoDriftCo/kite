@@ -1,0 +1,308 @@
+{
+  "info": {
+    "name": "Google Gemini API - Recipe Parsing",
+    "description": "Collection for testing Google Gemini API with recipe image parsing. Includes requests for the multimodal generateContent endpoint used by RecipeVault.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Gemini Generate Content",
+      "item": [
+        {
+          "name": "Parse Recipe Image - With Recipe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"You are a recipe parser. Extract structured data from this recipe image.\\n\\nReturn ONLY valid JSON matching this schema:\\n{\\n  \\\"title\\\": \\\"string\\\",\\n  \\\"yield\\\": number or null,\\n  \\\"prepTimeMinutes\\\": number or null,\\n  \\\"cookTimeMinutes\\\": number or null,\\n  \\\"ingredients\\\": [{\\n    \\\"quantity\\\": number or null,\\n    \\\"unit\\\": \\\"string or null (normalize to: cup, tbsp, tsp, oz, lb, g, kg, ml, l, piece, pinch, dash)\\\",\\n    \\\"item\\\": \\\"string (the ingredient name)\\\",\\n    \\\"preparation\\\": \\\"string or null\\\",\\n    \\\"rawText\\\": \\\"string (exact text from image)\\\"\\n  }],\\n  \\\"instructions\\\": [{\\n    \\\"stepNumber\\\": number,\\n    \\\"instruction\\\": \\\"string\\\",\\n    \\\"rawText\\\": \\\"string\\\"\\n  }]\\n}\\n\\nRules:\\n- Normalize units (tablespoon → tbsp, teaspoon → tsp)\\n- Convert fractions to decimals (1/2 → 0.5)\\n- Separate preparation notes from ingredient names\\n- Number instructions sequentially\\n- If information is unclear, use null\"\n        },\n        {\n          \"inline_data\": {\n            \"mime_type\": \"image/png\",\n            \"data\": \"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n          }\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"response_mime_type\": \"application/json\"\n  }\n}"
+            },
+            "url": {
+              "raw": "https://generativelanguage.googleapis.com/v1beta/models/{{gemini_model}}:generateContent?key={{gemini_api_key}}",
+              "protocol": "https",
+              "host": [
+                "generativelanguage.googleapis.com"
+              ],
+              "path": [
+                "v1beta",
+                "models",
+                "{{gemini_model}}:generateContent"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{gemini_api_key}}"
+                }
+              ]
+            },
+            "description": "Send a recipe image to Gemini API for parsing. The model will extract recipe information and return it as JSON.\n\nExpected response:\n```json\n{\n  \"candidates\": [\n    {\n      \"content\": {\n        \"parts\": [\n          {\n            \"text\": \"{json response with parsed recipe}\"\n          }\n        ]\n      }\n    }\n  ]\n}\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "Parse Recipe Text - From URL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Extract recipe information from the following text and return as JSON:\\n\\nChocolate Chip Cookies\\nYield: 24 cookies\\nPrep Time: 15 minutes\\nCook Time: 12 minutes\\n\\nIngredients:\\n- 2 1/4 cups all-purpose flour\\n- 1 tsp baking soda\\n- 1 tsp salt\\n- 1 cup butter, softened\\n- 3/4 cup granulated sugar\\n- 3/4 cup packed brown sugar\\n- 2 eggs\\n- 2 cups chocolate chips\\n\\nInstructions:\\n1. Preheat oven to 375°F\\n2. In small bowl, combine flour, baking soda and salt\\n3. In large bowl, beat butter and sugars until creamy\\n4. Add eggs to butter mixture and mix well\\n5. Gradually stir in flour mixture\\n6. Stir in chocolate chips\\n7. Drop rounded tablespoons onto ungreased baking sheets\\n8. Bake for 9 to 12 minutes or until golden brown\\n\\nReturn the data as JSON with fields: title, yield, prepTimeMinutes, cookTimeMinutes, ingredients (with quantity, unit, item, preparation, rawText), instructions (with stepNumber, instruction, rawText)\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"response_mime_type\": \"application/json\"\n  }\n}"
+            },
+            "url": {
+              "raw": "https://generativelanguage.googleapis.com/v1beta/models/{{gemini_model}}:generateContent?key={{gemini_api_key}}",
+              "protocol": "https",
+              "host": [
+                "generativelanguage.googleapis.com"
+              ],
+              "path": [
+                "v1beta",
+                "models",
+                "{{gemini_model}}:generateContent"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{gemini_api_key}}"
+                }
+              ]
+            },
+            "description": "Parse recipe information from text format using Gemini API"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Available Models",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://generativelanguage.googleapis.com/v1beta/models?key={{gemini_api_key}}",
+              "protocol": "https",
+              "host": [
+                "generativelanguage.googleapis.com"
+              ],
+              "path": [
+                "v1beta",
+                "models"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{gemini_api_key}}"
+                }
+              ]
+            },
+            "description": "List all available Gemini models and their capabilities"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Model Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://generativelanguage.googleapis.com/v1beta/models/{{gemini_model}}?key={{gemini_api_key}}",
+              "protocol": "https",
+              "host": [
+                "generativelanguage.googleapis.com"
+              ],
+              "path": [
+                "v1beta",
+                "models",
+                "{{gemini_model}}"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{gemini_api_key}}"
+                }
+              ]
+            },
+            "description": "Get detailed information about a specific Gemini model"
+          },
+          "response": []
+        },
+        {
+          "name": "Count Tokens",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Extract recipe information from this image and return as JSON with fields: title, yield, prepTimeMinutes, cookTimeMinutes, ingredients, instructions\"\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "https://generativelanguage.googleapis.com/v1beta/models/{{gemini_model}}:countTokens?key={{gemini_api_key}}",
+              "protocol": "https",
+              "host": [
+                "generativelanguage.googleapis.com"
+              ],
+              "path": [
+                "v1beta",
+                "models",
+                "{{gemini_model}}:countTokens"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{gemini_api_key}}"
+                }
+              ]
+            },
+            "description": "Count the number of tokens that will be used by a request without consuming quota"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Error Scenarios",
+      "item": [
+        {
+          "name": "Invalid API Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Parse this recipe\"\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=invalid_key",
+              "protocol": "https",
+              "host": [
+                "generativelanguage.googleapis.com"
+              ],
+              "path": [
+                "v1beta",
+                "models",
+                "gemini-1.5-flash:generateContent"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "invalid_key"
+                }
+              ]
+            },
+            "description": "Test error handling with invalid API key. Expected: 401 Unauthorized"
+          },
+          "response": []
+        },
+        {
+          "name": "Missing Content",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contents\": []\n}"
+            },
+            "url": {
+              "raw": "https://generativelanguage.googleapis.com/v1beta/models/{{gemini_model}}:generateContent?key={{gemini_api_key}}",
+              "protocol": "https",
+              "host": [
+                "generativelanguage.googleapis.com"
+              ],
+              "path": [
+                "v1beta",
+                "models",
+                "{{gemini_model}}:generateContent"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{gemini_api_key}}"
+                }
+              ]
+            },
+            "description": "Test error handling with empty content. Expected: 400 Bad Request"
+          },
+          "response": []
+        },
+        {
+          "name": "Rate Limit (429)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Parse recipe\"\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "https://generativelanguage.googleapis.com/v1beta/models/{{gemini_model}}:generateContent?key={{gemini_api_key}}",
+              "protocol": "https",
+              "host": [
+                "generativelanguage.googleapis.com"
+              ],
+              "path": [
+                "v1beta",
+                "models",
+                "{{gemini_model}}:generateContent"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{gemini_api_key}}"
+                }
+              ]
+            },
+            "description": "If rate limited by Gemini API. Expected: 429 Too Many Requests (Gemini free tier: 15 req/min)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "gemini_api_key",
+      "value": "your_gemini_api_key_here",
+      "type": "string",
+      "description": "Your Google Gemini API key from https://makersuite.google.com/app/apikey"
+    },
+    {
+      "key": "gemini_model",
+      "value": "gemini-1.5-flash",
+      "type": "string",
+      "description": "Gemini model to use. Options: gemini-1.5-flash (fast, cheaper), gemini-1.5-pro (more capable)"
+    }
+  ]
+}

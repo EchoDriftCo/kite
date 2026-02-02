@@ -1,0 +1,277 @@
+{
+  "info": {
+    "name": "RecipeVault API",
+    "description": "Complete API collection for RecipeVault recipe management and parsing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Recipes",
+      "item": [
+        {
+          "name": "Search Recipes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/recipes?pageNumber=1&pageSize=10&sort=title",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "recipes"
+              ],
+              "query": [
+                {
+                  "key": "pageNumber",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                },
+                {
+                  "key": "sort",
+                  "value": "title"
+                },
+                {
+                  "key": "title",
+                  "value": "Chocolate",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Search for recipes with optional filtering and pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Recipe by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/recipes/{{recipe_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "recipes",
+                "{{recipe_id}}"
+              ]
+            },
+            "description": "Retrieve a specific recipe by its resource ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Recipe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Chocolate Chip Cookies\",\n  \"description\": \"Classic homemade chocolate chip cookies\",\n  \"yield\": 24,\n  \"prepTimeMinutes\": 15,\n  \"cookTimeMinutes\": 12,\n  \"source\": \"https://example.com/recipes\",\n  \"originalImageUrl\": \"https://example.com/images/cookies.jpg\",\n  \"ingredients\": [\n    {\n      \"sortOrder\": 1,\n      \"quantity\": 2.25,\n      \"unit\": \"cup\",\n      \"item\": \"all-purpose flour\",\n      \"preparation\": null,\n      \"rawText\": \"2 1/4 cups all-purpose flour\"\n    },\n    {\n      \"sortOrder\": 2,\n      \"quantity\": 1,\n      \"unit\": \"tsp\",\n      \"item\": \"baking soda\",\n      \"preparation\": null,\n      \"rawText\": \"1 tsp baking soda\"\n    },\n    {\n      \"sortOrder\": 3,\n      \"quantity\": 1,\n      \"unit\": \"tsp\",\n      \"item\": \"salt\",\n      \"preparation\": null,\n      \"rawText\": \"1 tsp salt\"\n    },\n    {\n      \"sortOrder\": 4,\n      \"quantity\": 1,\n      \"unit\": \"cup\",\n      \"item\": \"butter\",\n      \"preparation\": \"softened\",\n      \"rawText\": \"1 cup butter, softened\"\n    },\n    {\n      \"sortOrder\": 5,\n      \"quantity\": 0.75,\n      \"unit\": \"cup\",\n      \"item\": \"granulated sugar\",\n      \"preparation\": null,\n      \"rawText\": \"3/4 cup granulated sugar\"\n    },\n    {\n      \"sortOrder\": 6,\n      \"quantity\": 0.75,\n      \"unit\": \"cup\",\n      \"item\": \"packed brown sugar\",\n      \"preparation\": null,\n      \"rawText\": \"3/4 cup packed brown sugar\"\n    },\n    {\n      \"sortOrder\": 7,\n      \"quantity\": 2,\n      \"unit\": \"piece\",\n      \"item\": \"eggs\",\n      \"preparation\": null,\n      \"rawText\": \"2 eggs\"\n    },\n    {\n      \"sortOrder\": 8,\n      \"quantity\": 2,\n      \"unit\": \"cup\",\n      \"item\": \"chocolate chips\",\n      \"preparation\": null,\n      \"rawText\": \"2 cups chocolate chips\"\n    }\n  ],\n  \"instructions\": [\n    {\n      \"stepNumber\": 1,\n      \"instruction\": \"Preheat oven to 375°F\",\n      \"rawText\": \"Preheat oven to 375°F\"\n    },\n    {\n      \"stepNumber\": 2,\n      \"instruction\": \"In small bowl, combine flour, baking soda and salt\",\n      \"rawText\": \"In small bowl, combine flour, baking soda and salt\"\n    },\n    {\n      \"stepNumber\": 3,\n      \"instruction\": \"In large bowl, beat butter and sugars until creamy\",\n      \"rawText\": \"In large bowl, beat butter and sugars until creamy\"\n    },\n    {\n      \"stepNumber\": 4,\n      \"instruction\": \"Add eggs to butter mixture and mix well\",\n      \"rawText\": \"Add eggs to butter mixture and mix well\"\n    },\n    {\n      \"stepNumber\": 5,\n      \"instruction\": \"Gradually stir in flour mixture\",\n      \"rawText\": \"Gradually stir in flour mixture\"\n    },\n    {\n      \"stepNumber\": 6,\n      \"instruction\": \"Stir in chocolate chips\",\n      \"rawText\": \"Stir in chocolate chips\"\n    },\n    {\n      \"stepNumber\": 7,\n      \"instruction\": \"Drop rounded tablespoons onto ungreased baking sheets\",\n      \"rawText\": \"Drop rounded tablespoons onto ungreased baking sheets\"\n    },\n    {\n      \"stepNumber\": 8,\n      \"instruction\": \"Bake for 9 to 12 minutes or until golden brown\",\n      \"rawText\": \"Bake for 9 to 12 minutes or until golden brown\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/recipes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "recipes"
+              ]
+            },
+            "description": "Create a new recipe with full details"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Recipe",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Chocolate Chip Cookies - Updated\",\n  \"description\": \"Classic homemade chocolate chip cookies with extra cocoa\",\n  \"yield\": 24,\n  \"prepTimeMinutes\": 20,\n  \"cookTimeMinutes\": 12,\n  \"source\": \"https://example.com/recipes\",\n  \"originalImageUrl\": \"https://example.com/images/cookies-updated.jpg\",\n  \"ingredients\": [],\n  \"instructions\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/recipes/{{recipe_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "recipes",
+                "{{recipe_id}}"
+              ]
+            },
+            "description": "Update an existing recipe"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Recipe",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/recipes/{{recipe_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "recipes",
+                "{{recipe_id}}"
+              ]
+            },
+            "description": "Delete a recipe by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Parse Recipe Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"image\": \"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n  \"mimeType\": \"image/png\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/recipes/parse",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "recipes",
+                "parse"
+              ]
+            },
+            "description": "Parse a recipe from an image using AI (Gemini). Returns parsed recipe data with confidence score.\n\nExpected Responses:\n- 200 OK: Successfully parsed recipe\n- 422 Unprocessable Entity: No recipe detected in image\n- 503 Service Unavailable: Gemini API failure"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Get Health Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            },
+            "description": "Check application health status and dependencies"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    },
+    {
+      "key": "recipe_id",
+      "value": "550e8400-e29b-41d4-a716-446655440000",
+      "type": "string"
+    }
+  ]
+}
