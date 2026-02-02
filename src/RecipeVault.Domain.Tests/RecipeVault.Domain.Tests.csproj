@@ -10,10 +10,6 @@
     <NoWarn>$(NoWarn),1573,1591,1712,CA1707</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.14" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
@@ -28,6 +24,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RecipeVault.TestUtilities\RecipeVault.TestUtilities.csproj" />
-    <ProjectReference Include="..\RecipeVault.WebApi\RecipeVault.WebApi.csproj" />
+    <ProjectReference Include="..\RecipeVault.Domain\RecipeVault.Domain.csproj" />
   </ItemGroup>
 </Project>
