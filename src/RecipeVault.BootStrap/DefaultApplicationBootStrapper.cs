@@ -8,6 +8,7 @@ namespace RecipeVault.BootStrap {
                 new RepositoryInstaller(),
                 new DomainServiceInstaller(),
                 new DistributedLockInstaller(),
+                new GeminiInstaller(),
                 new FacadeInstaller()
             ];
         }

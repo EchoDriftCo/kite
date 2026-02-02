@@ -12,5 +12,6 @@ namespace RecipeVault.Facade {
         Task<PagedList<RecipeDto>> SearchRecipesAsync(RecipeSearchDto search);
         Task<RecipeDto> UpdateRecipeAsync(Guid resourceId, UpdateRecipeDto dto);
         Task DeleteRecipeAsync(Guid resourceId);
+        Task<ParseRecipeResponseDto> ParseRecipeImageAsync(ParseRecipeRequestDto request);
     }
 }

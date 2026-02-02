@@ -94,5 +94,45 @@ namespace RecipeVault.WebApi.Mappers {
                 }).ToList()
             };
         }
+
+        public ParseRecipeRequestDto MapToDto(ParseRecipeRequestModel model) {
+            if (model == null) {
+                return null;
+            }
+
+            return new ParseRecipeRequestDto {
+                Image = model.Image,
+                MimeType = model.MimeType
+            };
+        }
+
+        public ParseRecipeResponseModel Map(ParseRecipeResponseDto dto) {
+            if (dto == null) {
+                return null;
+            }
+
+            return new ParseRecipeResponseModel {
+                Confidence = dto.Confidence,
+                Parsed = dto.Parsed == null ? null : new ParsedRecipeModel {
+                    Title = dto.Parsed.Title,
+                    Yield = dto.Parsed.Yield,
+                    PrepTimeMinutes = dto.Parsed.PrepTimeMinutes,
+                    CookTimeMinutes = dto.Parsed.CookTimeMinutes,
+                    Ingredients = dto.Parsed.Ingredients?.Select(i => new ParsedIngredientModel {
+                        Quantity = i.Quantity,
+                        Unit = i.Unit,
+                        Item = i.Item,
+                        Preparation = i.Preparation,
+                        RawText = i.RawText
+                    }).ToList(),
+                    Instructions = dto.Parsed.Instructions?.Select(i => new ParsedInstructionModel {
+                        StepNumber = i.StepNumber,
+                        Instruction = i.Instruction,
+                        RawText = i.RawText
+                    }).ToList()
+                },
+                Warnings = dto.Warnings
+            };
+        }
     }
 }

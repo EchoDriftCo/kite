@@ -105,8 +105,13 @@ namespace RecipeVault.WebApi.Controllers {
         /// <param name="input"></param>
         [HttpPost("parse")]
         [ProducesResponseType(typeof(ParseRecipeResponseModel), StatusCodes.Status200OK)]
-        public Task<IActionResult> ParseRecipeAsync([FromBody] ParseRecipeRequestModel input) {
-            throw new NotImplementedException("Parse endpoint will be implemented with Gemini integration");
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        public async Task<IActionResult> ParseRecipeAsync([FromBody] ParseRecipeRequestModel input) {
+            var requestDto = recipeMapper.MapToDto(input);
+            var responseDto = await facade.ParseRecipeImageAsync(requestDto).ConfigureAwait(false);
+            var responseModel = recipeMapper.Map(responseDto);
+            return Ok(responseModel);
         }
     }
 }

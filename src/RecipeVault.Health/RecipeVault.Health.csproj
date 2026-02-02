@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Cortside.Health" Version="8.0.111" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.3" />
     <PackageReference Include="Npgsql" Version="8.0.6" />
   </ItemGroup>
 </Project>

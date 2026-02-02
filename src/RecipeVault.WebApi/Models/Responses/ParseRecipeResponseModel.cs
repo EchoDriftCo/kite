@@ -1,34 +1,109 @@
-#pragma warning disable CS1591 // Missing XML comments
-
+using System;
 using System.Collections.Generic;
 
 namespace RecipeVault.WebApi.Models.Responses {
+    /// <summary>
+    /// Response model from recipe parsing operation
+    /// </summary>
     public class ParseRecipeResponseModel {
+        /// <summary>
+        /// Confidence score (0-1) indicating parse quality
+        /// </summary>
         public double Confidence { get; set; }
+
+        /// <summary>
+        /// Parsed recipe data
+        /// </summary>
         public ParsedRecipeModel Parsed { get; set; }
+
+        /// <summary>
+        /// List of warnings about uncertain or missing fields
+        /// </summary>
         public List<string> Warnings { get; set; }
     }
 
+    /// <summary>
+    /// Parsed recipe data from AI
+    /// </summary>
     public class ParsedRecipeModel {
+        /// <summary>
+        /// Recipe title
+        /// </summary>
         public string Title { get; set; }
+
+        /// <summary>
+        /// Recipe yield (number of servings)
+        /// </summary>
         public int? Yield { get; set; }
+
+        /// <summary>
+        /// Prep time in minutes
+        /// </summary>
         public int? PrepTimeMinutes { get; set; }
+
+        /// <summary>
+        /// Cook time in minutes
+        /// </summary>
         public int? CookTimeMinutes { get; set; }
+
+        /// <summary>
+        /// List of ingredients
+        /// </summary>
         public List<ParsedIngredientModel> Ingredients { get; set; }
+
+        /// <summary>
+        /// List of preparation instructions
+        /// </summary>
         public List<ParsedInstructionModel> Instructions { get; set; }
     }
 
+    /// <summary>
+    /// Parsed ingredient with quantity and unit
+    /// </summary>
     public class ParsedIngredientModel {
+        /// <summary>
+        /// Quantity as decimal (e.g., 0.5 for 1/2)
+        /// </summary>
         public decimal? Quantity { get; set; }
+
+        /// <summary>
+        /// Unit of measurement (normalized)
+        /// </summary>
         public string Unit { get; set; }
+
+        /// <summary>
+        /// Ingredient name
+        /// </summary>
         public string Item { get; set; }
+
+        /// <summary>
+        /// Preparation notes (e.g., "sifted", "room temperature")
+        /// </summary>
         public string Preparation { get; set; }
+
+        /// <summary>
+        /// Original text from image
+        /// </summary>
         public string RawText { get; set; }
     }
 
+    /// <summary>
+    /// Single instruction step
+    /// </summary>
     public class ParsedInstructionModel {
+        /// <summary>
+        /// Step number in sequence
+        /// </summary>
         public int StepNumber { get; set; }
+
+        /// <summary>
+        /// Cleaned up instruction text
+        /// </summary>
         public string Instruction { get; set; }
+
+        /// <summary>
+        /// Original text from image
+        /// </summary>
         public string RawText { get; set; }
     }
 }

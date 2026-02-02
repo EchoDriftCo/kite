@@ -1,6 +1,16 @@
 namespace RecipeVault.Dto.Input {
+    /// <summary>
+    /// Request DTO for parsing a recipe image
+    /// </summary>
     public class ParseRecipeRequestDto {
+        /// <summary>
+        /// Base64 encoded image data
+        /// </summary>
         public string Image { get; set; }
+
+        /// <summary>
+        /// MIME type of the image (e.g., "image/jpeg", "image/png")
+        /// </summary>
         public string MimeType { get; set; }
     }
 }

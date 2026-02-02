@@ -75,5 +75,11 @@ namespace RecipeVault.Facade {
                 await uow.SaveChangesAsync().ConfigureAwait(false);
             }
         }
+
+        public async Task<ParseRecipeResponseDto> ParseRecipeImageAsync(ParseRecipeRequestDto request) {
+            // No transaction needed - read-only external API call
+            var result = await recipeService.ParseRecipeImageAsync(request).ConfigureAwait(false);
+            return result;
+        }
     }
 }

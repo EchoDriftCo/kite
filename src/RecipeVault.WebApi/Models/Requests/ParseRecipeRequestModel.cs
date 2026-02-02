@@ -1,12 +1,16 @@
-#pragma warning disable CS1591 // Missing XML comments
-
-using System.ComponentModel.DataAnnotations;
-
 namespace RecipeVault.WebApi.Models.Requests {
+    /// <summary>
+    /// Request model for parsing a recipe image
+    /// </summary>
     public class ParseRecipeRequestModel {
-        [Required]
+        /// <summary>
+        /// Base64 encoded image data
+        /// </summary>
         public string Image { get; set; }
-        [Required]
+
+        /// <summary>
+        /// MIME type of the image (e.g., "image/jpeg", "image/png")
+        /// </summary>
         public string MimeType { get; set; }
     }
 }

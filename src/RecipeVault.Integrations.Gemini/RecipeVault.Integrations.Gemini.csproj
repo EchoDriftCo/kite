@@ -6,16 +6,15 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <CopyDocumentationFileToOutputDirectory>false</CopyDocumentationFileToOutputDirectory>
-    <NoWarn>$(NoWarn),1573,1591,1712,CA1848</NoWarn>
+    <NoWarn>$(NoWarn),1573,1591,1712,CS1574,CA1869,CA1848,CA1822,SYSLIB0051</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Cortside.Common.Logging" Version="8.0.478" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.3" />
+    <PackageReference Include="System.Text.Json" Version="9.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RecipeVault.Data\RecipeVault.Data.csproj" />
-    <ProjectReference Include="..\RecipeVault.Domain\RecipeVault.Domain.csproj" />
-    <ProjectReference Include="..\RecipeVault.Dto\RecipeVault.Dto.csproj" />
+    <ProjectReference Include="..\RecipeVault.Configuration\RecipeVault.Configuration.csproj" />
     <ProjectReference Include="..\RecipeVault.Exceptions\RecipeVault.Exceptions.csproj" />
-    <ProjectReference Include="..\RecipeVault.Integrations.Gemini\RecipeVault.Integrations.Gemini.csproj" />
   </ItemGroup>
 </Project>

@@ -8,16 +8,20 @@ using RecipeVault.Data.Repositories;
 using RecipeVault.Data.Searches;
 using RecipeVault.Domain.Entities;
 using RecipeVault.Dto.Input;
+using RecipeVault.Dto.Output;
 using RecipeVault.Exceptions;
+using RecipeVault.Integrations.Gemini;
 
 namespace RecipeVault.DomainService {
     public class RecipeService : IRecipeService {
         private readonly ILogger<RecipeService> logger;
         private readonly IRecipeRepository recipeRepository;
+        private readonly IGeminiClient geminiClient;
 
-        public RecipeService(IRecipeRepository recipeRepository, ILogger<RecipeService> logger) {
+        public RecipeService(IRecipeRepository recipeRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger) {
             this.logger = logger;
             this.recipeRepository = recipeRepository;
+            this.geminiClient = geminiClient;
         }
 
         public async Task<Recipe> CreateRecipeAsync(UpdateRecipeDto dto) {
@@ -76,6 +80,48 @@ namespace RecipeVault.DomainService {
             using (logger.PushProperty("RecipeResourceId", entity.RecipeResourceId)) {
                 await recipeRepository.RemoveAsync(entity);
                 logger.LogInformation("Deleted recipe");
+            }
+        }
+
+        public async Task<ParseRecipeResponseDto> ParseRecipeImageAsync(ParseRecipeRequestDto request) {
+            logger.LogInformation("Parsing recipe image, mimeType={MimeType}, imageSize={ImageSize}",
+                request.MimeType, request.Image?.Length ?? 0);
+
+            try {
+                var geminiResponse = await geminiClient.ParseRecipeAsync(request.Image, request.MimeType)
+                    .ConfigureAwait(false);
+
+                var result = new ParseRecipeResponseDto {
+                    Confidence = geminiResponse.Confidence,
+                    Parsed = new ParsedRecipeDto {
+                        Title = geminiResponse.Title,
+                        Yield = geminiResponse.Yield,
+                        PrepTimeMinutes = geminiResponse.PrepTimeMinutes,
+                        CookTimeMinutes = geminiResponse.CookTimeMinutes,
+                        Ingredients = geminiResponse.Ingredients?.Select(i => new ParsedIngredientDto {
+                            Quantity = i.Quantity,
+                            Unit = i.Unit,
+                            Item = i.Item,
+                            Preparation = i.Preparation,
+                            RawText = i.RawText
+                        }).ToList(),
+                        Instructions = geminiResponse.Instructions?.Select(i => new ParsedInstructionDto {
+                            StepNumber = i.StepNumber,
+                            Instruction = i.Instruction,
+                            RawText = i.RawText
+                        }).ToList()
+                    },
+                    Warnings = geminiResponse.Warnings
+                };
+
+                logger.LogInformation("Successfully parsed recipe, confidence={Confidence}, warnings={WarningCount}",
+                    result.Confidence, result.Warnings?.Count ?? 0);
+
+                return result;
+            }
+            catch (Exception ex) {
+                logger.LogError(ex, "Failed to parse recipe image");
+                throw;
             }
         }
     }
