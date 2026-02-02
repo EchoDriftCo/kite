@@ -55,3 +55,7 @@ nunit-*.xml
 
 # Claude AI files
 .claude/*
+
+# Local app settings and environment variables
+src/RecipeVault.WebApi/appsettings.local.json
+.env
