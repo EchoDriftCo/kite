@@ -16,9 +16,10 @@ using RecipeVault.WebApi.Models.Requests;
 using RecipeVault.WebApi.Models.Responses;
 
 namespace RecipeVault.WebApi.IntegrationTests.Endpoints {
-    public class RecipesEndpointTests : IAsyncLifetime {
+    public class RecipesEndpointTests : IAsyncLifetime, IDisposable {
         private readonly IntegrationFixture _fixture;
         private string _authToken;
+        private bool _disposed;
 
         public RecipesEndpointTests() {
             _fixture = new IntegrationFixture();
@@ -45,7 +46,7 @@ namespace RecipeVault.WebApi.IntegrationTests.Endpoints {
             // Assert
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-            var content = await response.Content.ReadAsAsync<object>();
+            var content = await response.Content.ReadFromJsonAsync<object>();
             content.ShouldNotBeNull();
         }
 
@@ -76,7 +77,7 @@ namespace RecipeVault.WebApi.IntegrationTests.Endpoints {
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
             response.Headers.Location.ShouldNotBeNull();
 
-            var content = await response.Content.ReadAsAsync<RecipeModel>();
+            var content = await response.Content.ReadFromJsonAsync<RecipeModel>();
             content.ShouldNotBeNull();
             content.Title.ShouldBe(input.Title);
             content.Yield.ShouldBe(input.Yield);
@@ -98,7 +99,7 @@ namespace RecipeVault.WebApi.IntegrationTests.Endpoints {
             // Assert
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-            var content = await response.Content.ReadAsAsync<RecipeModel>();
+            var content = await response.Content.ReadFromJsonAsync<RecipeModel>();
             content.ShouldNotBeNull();
             content.RecipeResourceId.ShouldBe(recipe.RecipeResourceId);
             content.Title.ShouldBe(recipe.Title);
@@ -129,7 +130,7 @@ namespace RecipeVault.WebApi.IntegrationTests.Endpoints {
             // Assert
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-            var content = await response.Content.ReadAsAsync<RecipeModel>();
+            var content = await response.Content.ReadFromJsonAsync<RecipeModel>();
             content.ShouldNotBeNull();
             content.Title.ShouldBe(updateInput.Title);
             content.Yield.ShouldBe(updateInput.Yield);
@@ -180,6 +181,20 @@ namespace RecipeVault.WebApi.IntegrationTests.Endpoints {
 
             // Assert
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        }
+
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing) {
+            if (!_disposed) {
+                if (disposing) {
+                    _fixture?.Dispose();
+                }
+                _disposed = true;
+            }
         }
     }
 }

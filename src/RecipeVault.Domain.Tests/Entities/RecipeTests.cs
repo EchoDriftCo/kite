@@ -97,7 +97,7 @@ namespace RecipeVault.Domain.Tests.Entities {
             recipe.SetIngredients(ingredients);
 
             // Assert
-            recipe.Ingredients.ShouldHaveCount(2);
+            recipe.Ingredients.Count.ShouldBe(2);
             recipe.Ingredients[0].Item.ShouldBe("flour");
             recipe.Ingredients[1].Item.ShouldBe("sugar");
         }
@@ -117,7 +117,7 @@ namespace RecipeVault.Domain.Tests.Entities {
             recipe.SetInstructions(instructions);
 
             // Assert
-            recipe.Instructions.ShouldHaveCount(3);
+            recipe.Instructions.Count.ShouldBe(3);
             recipe.Instructions[0].Instruction.ShouldBe("Step 1");
             recipe.Instructions[1].Instruction.ShouldBe("Step 2");
             recipe.Instructions[2].Instruction.ShouldBe("Step 3");

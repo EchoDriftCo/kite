@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Cortside.Health;
 using Cortside.Health.Checks;
@@ -6,7 +7,6 @@ using Cortside.Health.Enums;
 using Cortside.Health.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
 namespace RecipeVault.Health {

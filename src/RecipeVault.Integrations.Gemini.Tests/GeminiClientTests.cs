@@ -1,26 +1,52 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
+using RecipeVault.Integrations.Gemini.Exceptions;
+using RecipeVault.Integrations.Gemini.Tests.Mocks;
 using Shouldly;
 using Xunit;
 
 namespace RecipeVault.Integrations.Gemini.Tests {
-    public class GeminiClientTests {
-        private readonly Mock<IHttpClientFactory> httpClientFactoryMock;
+    public class GeminiClientTests : IDisposable {
         private readonly Mock<IConfiguration> configurationMock;
         private readonly Mock<ILogger<GeminiClient>> loggerMock;
+        private readonly GeminiMockServer mockServer;
         private readonly HttpClient httpClient;
 
         public GeminiClientTests() {
-            httpClientFactoryMock = new Mock<IHttpClientFactory>();
             configurationMock = new Mock<IConfiguration>();
             loggerMock = new Mock<ILogger<GeminiClient>>();
-            httpClient = new HttpClient();
+
+            // Setup logger mock to allow any calls
+            loggerMock
+                .Setup(l => l.Log(
+                    It.IsAny<LogLevel>(),
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()));
+
+            loggerMock
+                .Setup(l => l.BeginScope(It.IsAny<It.IsAnyType>()))
+                .Returns(new NullDisposable());
+
+            // Create mock server
+            mockServer = new GeminiMockServer();
+
+            // Create HTTP client pointing to mock server
+            httpClient = new HttpClient {
+                BaseAddress = new Uri(mockServer.Url)
+            };
+        }
+
+        public void Dispose() {
+            httpClient?.Dispose();
+            mockServer?.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         [Fact]
@@ -34,51 +60,19 @@ namespace RecipeVault.Integrations.Gemini.Tests {
             configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns(apiKey);
             configurationMock.Setup(c => c["Gemini:Model"]).Returns(model);
 
-            var responseContent = new StringContent("""
-                {
-                  "candidates": [
-                    {
-                      "content": {
-                        "parts": [
-                          {
-                            "text": "{\\"title\\": \\"Chocolate Cake\\", \\"yield\\": 8, \\"prepTimeMinutes\\": 15, \\"cookTimeMinutes\\": 30, \\"ingredients\\": [{
-                              \\"quantity\\": 2,
-                              \\"unit\\": \\"cup\\",
-                              \\"item\\": \\"flour\\",
-                              \\"preparation\\": null,
-                              \\"rawText\\": \\"2 cups flour\\"
-                            }], \\"instructions\\": [{
-                              \\"stepNumber\\": 1,
-                              \\"instruction\\": \\"Preheat oven to 350°F\\",
-                              \\"rawText\\": \\"Preheat oven to 350°F\\"
-                            }]}"
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-                """);
-
-            var handlerMock = new Mock<HttpMessageHandler>();
-            handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<System.Threading.CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = responseContent
+            mockServer.StubParseRecipeSuccess(
+                title: "Chocolate Cake",
+                yield: 8,
+                prepTimeMinutes: 15,
+                cookTimeMinutes: 30,
+                ingredients: new List<MockIngredient> {
+                    new() { Quantity = 2, Unit = "cup", Item = "flour", Preparation = null, RawText = "2 cups flour" }
+                },
+                instructions: new List<MockInstruction> {
+                    new() { StepNumber = 1, Instruction = "Preheat oven to 350°F", RawText = "Preheat oven to 350°F" }
                 });
 
-            var client = new HttpClient(handlerMock.Object) {
-                BaseAddress = new Uri("https://generativelanguage.googleapis.com")
-            };
-
-            httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(client);
-
-            var geminiClient = new GeminiClient(client, configurationMock.Object, loggerMock.Object);
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
 
             // Act
             var result = await geminiClient.ParseRecipeAsync(imageBase64, mimeType);
@@ -96,7 +90,7 @@ namespace RecipeVault.Integrations.Gemini.Tests {
         }
 
         [Fact]
-        public async Task ParseRecipeAsync_WithNoRecipeDetected_Returns422StatusCode() {
+        public async Task ParseRecipeAsync_WithNoRecipeDetected_ThrowsGeminiApiException() {
             // Arrange
             var imageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
             var mimeType = "image/png";
@@ -105,21 +99,19 @@ namespace RecipeVault.Integrations.Gemini.Tests {
             configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns(apiKey);
             configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
 
-            var client = new HttpClient(new Mock<HttpMessageHandler>().Object) {
-                BaseAddress = new Uri("https://generativelanguage.googleapis.com")
-            };
+            mockServer.StubNoRecipeDetected();
 
-            var geminiClient = new GeminiClient(client, configurationMock.Object, loggerMock.Object);
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<GeminiApiException>(() =>
                 geminiClient.ParseRecipeAsync(imageBase64, mimeType));
 
-            ex.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+            ex.StatusCode.ShouldBe(422);
         }
 
         [Fact]
-        public async Task ParseRecipeAsync_WithGeminiApiDown_Returns503StatusCode() {
+        public async Task ParseRecipeAsync_WithServiceUnavailable_ThrowsGeminiApiException() {
             // Arrange
             var imageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
             var mimeType = "image/png";
@@ -128,17 +120,15 @@ namespace RecipeVault.Integrations.Gemini.Tests {
             configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns(apiKey);
             configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
 
-            var client = new HttpClient(new Mock<HttpMessageHandler>().Object) {
-                BaseAddress = new Uri("https://generativelanguage.googleapis.com")
-            };
+            mockServer.StubServiceUnavailable();
 
-            var geminiClient = new GeminiClient(client, configurationMock.Object, loggerMock.Object);
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<GeminiApiException>(() =>
                 geminiClient.ParseRecipeAsync(imageBase64, mimeType));
 
-            ex.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+            ex.StatusCode.ShouldBe(503);
         }
 
         [Fact]
@@ -152,49 +142,9 @@ namespace RecipeVault.Integrations.Gemini.Tests {
             configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns(apiKey);
             configurationMock.Setup(c => c["Gemini:Model"]).Returns(model);
 
-            var responseContent = new StringContent("""
-                {
-                  "candidates": [
-                    {
-                      "content": {
-                        "parts": [
-                          {
-                            "text": "{\\"title\\": \\"Chocolate Cake\\", \\"yield\\": 8, \\"prepTimeMinutes\\": 15, \\"cookTimeMinutes\\": 30, \\"ingredients\\": [{
-                              \\"quantity\\": 2,
-                              \\"unit\\": \\"cup\\",
-                              \\"item\\": \\"flour\\",
-                              \\"preparation\\": null,
-                              \\"rawText\\": \\"2 cups flour\\"
-                            }], \\"instructions\\": [{
-                              \\"stepNumber\\": 1,
-                              \\"instruction\\": \\"Preheat oven to 350°F\\",
-                              \\"rawText\\": \\"Preheat oven to 350°F\\"
-                            }]}"
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-                """);
+            mockServer.StubParseRecipeSuccess();
 
-            var handlerMock = new Mock<HttpMessageHandler>();
-            handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<System.Threading.CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = responseContent
-                });
-
-            var client = new HttpClient(handlerMock.Object) {
-                BaseAddress = new Uri("https://generativelanguage.googleapis.com")
-            };
-
-            var geminiClient = new GeminiClient(client, configurationMock.Object, loggerMock.Object);
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
 
             // Act
             var result = await geminiClient.ParseRecipeAsync(imageBase64, mimeType);
@@ -215,39 +165,9 @@ namespace RecipeVault.Integrations.Gemini.Tests {
             configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns(apiKey);
             configurationMock.Setup(c => c["Gemini:Model"]).Returns(model);
 
-            var responseContent = new StringContent("""
-                {
-                  "candidates": [
-                    {
-                      "content": {
-                        "parts": [
-                          {
-                            "text": "{\\"title\\": \\"Chocolate Cake\\", \\"yield\\": null, \\"prepTimeMinutes\\": null, \\"cookTimeMinutes\\": null, \\"ingredients\\": [], \\"instructions\\": []}"
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-                """);
+            mockServer.StubParseRecipeWithMissingFields(title: "Chocolate Cake");
 
-            var handlerMock = new Mock<HttpMessageHandler>();
-            handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<System.Threading.CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = responseContent
-                });
-
-            var client = new HttpClient(handlerMock.Object) {
-                BaseAddress = new Uri("https://generativelanguage.googleapis.com")
-            };
-
-            var geminiClient = new GeminiClient(client, configurationMock.Object, loggerMock.Object);
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
 
             // Act
             var result = await geminiClient.ParseRecipeAsync(imageBase64, mimeType);
@@ -255,6 +175,82 @@ namespace RecipeVault.Integrations.Gemini.Tests {
             // Assert
             result.Warnings.ShouldNotBeEmpty();
             result.Confidence.ShouldBeLessThan(1);
+        }
+
+        [Fact]
+        public async Task ParseRecipeAsync_WithUnauthorized_ThrowsGeminiApiException() {
+            // Arrange
+            var imageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+            var mimeType = "image/png";
+            var apiKey = "invalid-api-key";
+
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns(apiKey);
+            configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
+
+            mockServer.StubUnauthorized();
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<GeminiApiException>(() =>
+                geminiClient.ParseRecipeAsync(imageBase64, mimeType));
+
+            ex.StatusCode.ShouldBe(401);
+        }
+
+        [Fact]
+        public async Task ParseRecipeAsync_WithNullImageBase64_ThrowsArgumentException() {
+            // Arrange
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns("test-api-key");
+            configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(() =>
+                geminiClient.ParseRecipeAsync(null, "image/png"));
+        }
+
+        [Fact]
+        public async Task ParseRecipeAsync_WithNullMimeType_ThrowsArgumentException() {
+            // Arrange
+            var imageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns("test-api-key");
+            configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(() =>
+                geminiClient.ParseRecipeAsync(imageBase64, null));
+        }
+
+        [Fact]
+        public async Task ParseRecipeAsync_WithNoApiKey_ThrowsGeminiApiException() {
+            // Arrange
+            var imageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+            var mimeType = "image/png";
+
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns((string)null);
+            configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<GeminiApiException>(() =>
+                geminiClient.ParseRecipeAsync(imageBase64, mimeType));
+
+            ex.Message.ShouldContain("API key");
+        }
+
+        /// <summary>
+        /// Null disposable for BeginScope mock
+        /// </summary>
+        private sealed class NullDisposable : IDisposable {
+            public void Dispose() {
+                // No-op
+            }
         }
     }
 }

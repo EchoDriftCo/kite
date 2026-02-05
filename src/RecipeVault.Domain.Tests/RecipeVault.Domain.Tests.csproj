@@ -23,7 +23,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\RecipeVault.DomainService.Tests\RecipeVault.DomainService.Tests.csproj" />
     <ProjectReference Include="..\RecipeVault.TestUtilities\RecipeVault.TestUtilities.csproj" />
     <ProjectReference Include="..\RecipeVault.Domain\RecipeVault.Domain.csproj" />
+    <ProjectReference Include="..\RecipeVault.WebApi.Tests\RecipeVault.WebApi.Tests.csproj" />
   </ItemGroup>
 </Project>

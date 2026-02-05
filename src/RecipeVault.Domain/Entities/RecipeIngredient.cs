@@ -41,5 +41,15 @@ namespace RecipeVault.Domain.Entities {
 
         [Required]
         public string RawText { get; private set; }
+
+        public int? CanonicalUnitId { get; private set; }
+
+        [ForeignKey(nameof(CanonicalUnitId))]
+        public virtual Unit CanonicalUnit { get; private set; }
+
+        public void SetCanonicalUnit(Unit unit) {
+            CanonicalUnit = unit;
+            CanonicalUnitId = unit?.UnitId;
+        }
     }
 }

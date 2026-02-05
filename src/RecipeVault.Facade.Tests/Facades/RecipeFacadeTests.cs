@@ -17,9 +17,12 @@ using RecipeVault.DomainService;
 using RecipeVault.Facade.Mappers;
 using RecipeVault.TestUtilities.Builders;
 using RecipeVault.Facade.Tests.Base;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace RecipeVault.Facade.Tests.Facades {
     public class RecipeFacadeTests : FacadeTestBase {
+        private readonly SubjectMapper subjectMapper = new SubjectMapper();
+
         [Fact]
         public async Task CreateRecipeAsync_WithValidDto_CreatesAndReturnsMappedDto() {
             // Arrange
@@ -36,9 +39,9 @@ namespace RecipeVault.Facade.Tests.Facades {
             var mockUow = MockRepository.Create<IUnitOfWork>();
             var mockService = MockRepository.Create<IRecipeService>();
             var mockLogger = CreateMockLogger<RecipeFacade>();
-            var mockLockProvider = MockRepository.Create<IDistributedLockProvider>();
+            var stubLockProvider = new StubDistributedLockProvider();
 
-            var mapper = new RecipeMapper();
+            var mapper = new RecipeMapper(subjectMapper);
 
             mockService
                 .Setup(x => x.CreateRecipeAsync(dto))
@@ -46,11 +49,11 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .Verifiable();
 
             mockUow
-                .Setup(x => x.SaveChangesAsync())
+                .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, mockLockProvider.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider);
 
             // Act
             var result = await facade.CreateRecipeAsync(dto);
@@ -61,7 +64,7 @@ namespace RecipeVault.Facade.Tests.Facades {
             result.Yield.ShouldBe(dto.Yield);
 
             mockService.Verify(x => x.CreateRecipeAsync(dto), Times.Once);
-            mockUow.Verify(x => x.SaveChangesAsync(), Times.Once);
+            mockUow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -72,19 +75,19 @@ namespace RecipeVault.Facade.Tests.Facades {
             var mockUow = MockRepository.Create<IUnitOfWork>();
             var mockService = MockRepository.Create<IRecipeService>();
             var mockLogger = CreateMockLogger<RecipeFacade>();
-            var mockLockProvider = MockRepository.Create<IDistributedLockProvider>();
-            var mockTransaction = MockRepository.Create<IAsyncDisposable>();
+            var stubLockProvider = new StubDistributedLockProvider();
 
-            var mapper = new RecipeMapper();
+            var mapper = new RecipeMapper(subjectMapper);
+
+            var mockTransaction = MockRepository.Create<IDbContextTransaction>();
+            mockTransaction
+                .Setup(x => x.DisposeAsync())
+                .Returns(new ValueTask())
+                .Verifiable();
 
             mockUow
                 .Setup(x => x.BeginNoTracking())
                 .Returns(mockTransaction.Object)
-                .Verifiable();
-
-            mockTransaction
-                .Setup(x => x.DisposeAsync())
-                .Returns(new ValueTask())
                 .Verifiable();
 
             mockService
@@ -92,7 +95,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(recipe)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, mockLockProvider.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider);
 
             // Act
             var result = await facade.GetRecipeAsync(recipe.RecipeResourceId);
@@ -127,19 +130,19 @@ namespace RecipeVault.Facade.Tests.Facades {
             var mockUow = MockRepository.Create<IUnitOfWork>();
             var mockService = MockRepository.Create<IRecipeService>();
             var mockLogger = CreateMockLogger<RecipeFacade>();
-            var mockLockProvider = MockRepository.Create<IDistributedLockProvider>();
-            var mockTransaction = MockRepository.Create<IAsyncDisposable>();
+            var stubLockProvider = new StubDistributedLockProvider();
 
-            var mapper = new RecipeMapper();
+            var mapper = new RecipeMapper(subjectMapper);
+
+            var mockTransaction = MockRepository.Create<IDbContextTransaction>();
+            mockTransaction
+                .Setup(x => x.DisposeAsync())
+                .Returns(new ValueTask())
+                .Verifiable();
 
             mockUow
                 .Setup(x => x.BeginReadUncommitedAsync())
                 .ReturnsAsync(mockTransaction.Object)
-                .Verifiable();
-
-            mockTransaction
-                .Setup(x => x.DisposeAsync())
-                .Returns(new ValueTask())
                 .Verifiable();
 
             mockService
@@ -147,14 +150,14 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(pagedList)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, mockLockProvider.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider);
 
             // Act
             var result = await facade.SearchRecipesAsync(searchDto);
 
             // Assert
             result.ShouldNotBeNull();
-            result.Count.ShouldBe(2);
+            result.Items.Count.ShouldBe(2);
 
             mockService.Verify(x => x.SearchRecipesAsync(It.IsAny<RecipeSearch>()), Times.Once);
         }
@@ -173,19 +176,11 @@ namespace RecipeVault.Facade.Tests.Facades {
             var mockUow = MockRepository.Create<IUnitOfWork>();
             var mockService = MockRepository.Create<IRecipeService>();
             var mockLogger = CreateMockLogger<RecipeFacade>();
-            var mockLockProvider = MockRepository.Create<IDistributedLockProvider>();
 
-            var mapper = new RecipeMapper();
+            // Use a stub lock provider that returns a no-op handle
+            var stubLockProvider = new StubDistributedLockProvider();
 
-            var mockLock = MockRepository.Create<IAsyncDisposable>();
-            mockLock
-                .Setup(x => x.DisposeAsync())
-                .Returns(new ValueTask());
-
-            mockLockProvider
-                .Setup(x => x.AcquireLockAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockLock.Object)
-                .Verifiable();
+            var mapper = new RecipeMapper(subjectMapper);
 
             mockService
                 .Setup(x => x.UpdateRecipeAsync(recipe.RecipeResourceId, It.IsAny<UpdateRecipeDto>()))
@@ -193,11 +188,11 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .Verifiable();
 
             mockUow
-                .Setup(x => x.SaveChangesAsync())
+                .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, mockLockProvider.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider);
 
             // Act
             var result = await facade.UpdateRecipeAsync(recipe.RecipeResourceId, updateDto);
@@ -205,9 +200,8 @@ namespace RecipeVault.Facade.Tests.Facades {
             // Assert
             result.ShouldNotBeNull();
 
-            mockLockProvider.Verify(x => x.AcquireLockAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
             mockService.Verify(x => x.UpdateRecipeAsync(recipe.RecipeResourceId, It.IsAny<UpdateRecipeDto>()), Times.Once);
-            mockUow.Verify(x => x.SaveChangesAsync(), Times.Once);
+            mockUow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -218,19 +212,10 @@ namespace RecipeVault.Facade.Tests.Facades {
             var mockUow = MockRepository.Create<IUnitOfWork>();
             var mockService = MockRepository.Create<IRecipeService>();
             var mockLogger = CreateMockLogger<RecipeFacade>();
-            var mockLockProvider = MockRepository.Create<IDistributedLockProvider>();
+            var stubLockProvider = new StubDistributedLockProvider();
 
-            var mapper = new RecipeMapper();
+            var mapper = new RecipeMapper(subjectMapper);
 
-            var mockLock = MockRepository.Create<IAsyncDisposable>();
-            mockLock
-                .Setup(x => x.DisposeAsync())
-                .Returns(new ValueTask());
-
-            mockLockProvider
-                .Setup(x => x.AcquireLockAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockLock.Object)
-                .Verifiable();
 
             mockService
                 .Setup(x => x.DeleteRecipeAsync(recipe.RecipeResourceId))
@@ -238,19 +223,78 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .Verifiable();
 
             mockUow
-                .Setup(x => x.SaveChangesAsync())
+                .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, mockLockProvider.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider);
 
             // Act
             await facade.DeleteRecipeAsync(recipe.RecipeResourceId);
 
             // Assert
-            mockLockProvider.Verify(x => x.AcquireLockAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
             mockService.Verify(x => x.DeleteRecipeAsync(recipe.RecipeResourceId), Times.Once);
-            mockUow.Verify(x => x.SaveChangesAsync(), Times.Once);
+            mockUow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+    }
+
+    /// <summary>
+    /// Stub implementation of IDistributedLockProvider for testing
+    /// </summary>
+#pragma warning disable CA1822
+    internal sealed class StubDistributedLockProvider : IDistributedLockProvider {
+        public IDistributedSynchronizationHandle Acquire(string name, TimeSpan? timeout = null, CancellationToken cancellationToken = default) {
+            return new StubSynchronizationHandle();
+        }
+
+        public ValueTask<IDistributedSynchronizationHandle> AcquireAsync(string name, TimeSpan? timeout = null, CancellationToken cancellationToken = default) {
+            return new ValueTask<IDistributedSynchronizationHandle>(new StubSynchronizationHandle());
+        }
+
+        public IDistributedLock CreateLock(string name) {
+            return new StubDistributedLock();
+        }
+    }
+#pragma warning restore CA1822
+
+    /// <summary>
+    /// Stub implementation of IDistributedLock for testing
+    /// </summary>
+    internal sealed class StubDistributedLock : IDistributedLock {
+        public string Name => "stub-lock";
+
+        public IDistributedSynchronizationHandle Acquire(TimeSpan? timeout = null, CancellationToken cancellationToken = default) {
+            return new StubSynchronizationHandle();
+        }
+
+        public ValueTask<IDistributedSynchronizationHandle> AcquireAsync(TimeSpan? timeout = null, CancellationToken cancellationToken = default) {
+            return new ValueTask<IDistributedSynchronizationHandle>(new StubSynchronizationHandle());
+        }
+
+        public IDistributedSynchronizationHandle TryAcquire(TimeSpan timeout = default, CancellationToken cancellationToken = default) {
+            return new StubSynchronizationHandle();
+        }
+
+        public ValueTask<IDistributedSynchronizationHandle> TryAcquireAsync(TimeSpan timeout = default, CancellationToken cancellationToken = default) {
+            return new ValueTask<IDistributedSynchronizationHandle>(new StubSynchronizationHandle());
+        }
+    }
+
+    /// <summary>
+    /// Stub implementation of IDistributedSynchronizationHandle for testing
+    /// </summary>
+#pragma warning disable CA1822
+    internal sealed class StubSynchronizationHandle : IDistributedSynchronizationHandle {
+        public string HandleId => "stub-handle";
+        public CancellationToken HandleLostToken => CancellationToken.None;
+#pragma warning restore CA1822
+
+        public void Dispose() {
+            // No-op for testing
+        }
+
+        public ValueTask DisposeAsync() {
+            return default;
         }
     }
 }

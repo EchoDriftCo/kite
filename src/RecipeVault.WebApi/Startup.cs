@@ -23,6 +23,8 @@ using RecipeVault.Configuration;
 using RecipeVault.Data;
 using RecipeVault.Health;
 using RecipeVault.WebApi.Installers;
+using System.Threading.Tasks;
+using Cortside.AspNetCore.EntityFramework;
 
 namespace RecipeVault.WebApi {
     /// <summary>
@@ -66,20 +68,42 @@ namespace RecipeVault.WebApi {
             JsonConvert.DefaultSettings = JsonNetUtility.GlobalDefaultSettings;
 
             // add Supabase JWT bearer authentication (from config or env vars)
-            var jwtSecret = Configuration["Supabase:Auth:JwtSecret"] ?? Environment.GetEnvironmentVariable("SUPABASE_JWT_SECRET");
+            var supabaseUrl = Configuration["Supabase:Url"] ?? Environment.GetEnvironmentVariable("SUPABASE_URL");
             var jwtIssuer = Configuration["Supabase:Auth:Issuer"] ?? Environment.GetEnvironmentVariable("SUPABASE_JWT_ISSUER");
             var jwtAudience = Configuration["Supabase:Auth:Audience"] ?? Environment.GetEnvironmentVariable("SUPABASE_JWT_AUDIENCE") ?? "authenticated";
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {
+                    // Use Supabase JWKS endpoint to get public keys for RS256 validation
+                    options.Authority = jwtIssuer;
+                    options.Audience = jwtAudience;
+
+                    // Configure JWKS endpoint
+                    options.MetadataAddress = $"{supabaseUrl}/auth/v1/.well-known/openid-configuration";
+
                     options.TokenValidationParameters = new TokenValidationParameters {
                         ValidateIssuer = true,
                         ValidIssuer = jwtIssuer,
                         ValidateAudience = true,
                         ValidAudience = jwtAudience,
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
                         ValidateLifetime = true
+                    };
+
+                    // Add detailed error logging
+                    options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents {
+                        OnAuthenticationFailed = context => {
+                            if (context.Exception.InnerException != null) {
+                                Console.WriteLine($"   Inner: {context.Exception.InnerException.Message}");
+                            }
+                            return Task.CompletedTask;
+                        },
+                        OnTokenValidated = context => {
+                            return Task.CompletedTask;
+                        },
+                        OnChallenge = context => {
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 
@@ -97,11 +121,11 @@ namespace RecipeVault.WebApi {
                 connectionString = $"Host={host};Port={port};Database={database};Username={user};Password={password}{ssl}";
             }
             Configuration["Database:ConnectionString"] = connectionString;
-            Console.WriteLine($"Using database connection string: {connectionString}");
             // Register DbContext with PostgreSQL (Npgsql) instead of Cortside's default SQL Server
             services.AddDbContext<RecipeVaultDbContext>(options => options.UseNpgsql(connectionString));
             services.AddScoped<IRecipeVaultDbContext>(sp => sp.GetRequiredService<RecipeVaultDbContext>());
             services.AddScoped<DbContext>(sp => sp.GetRequiredService<RecipeVaultDbContext>());
+            services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<RecipeVaultDbContext>());
 
             // add health services
             services.AddHealth(o => {
