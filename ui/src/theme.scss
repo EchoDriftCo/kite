@@ -1,0 +1,167 @@
+// Kite RecipeVault - Custom Material Theme
+// "Dark Mode Fine Dining" aesthetic
+
+@use '@angular/material' as mat;
+
+// Include the common styles for Angular Material
+@include mat.elevation-classes();
+@include mat.app-background();
+
+// Define custom color palettes
+$kite-amber: (
+  50: #fffbeb,
+  100: #fef3c7,
+  200: #fde68a,
+  300: #fcd34d,
+  400: #fbbf24,
+  500: #f59e0b,  // Primary amber
+  600: #d97706,
+  700: #b45309,
+  800: #92400e,
+  900: #78350f,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: rgba(black, 0.87),
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+  )
+);
+
+$kite-teal: (
+  50: #f0fdfa,
+  100: #ccfbf1,
+  200: #99f6e4,
+  300: #5eead4,
+  400: #2dd4bf,
+  500: #14b8a6,  // Secondary teal
+  600: #0d9488,
+  700: #0f766e,
+  800: #115e59,
+  900: #134e4a,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+  )
+);
+
+$kite-slate: (
+  50: #f8fafc,
+  100: #f1f5f9,
+  200: #e2e8f0,
+  300: #cbd5e1,
+  400: #94a3b8,
+  500: #64748b,
+  600: #475569,
+  700: #334155,
+  800: #1e293b,
+  900: #0f172a,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+  )
+);
+
+// Create the theme palettes
+$kite-primary: mat.m2-define-palette($kite-amber, 500);
+$kite-accent: mat.m2-define-palette($kite-teal, 500);
+$kite-warn: mat.m2-define-palette(mat.$m2-red-palette);
+
+// Create the dark theme
+$kite-theme: mat.m2-define-dark-theme((
+  color: (
+    primary: $kite-primary,
+    accent: $kite-accent,
+    warn: $kite-warn,
+  ),
+  typography: mat.m2-define-typography-config(),
+  density: 0,
+));
+
+// Apply the theme
+@include mat.all-component-themes($kite-theme);
+
+// Custom global styles
+body {
+  margin: 0;
+  font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+  background-color: #1e293b;  // slate-800
+  color: #f1f5f9;  // off-white
+}
+
+// Custom card styling
+.mat-mdc-card {
+  background-color: #334155 !important;  // slate-700
+  border-radius: 12px !important;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+  }
+}
+
+// Toolbar styling
+.mat-toolbar {
+  background-color: #0f172a !important;  // slate-900
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+// Make form fields pop nicely
+.mat-mdc-form-field {
+  .mat-mdc-text-field-wrapper {
+    background-color: rgba(51, 65, 85, 0.5);  // semi-transparent slate-700
+  }
+}
+
+// Recipe card image containers
+.recipe-image {
+  border-radius: 8px;
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+}
+
+// Scrollbar styling (dark theme friendly)
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 5px;
+  
+  &:hover {
+    background: #64748b;
+  }
+}

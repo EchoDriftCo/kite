@@ -1,0 +1,71 @@
+<div class="recipe-detail-container">
+  <div *ngIf="loading" class="loading">
+    <p>Loading recipe...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <mat-card>
+      <mat-card-content>
+        {{ error }}
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div *ngIf="recipe && !loading" class="recipe-detail">
+    <div class="actions">
+      <button mat-button routerLink="/recipes">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Recipes
+      </button>
+      <button mat-raised-button color="primary" [routerLink]="['/recipes', recipe.id, 'edit']">
+        <mat-icon>edit</mat-icon>
+        Edit
+      </button>
+    </div>
+
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{ recipe.name }}</mat-card-title>
+        <mat-card-subtitle *ngIf="recipe.category">
+          <mat-chip>{{ recipe.category }}</mat-chip>
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <img mat-card-image *ngIf="recipe.originalImageUrl" [src]="recipe.originalImageUrl" [alt]="recipe.name">
+
+      <mat-card-content>
+        <div class="recipe-meta">
+          <div *ngIf="recipe.prepTime">
+            <mat-icon>schedule</mat-icon>
+            <strong>Prep Time:</strong> {{ recipe.prepTime }} minutes
+          </div>
+          <div *ngIf="recipe.cookTime">
+            <mat-icon>restaurant</mat-icon>
+            <strong>Cook Time:</strong> {{ recipe.cookTime }} minutes
+          </div>
+          <div *ngIf="recipe.servings">
+            <mat-icon>people</mat-icon>
+            <strong>Servings:</strong> {{ recipe.servings }}
+          </div>
+        </div>
+
+        <div *ngIf="recipe.description" class="section">
+          <h3>Description</h3>
+          <p>{{ recipe.description }}</p>
+        </div>
+
+        <div *ngIf="recipe.ingredients && recipe.ingredients.length > 0" class="section">
+          <h3>Ingredients</h3>
+          <ul>
+            <li *ngFor="let ingredient of recipe.ingredients">{{ ingredient }}</li>
+          </ul>
+        </div>
+
+        <div *ngIf="recipe.instructions" class="section">
+          <h3>Instructions</h3>
+          <p class="instructions">{{ recipe.instructions }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

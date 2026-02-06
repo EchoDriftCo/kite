@@ -1,0 +1,39 @@
+/* You can add global styles to this file, and also import other style files */
+
+html, body { 
+  height: 100%; 
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+body { 
+  margin: 0; 
+  font-family: Roboto, "Helvetica Neue", sans-serif; 
+}
+
+// Force light text throughout the app
+* {
+  color: inherit;
+}
+
+// Make sure card titles and content are light
+.mat-mdc-card-title,
+.mat-mdc-card-content,
+.mat-mdc-card-subtitle,
+h1, h2, h3, h4, h5, h6,
+p, span, div {
+  color: #f1f5f9 !important;
+}
+
+// Ensure Material components use light text
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-icon-button {
+  color: #f1f5f9 !important;
+}
+
+// Form field text
+.mat-mdc-form-field,
+.mat-mdc-input-element {
+  color: #f1f5f9 !important;
+}
