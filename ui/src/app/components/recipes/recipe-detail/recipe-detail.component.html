@@ -1,71 +1,141 @@
 <div class="recipe-detail-container">
-  <div *ngIf="loading" class="loading">
-    <p>Loading recipe...</p>
-  </div>
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Loading recipe...</p>
+    </div>
+  }
 
-  <div *ngIf="error" class="error">
-    <mat-card>
-      <mat-card-content>
-        {{ error }}
-      </mat-card-content>
-    </mat-card>
-  </div>
+  @if (error) {
+    <div class="error-message">
+      <mat-icon>error</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-button (click)="loadRecipe()">Try Again</button>
+      <button mat-button (click)="goBack()">Go Back</button>
+    </div>
+  }
 
-  <div *ngIf="recipe && !loading" class="recipe-detail">
-    <div class="actions">
-      <button mat-button routerLink="/recipes">
-        <mat-icon>arrow_back</mat-icon>
-        Back to Recipes
-      </button>
-      <button mat-raised-button color="primary" [routerLink]="['/recipes', recipe.id, 'edit']">
-        <mat-icon>edit</mat-icon>
-        Edit
-      </button>
+  @if (!loading && !error && recipe) {
+    <div class="recipe-header">
+      <div class="header-actions">
+        <button mat-icon-button (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        
+        <div class="action-buttons">
+          <button mat-icon-button (click)="printRecipe()" matTooltip="Print Recipe">
+            <mat-icon>print</mat-icon>
+          </button>
+          <button mat-raised-button color="primary" (click)="editRecipe()">
+            <mat-icon>edit</mat-icon>
+            Edit
+          </button>
+          <button mat-raised-button color="warn" (click)="deleteRecipe()">
+            <mat-icon>delete</mat-icon>
+            Delete
+          </button>
+        </div>
+      </div>
+
+      @if (recipe.originalImageUrl) {
+        <div class="recipe-image">
+          <img [src]="recipe.originalImageUrl" [alt]="recipe.title">
+        </div>
+      }
+
+      <h1>{{ recipe.title }}</h1>
+
+      @if (recipe.description) {
+        <p class="description">{{ recipe.description }}</p>
+      }
+
+      <div class="recipe-meta">
+        <mat-chip-set>
+          @if (recipe.prepTimeMinutes) {
+            <mat-chip>
+              <mat-icon>schedule</mat-icon>
+              Prep: {{ formatTime(recipe.prepTimeMinutes) }}
+            </mat-chip>
+          }
+          @if (recipe.cookTimeMinutes) {
+            <mat-chip>
+              <mat-icon>whatshot</mat-icon>
+              Cook: {{ formatTime(recipe.cookTimeMinutes) }}
+            </mat-chip>
+          }
+          <mat-chip>
+            <mat-icon>schedule</mat-icon>
+            Total: {{ getTotalTime() }}
+          </mat-chip>
+          <mat-chip>
+            <mat-icon>restaurant_menu</mat-icon>
+            Serves: {{ recipe.yield }}
+          </mat-chip>
+        </mat-chip-set>
+
+        @if (recipe.source) {
+          <p class="source">Source: {{ recipe.source }}</p>
+        }
+      </div>
     </div>
 
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>{{ recipe.name }}</mat-card-title>
-        <mat-card-subtitle *ngIf="recipe.category">
-          <mat-chip>{{ recipe.category }}</mat-chip>
-        </mat-card-subtitle>
-      </mat-card-header>
+    <mat-divider></mat-divider>
 
-      <img mat-card-image *ngIf="recipe.originalImageUrl" [src]="recipe.originalImageUrl" [alt]="recipe.name">
+    <div class="recipe-content">
+      <div class="ingredients-section">
+        <h2>
+          <mat-icon>list</mat-icon>
+          Ingredients
+        </h2>
 
-      <mat-card-content>
-        <div class="recipe-meta">
-          <div *ngIf="recipe.prepTime">
-            <mat-icon>schedule</mat-icon>
-            <strong>Prep Time:</strong> {{ recipe.prepTime }} minutes
-          </div>
-          <div *ngIf="recipe.cookTime">
-            <mat-icon>restaurant</mat-icon>
-            <strong>Cook Time:</strong> {{ recipe.cookTime }} minutes
-          </div>
-          <div *ngIf="recipe.servings">
-            <mat-icon>people</mat-icon>
-            <strong>Servings:</strong> {{ recipe.servings }}
-          </div>
+        <div class="ingredients-list">
+          @for (ingredient of recipe.ingredients; track ingredient.recipeIngredientId || $index) {
+            <div class="ingredient-item">
+              <mat-icon class="check-circle">radio_button_unchecked</mat-icon>
+              <span class="ingredient-text">
+                @if (ingredient.quantity) {
+                  <strong>{{ ingredient.quantity }}</strong>
+                }
+                @if (ingredient.unit) {
+                  <strong>{{ ingredient.unit }}</strong>
+                }
+                {{ ingredient.item }}
+                @if (ingredient.preparation) {
+                  <em>({{ ingredient.preparation }})</em>
+                }
+              </span>
+            </div>
+          }
         </div>
+      </div>
 
-        <div *ngIf="recipe.description" class="section">
-          <h3>Description</h3>
-          <p>{{ recipe.description }}</p>
-        </div>
+      <div class="instructions-section">
+        <h2>
+          <mat-icon>format_list_numbered</mat-icon>
+          Instructions
+        </h2>
 
-        <div *ngIf="recipe.ingredients && recipe.ingredients.length > 0" class="section">
-          <h3>Ingredients</h3>
-          <ul>
-            <li *ngFor="let ingredient of recipe.ingredients">{{ ingredient }}</li>
-          </ul>
+        <div class="instructions-list">
+          @for (instruction of recipe.instructions; track instruction.recipeInstructionId || $index) {
+            <div class="instruction-item">
+              <div class="step-number">{{ instruction.stepNumber }}</div>
+              <p>{{ instruction.instruction }}</p>
+            </div>
+          }
         </div>
+      </div>
+    </div>
 
-        <div *ngIf="recipe.instructions" class="section">
-          <h3>Instructions</h3>
-          <p class="instructions">{{ recipe.instructions }}</p>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
+    @if (recipe.createdDate || recipe.lastModifiedDate) {
+      <mat-divider></mat-divider>
+      <div class="recipe-footer">
+        @if (recipe.createdDate) {
+          <p class="meta-info">Created: {{ recipe.createdDate | date: 'medium' }}</p>
+        }
+        @if (recipe.lastModifiedDate) {
+          <p class="meta-info">Last updated: {{ recipe.lastModifiedDate | date: 'medium' }}</p>
+        }
+      </div>
+    }
+  }
 </div>

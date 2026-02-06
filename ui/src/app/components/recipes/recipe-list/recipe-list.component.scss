@@ -1,6 +1,6 @@
 .recipe-list-container {
-  padding: 20px;
-  max-width: 1200px;
+  padding: 24px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -8,53 +8,238 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
 
   h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 500;
+  }
+
+  .actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+
+    .search-field {
+      width: 300px;
+      margin-bottom: -1.25em; // Cancel Material field margin
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 0;
+  gap: 16px;
+
+  p {
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px;
+  background-color: #ffebee;
+  border-radius: 8px;
+  gap: 8px;
+
+  mat-icon {
+    color: #c62828;
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+  }
+
+  p {
+    color: #c62828;
     margin: 0;
   }
 }
 
-.loading, .error, .no-recipes {
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 24px;
   text-align: center;
-  padding: 40px;
+
+  mat-icon {
+    font-size: 96px;
+    width: 96px;
+    height: 96px;
+    color: rgba(0, 0, 0, 0.3);
+  }
+
+  h2 {
+    margin: 16px 0 8px;
+    font-weight: 400;
+  }
+
+  p {
+    color: rgba(0, 0, 0, 0.6);
+    margin-bottom: 24px;
+  }
 }
 
-.error {
-  color: #d32f2f;
-}
-
-.recipes-grid {
+.recipe-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
 .recipe-card {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
   display: flex;
   flex-direction: column;
 
-  mat-card-content {
-    flex-grow: 1;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   }
 
-  .recipe-meta {
+  img {
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .placeholder-image {
+    height: 200px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
-    gap: 15px;
-    margin-top: 10px;
-    color: #666;
-    font-size: 0.9em;
+    align-items: center;
+    justify-content: center;
 
-    span {
+    mat-icon {
+      font-size: 72px;
+      width: 72px;
+      height: 72px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+
+  mat-card-content {
+    flex: 1;
+    padding: 16px !important;
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 1.25rem;
+      font-weight: 500;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .description {
+      color: rgba(0, 0, 0, 0.6);
+      font-size: 0.875rem;
+      line-height: 1.4;
+      margin: 0 0 16px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .recipe-meta {
       display: flex;
-      align-items: center;
-      gap: 5px;
+      flex-direction: column;
+      gap: 12px;
 
+      mat-chip-set {
+        display: flex;
+        gap: 8px;
+      }
+
+      mat-chip {
+        font-size: 0.75rem;
+        
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          margin-right: 4px;
+        }
+      }
+
+      .recipe-stats {
+        display: flex;
+        gap: 16px;
+        font-size: 0.875rem;
+        color: rgba(0, 0, 0, 0.6);
+
+        span {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+
+          mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+          }
+        }
+      }
+    }
+  }
+
+  mat-card-actions {
+    padding: 8px 16px !important;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+
+    button {
       mat-icon {
         font-size: 18px;
         width: 18px;
         height: 18px;
+        margin-right: 4px;
       }
     }
+  }
+}
+
+mat-paginator {
+  background: transparent;
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .actions {
+      width: 100%;
+      flex-direction: column;
+
+      .search-field {
+        width: 100%;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+
+  .recipe-grid {
+    grid-template-columns: 1fr;
   }
 }

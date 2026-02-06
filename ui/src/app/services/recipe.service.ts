@@ -1,45 +1,78 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { Recipe, CreateRecipeRequest, UpdateRecipeRequest } from '../models/recipe.model';
+import {
+  Recipe,
+  CreateRecipeRequest,
+  UpdateRecipeRequest,
+  RecipeSearchRequest,
+  PagedResult,
+  ParseRecipeRequest,
+  ParseRecipeResponse
+} from '../models/recipe.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RecipeService {
-  private endpoint = 'recipes';
+  private readonly endpoint = 'recipes';
 
-  constructor(private apiService: ApiService) { }
+  constructor(private api: ApiService) {}
 
-  getAllRecipes(): Observable<Recipe[]> {
-    return this.apiService.get<Recipe[]>(this.endpoint);
+  /**
+   * Search/list recipes with pagination
+   */
+  searchRecipes(request: RecipeSearchRequest = {}): Observable<PagedResult<Recipe>> {
+    const params: any = {};
+    
+    if (request.pageNumber) params.pageNumber = request.pageNumber;
+    if (request.pageSize) params.pageSize = request.pageSize || 20;
+    if (request.sortBy) params.sortBy = request.sortBy;
+    if (request.sortDirection) params.sortDirection = request.sortDirection;
+    if (request.title) params.title = request.title;
+
+    // Build query string
+    const queryString = Object.keys(params)
+      .map(key => `${key}=${encodeURIComponent(params[key])}`)
+      .join('&');
+
+    const url = queryString ? `${this.endpoint}?${queryString}` : this.endpoint;
+    
+    return this.api.get<PagedResult<Recipe>>(url);
   }
 
-  getRecipeById(id: string): Observable<Recipe> {
-    return this.apiService.get<Recipe>(`${this.endpoint}/${id}`);
+  /**
+   * Get a single recipe by ID
+   */
+  getRecipe(id: string): Observable<Recipe> {
+    return this.api.get<Recipe>(`${this.endpoint}/${id}`);
   }
 
+  /**
+   * Create a new recipe
+   */
   createRecipe(recipe: CreateRecipeRequest): Observable<Recipe> {
-    return this.apiService.post<Recipe>(this.endpoint, recipe);
+    return this.api.post<Recipe>(this.endpoint, recipe);
   }
 
-  updateRecipe(recipe: UpdateRecipeRequest): Observable<Recipe> {
-    return this.apiService.put<Recipe>(`${this.endpoint}/${recipe.id}`, recipe);
+  /**
+   * Update an existing recipe
+   */
+  updateRecipe(id: string, recipe: UpdateRecipeRequest): Observable<Recipe> {
+    return this.api.put<Recipe>(`${this.endpoint}/${id}`, recipe);
   }
 
+  /**
+   * Delete a recipe
+   */
   deleteRecipe(id: string): Observable<void> {
-    return this.apiService.delete<void>(`${this.endpoint}/${id}`);
+    return this.api.delete<void>(`${this.endpoint}/${id}`);
   }
 
-  uploadRecipeImage(recipeId: string, imageFile: File): Observable<Recipe> {
-    const formData = new FormData();
-    formData.append('image', imageFile);
-    return this.apiService.upload<Recipe>(`${this.endpoint}/${recipeId}/image`, formData);
-  }
-
-  parseRecipeFromImage(imageFile: File): Observable<Recipe> {
-    const formData = new FormData();
-    formData.append('image', imageFile);
-    return this.apiService.upload<Recipe>(`${this.endpoint}/parse`, formData);
+  /**
+   * Parse a recipe from URL or text using AI
+   */
+  parseRecipe(request: ParseRecipeRequest): Observable<ParseRecipeResponse> {
+    return this.api.post<ParseRecipeResponse>(`${this.endpoint}/parse`, request);
   }
 }

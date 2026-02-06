@@ -1,56 +1,288 @@
 .recipe-form-container {
-  padding: 20px;
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
+  padding: 24px;
 }
 
 .header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 
   h1 {
+    font-size: 2rem;
+    font-weight: 500;
     margin: 0;
   }
 }
 
-.error {
-  color: #d32f2f;
-  margin-bottom: 20px;
-}
-
-form {
+.loading-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.full-width {
-  width: 100%;
-}
-
-.form-row {
-  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 0;
   gap: 16px;
 
-  mat-form-field {
-    flex: 1;
+  p {
+    color: rgba(0, 0, 0, 0.6);
   }
 }
 
-.file-upload {
+.error-message {
+  padding: 16px;
+  background-color: #ffebee;
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin: 16px 0;
+  gap: 12px;
+  margin-bottom: 24px;
 
-  .file-name {
-    color: #666;
-    font-style: italic;
+  mat-icon {
+    color: #c62828;
+  }
+
+  p {
+    margin: 0;
+    color: #c62828;
+  }
+}
+
+.form-section {
+  margin-bottom: 24px;
+
+  mat-card-header {
+    padding: 16px 16px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.25rem;
+
+      mat-icon {
+        color: var(--primary-color, #3f51b5);
+      }
+    }
+  }
+
+  mat-card-content {
+    padding: 24px 16px 16px;
+  }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+
+  .full-width {
+    grid-column: 1 / -1;
+  }
+}
+
+.ingredients-list, .instructions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.ingredient-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.02);
+
+  .ingredient-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    button {
+      width: 32px;
+      height: 32px;
+      line-height: 32px;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+
+  .ingredient-fields {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 80px 100px 1fr 150px;
+    gap: 8px;
+
+    .quantity-field, .unit-field, .item-field, .prep-field {
+      margin-bottom: -1.25em; // Cancel Material field margin
+    }
+  }
+
+  > button[color="warn"] {
+    margin-top: 8px;
+  }
+}
+
+.instruction-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.02);
+
+  .step-number {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--primary-color, #3f51b5);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-top: 8px;
+  }
+
+  .instruction-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    button {
+      width: 32px;
+      height: 32px;
+      line-height: 32px;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+
+  .instruction-field {
+    flex: 1;
+    margin-bottom: -1.25em; // Cancel Material field margin
+  }
+
+  > button[color="warn"] {
+    margin-top: 8px;
+  }
+}
+
+.empty-message {
+  text-align: center;
+  color: rgba(0, 0, 0, 0.6);
+  font-style: italic;
+  padding: 32px;
+  margin: 0;
+}
+
+.add-button {
+  width: 100%;
+  margin-top: 8px;
+
+  mat-icon {
+    margin-right: 8px;
   }
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 16px;
-  margin-top: 24px;
+  gap: 12px;
+  padding: 24px 0;
+
+  button {
+    min-width: 120px;
+
+    mat-icon {
+      margin-right: 8px;
+    }
+
+    mat-spinner {
+      margin-right: 8px;
+      display: inline-block;
+    }
+  }
+}
+
+// Mobile responsive
+@media (max-width: 768px) {
+  .recipe-form-container {
+    padding: 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ingredient-row {
+    flex-direction: column;
+
+    .ingredient-controls {
+      flex-direction: row;
+      order: 3;
+      align-self: stretch;
+      justify-content: center;
+    }
+
+    .ingredient-fields {
+      grid-template-columns: 1fr 1fr;
+      order: 1;
+
+      .item-field, .prep-field {
+        grid-column: 1 / -1;
+      }
+    }
+
+    > button[color="warn"] {
+      order: 2;
+      align-self: flex-end;
+      margin-top: 0;
+    }
+  }
+
+  .instruction-row {
+    flex-direction: column;
+
+    .instruction-controls {
+      flex-direction: row;
+      order: 3;
+      align-self: stretch;
+      justify-content: center;
+    }
+
+    .instruction-field {
+      order: 1;
+    }
+
+    > button[color="warn"] {
+      order: 2;
+      align-self: flex-end;
+      margin-top: 0;
+    }
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+    }
+  }
 }

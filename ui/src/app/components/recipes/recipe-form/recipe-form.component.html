@@ -1,82 +1,212 @@
 <div class="recipe-form-container">
   <div class="header">
-    <h1>{{ isEditMode ? 'Edit Recipe' : 'New Recipe' }}</h1>
+    <h1>{{ isEditMode ? 'Edit Recipe' : 'Create New Recipe' }}</h1>
   </div>
 
-  <div *ngIf="error" class="error">
-    <mat-card>
-      <mat-card-content>
-        {{ error }}
-      </mat-card-content>
-    </mat-card>
-  </div>
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Loading recipe...</p>
+    </div>
+  }
 
-  <mat-card>
-    <mat-card-content>
-      <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Recipe Name</mat-label>
-          <input matInput formControlName="name" required>
-          <mat-error *ngIf="recipeForm.get('name')?.hasError('required')">
-            Recipe name is required
-          </mat-error>
-        </mat-form-field>
+  @if (error && !saving) {
+    <div class="error-message">
+      <mat-icon>error</mat-icon>
+      <p>{{ error }}</p>
+    </div>
+  }
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Category</mat-label>
-          <input matInput formControlName="category">
-        </mat-form-field>
+  @if (!loading) {
+    <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
+      <mat-card class="form-section">
+        <mat-card-header>
+          <mat-card-title>Basic Information</mat-card-title>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="form-grid">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Recipe Title</mat-label>
+              <input matInput formControlName="title" placeholder="Enter recipe title" required>
+              @if (recipeForm.get('title')?.hasError('required') && recipeForm.get('title')?.touched) {
+                <mat-error>Title is required</mat-error>
+              }
+            </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Description</mat-label>
-          <textarea matInput formControlName="description" rows="3"></textarea>
-        </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Description</mat-label>
+              <textarea matInput formControlName="description" rows="3" placeholder="Describe your recipe..."></textarea>
+            </mat-form-field>
 
-        <div class="form-row">
-          <mat-form-field appearance="outline">
-            <mat-label>Prep Time (minutes)</mat-label>
-            <input matInput type="number" formControlName="prepTime">
-          </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Servings</mat-label>
+              <input matInput type="number" formControlName="yield" min="1" max="100" required>
+              @if (recipeForm.get('yield')?.hasError('required') && recipeForm.get('yield')?.touched) {
+                <mat-error>Servings is required</mat-error>
+              }
+            </mat-form-field>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Cook Time (minutes)</mat-label>
-            <input matInput type="number" formControlName="cookTime">
-          </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Prep Time (minutes)</mat-label>
+              <input matInput type="number" formControlName="prepTimeMinutes" min="0" max="1440">
+            </mat-form-field>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Servings</mat-label>
-            <input matInput type="number" formControlName="servings">
-          </mat-form-field>
-        </div>
+            <mat-form-field appearance="outline">
+              <mat-label>Cook Time (minutes)</mat-label>
+              <input matInput type="number" formControlName="cookTimeMinutes" min="0" max="1440">
+            </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Ingredients (one per line)</mat-label>
-          <textarea matInput formControlName="ingredients" rows="8"></textarea>
-        </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Source</mat-label>
+              <input matInput formControlName="source" placeholder="Where did you find this recipe?">
+            </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Instructions</mat-label>
-          <textarea matInput formControlName="instructions" rows="10"></textarea>
-        </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Image URL</mat-label>
+              <input matInput formControlName="originalImageUrl" placeholder="https://example.com/image.jpg">
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-        <div class="file-upload">
-          <label for="file-input">
-            <button mat-raised-button type="button" (click)="fileInput.click()">
-              <mat-icon>image</mat-icon>
-              Upload Image
-            </button>
-          </label>
-          <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" style="display: none;">
-          <span *ngIf="selectedFile" class="file-name">{{ selectedFile.name }}</span>
-        </div>
-
-        <div class="form-actions">
-          <button mat-button type="button" (click)="onCancel()">Cancel</button>
-          <button mat-raised-button color="primary" type="submit" [disabled]="recipeForm.invalid || loading">
-            {{ isEditMode ? 'Update' : 'Create' }} Recipe
+      <mat-card class="form-section">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>list</mat-icon>
+            Ingredients
+          </mat-card-title>
+          <button mat-icon-button type="button" (click)="addIngredient()" matTooltip="Add ingredient">
+            <mat-icon>add_circle</mat-icon>
           </button>
-        </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div formArrayName="ingredients" class="ingredients-list">
+            @for (ingredient of ingredients.controls; track $index; let i = $index) {
+              <div [formGroupName]="i" class="ingredient-row">
+                <div class="ingredient-controls">
+                  <button mat-icon-button type="button" (click)="moveIngredientUp(i)" 
+                          [disabled]="i === 0" matTooltip="Move up">
+                    <mat-icon>arrow_upward</mat-icon>
+                  </button>
+                  <button mat-icon-button type="button" (click)="moveIngredientDown(i)" 
+                          [disabled]="i === ingredients.length - 1" matTooltip="Move down">
+                    <mat-icon>arrow_downward</mat-icon>
+                  </button>
+                </div>
+
+                <div class="ingredient-fields">
+                  <mat-form-field appearance="outline" class="quantity-field">
+                    <mat-label>Qty</mat-label>
+                    <input matInput type="number" formControlName="quantity" step="0.25">
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="unit-field">
+                    <mat-label>Unit</mat-label>
+                    <input matInput formControlName="unit" placeholder="cup, tbsp, etc">
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="item-field">
+                    <mat-label>Ingredient</mat-label>
+                    <input matInput formControlName="item" placeholder="flour, sugar, etc" required>
+                    @if (ingredient.get('item')?.hasError('required') && ingredient.get('item')?.touched) {
+                      <mat-error>Ingredient is required</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="prep-field">
+                    <mat-label>Preparation</mat-label>
+                    <input matInput formControlName="preparation" placeholder="chopped, diced, etc">
+                  </mat-form-field>
+                </div>
+
+                <button mat-icon-button type="button" color="warn" (click)="removeIngredient(i)" 
+                        matTooltip="Remove ingredient">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            }
+
+            @if (ingredients.length === 0) {
+              <p class="empty-message">No ingredients yet. Click the + button to add one.</p>
+            }
+          </div>
+
+          <button mat-stroked-button type="button" (click)="addIngredient()" class="add-button">
+            <mat-icon>add</mat-icon>
+            Add Ingredient
+          </button>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="form-section">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>format_list_numbered</mat-icon>
+            Instructions
+          </mat-card-title>
+          <button mat-icon-button type="button" (click)="addInstruction()" matTooltip="Add instruction">
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div formArrayName="instructions" class="instructions-list">
+            @for (instruction of instructions.controls; track $index; let i = $index) {
+              <div [formGroupName]="i" class="instruction-row">
+                <div class="step-number">{{ i + 1 }}</div>
+
+                <div class="instruction-controls">
+                  <button mat-icon-button type="button" (click)="moveInstructionUp(i)" 
+                          [disabled]="i === 0" matTooltip="Move up">
+                    <mat-icon>arrow_upward</mat-icon>
+                  </button>
+                  <button mat-icon-button type="button" (click)="moveInstructionDown(i)" 
+                          [disabled]="i === instructions.length - 1" matTooltip="Move down">
+                    <mat-icon>arrow_downward</mat-icon>
+                  </button>
+                </div>
+
+                <mat-form-field appearance="outline" class="instruction-field">
+                  <mat-label>Step {{ i + 1 }}</mat-label>
+                  <textarea matInput formControlName="instruction" rows="3" 
+                            placeholder="Describe this step..." required></textarea>
+                  @if (instruction.get('instruction')?.hasError('required') && instruction.get('instruction')?.touched) {
+                    <mat-error>Instruction is required</mat-error>
+                  }
+                </mat-form-field>
+
+                <button mat-icon-button type="button" color="warn" (click)="removeInstruction(i)" 
+                        matTooltip="Remove instruction">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            }
+
+            @if (instructions.length === 0) {
+              <p class="empty-message">No instructions yet. Click the + button to add one.</p>
+            }
+          </div>
+
+          <button mat-stroked-button type="button" (click)="addInstruction()" class="add-button">
+            <mat-icon>add</mat-icon>
+            Add Instruction
+          </button>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="form-actions">
+        <button mat-button type="button" (click)="cancel()">Cancel</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="saving">
+          @if (saving) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <mat-icon>save</mat-icon>
+          }
+          {{ isEditMode ? 'Update' : 'Create' }} Recipe
+        </button>
+      </div>
+    </form>
+  }
 </div>

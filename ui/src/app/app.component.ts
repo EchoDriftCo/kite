@@ -1,15 +1,41 @@
 import { Component } from '@angular/core';
-import { RouterOutlet, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet, RouterLink } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
+import { AuthService } from './services/auth.service';
 
 @Component({
-    selector: 'app-root',
-    imports: [RouterOutlet, RouterModule, MatToolbarModule, MatButtonModule, MatIconModule],
-    templateUrl: './app.component.html',
-    styleUrl: './app.component.scss'
+  selector: 'app-root',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    RouterLink,
+    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    MatDividerModule
+  ],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  title = 'RecipeVault';
+  constructor(private authService: AuthService) {}
+
+  isAuthenticated(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
+  userEmail(): string {
+    return this.authService.currentUser?.email || 'User';
+  }
+
+  logout(): void {
+    this.authService.signOut();
+  }
 }
