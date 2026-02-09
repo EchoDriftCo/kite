@@ -1,0 +1,105 @@
+<div class="import-dialog">
+  <h2 mat-dialog-title>
+    <mat-icon>photo_camera</mat-icon>
+    Import Recipe from Image
+  </h2>
+
+  <mat-dialog-content>
+    <p class="instructions">
+      Upload a photo of a recipe (cookbook page, recipe card, etc.) and AI will extract the ingredients and instructions.
+    </p>
+
+    @if (error) {
+      <div class="error-message">
+        <mat-icon>error</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+    }
+
+    @if (!selectedFile) {
+      <div 
+        class="drop-zone"
+        [class.drag-over]="dragOver"
+        (drop)="onFileDrop($event)"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)">
+        
+        <mat-icon class="upload-icon">cloud_upload</mat-icon>
+        
+        <p class="drop-text">
+          <strong>Drag & drop</strong> an image here, or
+        </p>
+        
+        <label for="file-input" class="file-button">
+          <button mat-raised-button color="primary" type="button" onclick="document.getElementById('file-input').click()">
+            <mat-icon>add_photo_alternate</mat-icon>
+            Choose Image
+          </button>
+        </label>
+        
+        <input 
+          id="file-input"
+          type="file" 
+          accept="image/*"
+          (change)="onFileSelected($event)"
+          style="display: none">
+        
+        <p class="file-info">Supports: JPG, PNG, HEIC (max 10MB)</p>
+      </div>
+    } @else {
+      <div class="preview-container">
+        @if (previewUrl) {
+          <img [src]="previewUrl" alt="Recipe preview" class="preview-image">
+        }
+        
+        <div class="file-details">
+          <p class="file-name">
+            <mat-icon>image</mat-icon>
+            {{ selectedFile.name }}
+          </p>
+          <p class="file-size">{{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</p>
+        </div>
+
+        <button mat-icon-button color="warn" (click)="clearFile()" [disabled]="loading">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    }
+
+    <div class="tips">
+      <h4>
+        <mat-icon>lightbulb</mat-icon>
+        Tips for best results:
+      </h4>
+      <ul>
+        <li>Use good lighting and avoid shadows</li>
+        <li>Make sure text is clear and legible</li>
+        <li>Capture the entire recipe in one photo</li>
+        <li>Avoid glare or reflections</li>
+      </ul>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()" [disabled]="loading">
+      Cancel
+    </button>
+    <button 
+      mat-raised-button 
+      color="primary" 
+      (click)="importRecipe()" 
+      [disabled]="!selectedFile || loading">
+      @if (loading) {
+        <ng-container>
+          <mat-spinner diameter="20"></mat-spinner>
+          <span>Analyzing image...</span>
+        </ng-container>
+      } @else {
+        <ng-container>
+          <mat-icon>auto_fix_high</mat-icon>
+          <span>Import Recipe</span>
+        </ng-container>
+      }
+    </button>
+  </mat-dialog-actions>
+</div>

@@ -70,12 +70,35 @@ export interface PagedResult<T> {
 
 export interface ParseRecipeRequest {
   imageUrl?: string;
-  imageData?: string;
+  imageData?: string;  // base64 encoded
   recipeText?: string;
 }
 
 export interface ParseRecipeResponse {
-  recipe: CreateRecipeRequest;
-  confidence?: number;
+  confidence: number;
+  recipe: ParsedRecipe;
   warnings?: string[];
+}
+
+export interface ParsedRecipe {
+  title?: string;
+  yield?: number;
+  prepTimeMinutes?: number;
+  cookTimeMinutes?: number;
+  ingredients?: ParsedIngredient[];
+  instructions?: ParsedInstruction[];
+}
+
+export interface ParsedIngredient {
+  quantity?: number;
+  unit?: string;
+  item: string;
+  preparation?: string;
+  rawText?: string;
+}
+
+export interface ParsedInstruction {
+  stepNumber: number;
+  instruction: string;
+  rawText?: string;
 }

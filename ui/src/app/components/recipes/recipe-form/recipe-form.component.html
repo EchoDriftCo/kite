@@ -1,6 +1,13 @@
 <div class="recipe-form-container">
   <div class="header">
     <h1>{{ isEditMode ? 'Edit Recipe' : 'Create New Recipe' }}</h1>
+    
+    @if (!isEditMode) {
+      <button mat-raised-button color="accent" type="button" (click)="openImportDialog()">
+        <mat-icon>photo_camera</mat-icon>
+        Import from Image
+      </button>
+    }
   </div>
 
   @if (loading) {

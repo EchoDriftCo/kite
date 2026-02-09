@@ -9,8 +9,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatDialog } from '@angular/material/dialog';
 import { RecipeService } from '../../../services/recipe.service';
-import { Recipe, CreateRecipeRequest, RecipeIngredient, RecipeInstruction } from '../../../models/recipe.model';
+import { Recipe, CreateRecipeRequest, RecipeIngredient, RecipeInstruction, ParsedRecipe } from '../../../models/recipe.model';
+import { RecipeImportDialogComponent, ImportResult } from '../recipe-import-dialog/recipe-import-dialog.component';
 
 @Component({
   selector: 'app-recipe-form',
@@ -42,7 +44,8 @@ export class RecipeFormComponent implements OnInit {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private recipeService: RecipeService
+    private recipeService: RecipeService,
+    private dialog: MatDialog
   ) {
     this.initForm();
   }
@@ -255,6 +258,69 @@ export class RecipeFormComponent implements OnInit {
       this.router.navigate(['/recipes', this.recipeId]);
     } else {
       this.router.navigate(['/recipes']);
+    }
+  }
+
+  openImportDialog() {
+    const dialogRef = this.dialog.open(RecipeImportDialogComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe((result: ImportResult) => {
+      if (result?.success && result.parsedData) {
+        this.populateFromParsedData(result.parsedData);
+        
+        // Show success message with warnings if any
+        if (result.warnings && result.warnings.length > 0) {
+          console.warn('Import warnings:', result.warnings);
+          // Could show a snackbar here with warnings
+        }
+      }
+    });
+  }
+
+  populateFromParsedData(parsed: ParsedRecipe) {
+    // Populate basic fields
+    this.recipeForm.patchValue({
+      title: parsed.title || '',
+      yield: parsed.yield || 4,
+      prepTimeMinutes: parsed.prepTimeMinutes,
+      cookTimeMinutes: parsed.cookTimeMinutes
+    });
+
+    // Clear and populate ingredients
+    this.ingredients.clear();
+    if (parsed.ingredients && parsed.ingredients.length > 0) {
+      parsed.ingredients.forEach((ing, index) => {
+        const ingredientGroup = this.fb.group({
+          sortOrder: [index + 1],
+          quantity: [ing.quantity || null],
+          unit: [ing.unit || ''],
+          item: [ing.item || '', Validators.required],
+          preparation: [ing.preparation || '']
+        });
+        this.ingredients.push(ingredientGroup);
+      });
+    } else {
+      // Add one empty if none parsed
+      this.addIngredient();
+    }
+
+    // Clear and populate instructions
+    this.instructions.clear();
+    if (parsed.instructions && parsed.instructions.length > 0) {
+      parsed.instructions.forEach((inst, index) => {
+        const instructionGroup = this.fb.group({
+          stepNumber: [index + 1],
+          instruction: [inst.instruction || '', Validators.required]
+        });
+        this.instructions.push(instructionGroup);
+      });
+    } else {
+      // Add one empty if none parsed
+      this.addInstruction();
     }
   }
 }

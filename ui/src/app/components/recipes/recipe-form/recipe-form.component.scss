@@ -5,12 +5,23 @@
 }
 
 .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
 
   h1 {
     font-size: 2rem;
     font-weight: 500;
     margin: 0;
+  }
+
+  button {
+    mat-icon {
+      margin-right: 8px;
+    }
   }
 }
 
