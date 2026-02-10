@@ -14,7 +14,7 @@ namespace RecipeVault.WebApi.Models.Responses {
         /// <summary>
         /// Parsed recipe data
         /// </summary>
-        public ParsedRecipeModel Parsed { get; set; }
+        public ParsedRecipeModel Recipe { get; set; }
 
         /// <summary>
         /// List of warnings about uncertain or missing fields

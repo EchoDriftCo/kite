@@ -128,6 +128,7 @@ Rules:
                             responseContent);
                     }
 
+                    logger.LogInformation("Received successful response from Gemini API: {ResponseContent}", responseContent);
                     var geminiResponse = JsonSerializer.Deserialize<GeminiGenerateContentResponse>(
                         responseContent,
                         new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });

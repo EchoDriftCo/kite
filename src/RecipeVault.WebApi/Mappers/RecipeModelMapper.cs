@@ -113,7 +113,7 @@ namespace RecipeVault.WebApi.Mappers {
 
             return new ParseRecipeResponseModel {
                 Confidence = dto.Confidence,
-                Parsed = dto.Parsed == null ? null : new ParsedRecipeModel {
+                Recipe = dto.Parsed == null ? null : new ParsedRecipeModel {
                     Title = dto.Parsed.Title,
                     Yield = dto.Parsed.Yield,
                     PrepTimeMinutes = dto.Parsed.PrepTimeMinutes,
