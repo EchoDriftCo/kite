@@ -34,13 +34,13 @@
   gap: 16px;
 
   p {
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(255, 255, 255, 0.6);
   }
 }
 
 .error-message {
   padding: 16px;
-  background-color: #ffebee;
+  background-color: rgba(127, 29, 29, 0.3);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -48,12 +48,12 @@
   margin-bottom: 24px;
 
   mat-icon {
-    color: #c62828;
+    color: #fca5a5;
   }
 
   p {
     margin: 0;
-    color: #c62828;
+    color: #fca5a5;
   }
 }
 
@@ -105,9 +105,9 @@
   align-items: flex-start;
   gap: 8px;
   padding: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: rgba(255, 255, 255, 0.05);
 
   .ingredient-controls {
     display: flex;
@@ -148,9 +148,9 @@
   align-items: flex-start;
   gap: 12px;
   padding: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: rgba(255, 255, 255, 0.05);
 
   .step-number {
     flex-shrink: 0;
@@ -197,7 +197,7 @@
 
 .empty-message {
   text-align: center;
-  color: rgba(0, 0, 0, 0.6);
+  color: rgba(255, 255, 255, 0.6);
   font-style: italic;
   padding: 32px;
   margin: 0;

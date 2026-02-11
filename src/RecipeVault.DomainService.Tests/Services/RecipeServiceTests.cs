@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Cortside.AspNetCore.Auditable.Entities;
 using Cortside.AspNetCore.Common.Paging;
+using Cortside.Common.Security;
 using Moq;
 using Shouldly;
 using Xunit;
@@ -17,6 +19,23 @@ using RecipeVault.Integrations.Gemini;
 
 namespace RecipeVault.DomainService.Tests.Services {
     public class RecipeServiceTests : DomainServiceTestBase {
+        private static readonly Guid TestSubjectId = Guid.NewGuid();
+
+        private Mock<ISubjectPrincipal> CreateMockSubjectPrincipal(bool setupSubjectId = false) {
+            var mock = MockRepository.Create<ISubjectPrincipal>();
+            if (setupSubjectId) {
+                mock.Setup(x => x.SubjectId).Returns(TestSubjectId.ToString());
+            }
+            return mock;
+        }
+
+        private static Recipe BuildRecipeWithOwner(RecipeBuilder builder = null) {
+            builder ??= new RecipeBuilder();
+            var recipe = builder.Build();
+            recipe.CreatedSubject = new Subject(TestSubjectId, "Test User", "Test", "User", "test@example.com");
+            return recipe;
+        }
+
         [Fact]
         public async Task CreateRecipeAsync_WithValidDto_CreatesAndReturnsRecipe() {
             // Arrange
@@ -24,13 +43,14 @@ namespace RecipeVault.DomainService.Tests.Services {
             var mockRepository = MockRepository.Create<IRecipeRepository>();
             var mockGeminiClient = MockRepository.Create<IGeminiClient>();
             var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
 
             mockRepository
                 .Setup(x => x.AddAsync(It.IsAny<Recipe>()))
                 .ReturnsAsync((Recipe recipe) => recipe)
                 .Verifiable();
 
-            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object);
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
 
             // Act
             var result = await service.CreateRecipeAsync(dto);
@@ -61,13 +81,14 @@ namespace RecipeVault.DomainService.Tests.Services {
             var mockRepository = MockRepository.Create<IRecipeRepository>();
             var mockGeminiClient = MockRepository.Create<IGeminiClient>();
             var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
 
             mockRepository
                 .Setup(x => x.AddAsync(It.IsAny<Recipe>()))
                 .ReturnsAsync((Recipe recipe) => recipe)
                 .Verifiable();
 
-            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object);
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
 
             // Act
             var result = await service.CreateRecipeAsync(dto);
@@ -96,13 +117,14 @@ namespace RecipeVault.DomainService.Tests.Services {
             var mockRepository = MockRepository.Create<IRecipeRepository>();
             var mockGeminiClient = MockRepository.Create<IGeminiClient>();
             var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
 
             mockRepository
                 .Setup(x => x.AddAsync(It.IsAny<Recipe>()))
                 .ReturnsAsync((Recipe recipe) => recipe)
                 .Verifiable();
 
-            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object);
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
 
             // Act
             var result = await service.CreateRecipeAsync(dto);
@@ -118,17 +140,18 @@ namespace RecipeVault.DomainService.Tests.Services {
         [Fact]
         public async Task GetRecipeAsync_WithValidId_ReturnsRecipe() {
             // Arrange
-            var recipe = new RecipeBuilder().Build();
+            var recipe = BuildRecipeWithOwner();
             var mockRepository = MockRepository.Create<IRecipeRepository>();
             var mockGeminiClient = MockRepository.Create<IGeminiClient>();
             var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
 
             mockRepository
                 .Setup(x => x.GetAsync(recipe.RecipeResourceId))
                 .ReturnsAsync(recipe)
                 .Verifiable();
 
-            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object);
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
 
             // Act
             var result = await service.GetRecipeAsync(recipe.RecipeResourceId);
@@ -145,13 +168,14 @@ namespace RecipeVault.DomainService.Tests.Services {
             var mockRepository = MockRepository.Create<IRecipeRepository>();
             var mockGeminiClient = MockRepository.Create<IGeminiClient>();
             var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
 
             mockRepository
                 .Setup(x => x.GetAsync(invalidId))
                 .ReturnsAsync((Recipe)null)
                 .Verifiable();
 
-            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object);
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
 
             // Act & Assert
             var ex = await Should.ThrowAsync<RecipeNotFoundException>(
@@ -163,12 +187,36 @@ namespace RecipeVault.DomainService.Tests.Services {
         }
 
         [Fact]
+        public async Task GetRecipeAsync_WithOtherUsersRecipe_ThrowsNotFoundException() {
+            // Arrange
+            var otherUserId = Guid.NewGuid();
+            var recipe = new RecipeBuilder().Build();
+            recipe.CreatedSubject = new Subject(otherUserId, "Other User", "Other", "User", "other@example.com");
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe)
+                .Verifiable();
+
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
+
+            // Act & Assert
+            await Should.ThrowAsync<RecipeNotFoundException>(
+                () => service.GetRecipeAsync(recipe.RecipeResourceId)
+            );
+        }
+
+        [Fact]
         public async Task UpdateRecipeAsync_WithValidData_UpdatesAndReturnsRecipe() {
             // Arrange
-            var recipe = new RecipeBuilder()
+            var recipe = BuildRecipeWithOwner(new RecipeBuilder()
                 .WithTitle("Original Title")
-                .WithYield(4)
-                .Build();
+                .WithYield(4));
 
             var updateDto = new UpdateRecipeDtoBuilder()
                 .WithTitle("Updated Title")
@@ -178,13 +226,14 @@ namespace RecipeVault.DomainService.Tests.Services {
             var mockRepository = MockRepository.Create<IRecipeRepository>();
             var mockGeminiClient = MockRepository.Create<IGeminiClient>();
             var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
 
             mockRepository
                 .Setup(x => x.GetAsync(recipe.RecipeResourceId))
                 .ReturnsAsync(recipe)
                 .Verifiable();
 
-            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object);
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
 
             // Act
             var result = await service.UpdateRecipeAsync(recipe.RecipeResourceId, updateDto);
@@ -199,10 +248,11 @@ namespace RecipeVault.DomainService.Tests.Services {
         [Fact]
         public async Task DeleteRecipeAsync_WithValidId_DeletesRecipe() {
             // Arrange
-            var recipe = new RecipeBuilder().Build();
+            var recipe = BuildRecipeWithOwner();
             var mockRepository = MockRepository.Create<IRecipeRepository>();
             var mockGeminiClient = MockRepository.Create<IGeminiClient>();
             var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
 
             mockRepository
                 .Setup(x => x.GetAsync(recipe.RecipeResourceId))
@@ -214,7 +264,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
-            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object);
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
 
             // Act
             await service.DeleteRecipeAsync(recipe.RecipeResourceId);
@@ -245,13 +295,14 @@ namespace RecipeVault.DomainService.Tests.Services {
             var mockRepository = MockRepository.Create<IRecipeRepository>();
             var mockGeminiClient = MockRepository.Create<IGeminiClient>();
             var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
 
             mockRepository
                 .Setup(x => x.SearchAsync(search))
                 .ReturnsAsync(pagedList)
                 .Verifiable();
 
-            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object);
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
 
             // Act
             var result = await service.SearchRecipesAsync(search);

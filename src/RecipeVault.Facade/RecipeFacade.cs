@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
 using Cortside.AspNetCore.EntityFramework;
+using Cortside.Common.Security;
 using Medallion.Threading;
 using Microsoft.Extensions.Logging;
 using RecipeVault.DomainService;
@@ -17,13 +18,15 @@ namespace RecipeVault.Facade {
         private readonly RecipeMapper mapper;
         private readonly ILogger<RecipeFacade> logger;
         private readonly IDistributedLockProvider lockProvider;
+        private readonly ISubjectPrincipal subjectPrincipal;
 
-        public RecipeFacade(ILogger<RecipeFacade> logger, IUnitOfWork uow, IRecipeService recipeService, RecipeMapper mapper, IDistributedLockProvider lockProvider) {
+        public RecipeFacade(ILogger<RecipeFacade> logger, IUnitOfWork uow, IRecipeService recipeService, RecipeMapper mapper, IDistributedLockProvider lockProvider, ISubjectPrincipal subjectPrincipal) {
             this.uow = uow;
             this.recipeService = recipeService;
             this.mapper = mapper;
             this.logger = logger;
             this.lockProvider = lockProvider;
+            this.subjectPrincipal = subjectPrincipal;
         }
 
         private static string GetLockName(Guid id) {
@@ -45,6 +48,7 @@ namespace RecipeVault.Facade {
 
         public async Task<PagedList<RecipeDto>> SearchRecipesAsync(RecipeSearchDto search) {
             var recipeSearch = mapper.Map(search);
+            recipeSearch.CreatedSubjectId = Guid.Parse(subjectPrincipal.SubjectId);
             await using (var tx = await uow.BeginReadUncommitedAsync().ConfigureAwait(false)) {
                 var recipes = await recipeService.SearchRecipesAsync(recipeSearch).ConfigureAwait(false);
                 return recipes.Convert(x => mapper.MapToDto(x));

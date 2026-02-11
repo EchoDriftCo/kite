@@ -93,11 +93,8 @@
             <div class="ingredient-item">
               <mat-icon class="check-circle">radio_button_unchecked</mat-icon>
               <span class="ingredient-text">
-                @if (ingredient.quantity) {
-                  <strong>{{ ingredient.quantity }}</strong>
-                }
-                @if (ingredient.unit) {
-                  <strong>{{ ingredient.unit }}</strong>
+                @if (ingredient.quantity || ingredient.unit) {
+                  <strong>{{ ingredient.quantity | fraction }} {{ ingredient.unit }}</strong>
                 }
                 {{ ingredient.item }}
                 @if (ingredient.preparation) {

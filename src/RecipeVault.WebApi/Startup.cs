@@ -78,6 +78,10 @@ namespace RecipeVault.WebApi {
                     options.Authority = jwtIssuer;
                     options.Audience = jwtAudience;
 
+                    // Prevent ASP.NET Core from remapping JWT claim types (e.g. "sub" → long URI)
+                    // so Cortside SubjectPrincipal can find the "sub" claim by its original name
+                    options.MapInboundClaims = false;
+
                     // Configure JWKS endpoint
                     options.MetadataAddress = $"{supabaseUrl}/auth/v1/.well-known/openid-configuration";
 

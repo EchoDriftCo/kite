@@ -11,7 +11,7 @@ namespace RecipeVault.Domain.Entities {
         public RecipeInstruction(int stepNumber, string instruction, string rawText) {
             StepNumber = stepNumber;
             Instruction = instruction;
-            RawText = rawText;
+            RawText = string.IsNullOrWhiteSpace(rawText) ? instruction : rawText;
         }
 
         [Key]

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
 using Cortside.Common.Logging;
+using Cortside.Common.Security;
 using Microsoft.Extensions.Logging;
 using RecipeVault.Data.Repositories;
 using RecipeVault.Data.Searches;
@@ -17,11 +18,13 @@ namespace RecipeVault.DomainService {
         private readonly ILogger<RecipeService> logger;
         private readonly IRecipeRepository recipeRepository;
         private readonly IGeminiClient geminiClient;
+        private readonly ISubjectPrincipal subjectPrincipal;
 
-        public RecipeService(IRecipeRepository recipeRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger) {
+        public RecipeService(IRecipeRepository recipeRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger, ISubjectPrincipal subjectPrincipal) {
             this.logger = logger;
             this.recipeRepository = recipeRepository;
             this.geminiClient = geminiClient;
+            this.subjectPrincipal = subjectPrincipal;
         }
 
         public async Task<Recipe> CreateRecipeAsync(UpdateRecipeDto dto) {
@@ -44,7 +47,7 @@ namespace RecipeVault.DomainService {
 
         public async Task<Recipe> GetRecipeAsync(Guid recipeResourceId) {
             var entity = await recipeRepository.GetAsync(recipeResourceId).ConfigureAwait(false);
-            if (entity == null) {
+            if (entity == null || entity.CreatedSubject?.SubjectId != Guid.Parse(subjectPrincipal.SubjectId)) {
                 throw new RecipeNotFoundException($"Recipe with id {recipeResourceId} not found");
             }
 

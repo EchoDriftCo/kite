@@ -14,7 +14,7 @@ namespace RecipeVault.BootStrap.Installer {
         public void Install(IServiceCollection services, IConfiguration configuration) {
             services.AddHttpClient<IGeminiClient, GeminiClient>(client => {
                 client.BaseAddress = new System.Uri("https://generativelanguage.googleapis.com");
-                client.Timeout = System.TimeSpan.FromSeconds(30);
+                client.Timeout = System.TimeSpan.FromSeconds(60);
             });
         }
     }

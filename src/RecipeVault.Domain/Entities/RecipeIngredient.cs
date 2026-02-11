@@ -1,5 +1,7 @@
+using System.Globalization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using Cortside.AspNetCore.Auditable.Entities;
 
 namespace RecipeVault.Domain.Entities {
@@ -14,7 +16,19 @@ namespace RecipeVault.Domain.Entities {
             Unit = unit;
             Item = item;
             Preparation = preparation;
-            RawText = rawText;
+            RawText = string.IsNullOrWhiteSpace(rawText)
+                ? BuildRawText(quantity, unit, item, preparation)
+                : rawText;
+        }
+
+        private static string BuildRawText(decimal? quantity, string unit, string item, string preparation) {
+            var parts = new[] {
+                quantity?.ToString(CultureInfo.InvariantCulture),
+                unit,
+                item,
+                string.IsNullOrWhiteSpace(preparation) ? null : $"({preparation})"
+            };
+            return string.Join(" ", parts.Where(p => !string.IsNullOrWhiteSpace(p)));
         }
 
         [Key]

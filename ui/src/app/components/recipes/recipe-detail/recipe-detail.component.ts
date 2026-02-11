@@ -10,6 +10,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RecipeService } from '../../../services/recipe.service';
 import { Recipe } from '../../../models/recipe.model';
+import { FractionPipe } from '../../../pipes/fraction.pipe';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -22,7 +23,8 @@ import { Recipe } from '../../../models/recipe.model';
     MatProgressSpinnerModule,
     MatChipsModule,
     MatDividerModule,
-    MatDialogModule
+    MatDialogModule,
+    FractionPipe
   ],
   templateUrl: './recipe-detail.component.html',
   styleUrl: './recipe-detail.component.scss'

@@ -6,5 +6,6 @@ namespace RecipeVault.Data.Searches {
     public interface IRecipeSearch : ISearch, ISearchBuilder<Recipe> {
         Guid? RecipeResourceId { get; set; }
         string Title { get; set; }
+        Guid? CreatedSubjectId { get; set; }
     }
 }
