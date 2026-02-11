@@ -14,6 +14,7 @@ namespace RecipeVault.TestUtilities.Builders {
         private string _originalImageUrl = "https://example.com/image.jpg";
         private List<RecipeIngredient> _ingredients = new();
         private List<RecipeInstruction> _instructions = new();
+        private bool _isPublic;
 
         public RecipeBuilder WithTitle(string title) {
             _title = title;
@@ -60,6 +61,11 @@ namespace RecipeVault.TestUtilities.Builders {
             return this;
         }
 
+        public RecipeBuilder WithIsPublic(bool isPublic) {
+            _isPublic = isPublic;
+            return this;
+        }
+
         public RecipeBuilder WithRandomValues() {
             var faker = new Faker();
             _title = faker.Commerce.Product();
@@ -72,7 +78,7 @@ namespace RecipeVault.TestUtilities.Builders {
         }
 
         public Recipe Build() {
-            var recipe = new Recipe(_title, _yield, _prepTimeMinutes, _cookTimeMinutes, _description, _source, _originalImageUrl);
+            var recipe = new Recipe(_title, _yield, _prepTimeMinutes, _cookTimeMinutes, _description, _source, _originalImageUrl, _isPublic);
             if (_ingredients.Count > 0) {
                 recipe.SetIngredients(_ingredients);
             }

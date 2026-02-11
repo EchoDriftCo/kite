@@ -7,5 +7,7 @@ namespace RecipeVault.Data.Searches {
         Guid? RecipeResourceId { get; set; }
         string Title { get; set; }
         Guid? CreatedSubjectId { get; set; }
+        bool? IsPublic { get; set; }
+        bool IncludePublic { get; set; }
     }
 }

@@ -30,6 +30,8 @@ namespace RecipeVault.WebApi.Mappers {
                 TotalTimeMinutes = dto.TotalTimeMinutes,
                 Source = dto.Source,
                 OriginalImageUrl = dto.OriginalImageUrl,
+                IsPublic = dto.IsPublic,
+                IsOwner = dto.IsOwner,
                 Ingredients = dto.Ingredients?.Select(i => new RecipeIngredientModel {
                     RecipeIngredientId = i.RecipeIngredientId,
                     SortOrder = i.SortOrder,
@@ -60,6 +62,8 @@ namespace RecipeVault.WebApi.Mappers {
             return new RecipeSearchDto {
                 RecipeResourceId = model.RecipeResourceId,
                 Title = model.Title,
+                IsPublic = model.IsPublic,
+                IncludePublic = model.IncludePublic,
                 PageNumber = model.PageNumber,
                 PageSize = model.PageSize,
                 Sort = model.Sort
@@ -91,7 +95,8 @@ namespace RecipeVault.WebApi.Mappers {
                     StepNumber = i.StepNumber,
                     Instruction = i.Instruction,
                     RawText = i.RawText
-                }).ToList()
+                }).ToList(),
+                IsPublic = model.IsPublic
             };
         }
 

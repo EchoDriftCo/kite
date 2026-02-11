@@ -30,6 +30,8 @@ export class RecipeService {
     if (request.sortBy) params.sortBy = request.sortBy;
     if (request.sortDirection) params.sortDirection = request.sortDirection;
     if (request.title) params.title = request.title;
+    if (request.isPublic != null) params.isPublic = request.isPublic;
+    if (request.includePublic != null) params.includePublic = request.includePublic;
 
     // Build query string
     const queryString = Object.keys(params)
@@ -67,6 +69,13 @@ export class RecipeService {
    */
   deleteRecipe(id: string): Observable<void> {
     return this.api.delete<void>(`${this.endpoint}/${id}`);
+  }
+
+  /**
+   * Set recipe visibility (public/private)
+   */
+  setVisibility(id: string, isPublic: boolean): Observable<Recipe> {
+    return this.api.put<Recipe>(`${this.endpoint}/${id}/visibility`, { isPublic });
   }
 
   /**

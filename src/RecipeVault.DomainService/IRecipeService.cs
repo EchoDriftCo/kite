@@ -14,5 +14,6 @@ namespace RecipeVault.DomainService {
         Task<Recipe> UpdateRecipeAsync(Guid resourceId, UpdateRecipeDto dto);
         Task DeleteRecipeAsync(Guid resourceId);
         Task<ParseRecipeResponseDto> ParseRecipeImageAsync(ParseRecipeRequestDto request);
+        Task SetRecipeVisibilityAsync(Guid recipeResourceId, bool isPublic);
     }
 }

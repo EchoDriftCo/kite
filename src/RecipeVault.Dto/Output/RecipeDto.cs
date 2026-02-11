@@ -16,5 +16,7 @@ namespace RecipeVault.Dto.Output {
         public string OriginalImageUrl { get; set; }
         public List<RecipeIngredientDto> Ingredients { get; set; }
         public List<RecipeInstructionDto> Instructions { get; set; }
+        public bool IsPublic { get; set; }
+        public bool IsOwner { get; set; }
     }
 }

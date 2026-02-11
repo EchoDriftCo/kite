@@ -27,6 +27,8 @@ export interface Recipe {
   totalTimeMinutes?: number;
   source?: string;
   originalImageUrl?: string;
+  isPublic?: boolean;
+  isOwner?: boolean;
   ingredients: RecipeIngredient[];
   instructions: RecipeInstruction[];
   createdBy?: string;
@@ -44,6 +46,7 @@ export interface CreateRecipeRequest {
   totalTimeMinutes?: number;
   source?: string;
   originalImageUrl?: string;
+  isPublic?: boolean;
   ingredients: RecipeIngredient[];
   instructions: RecipeInstruction[];
 }
@@ -58,6 +61,8 @@ export interface RecipeSearchRequest {
   sortBy?: string;
   sortDirection?: 'asc' | 'desc';
   title?: string;
+  isPublic?: boolean;
+  includePublic?: boolean;
 }
 
 export interface PagedResult<T> {

@@ -9,6 +9,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { FormsModule } from '@angular/forms';
 import { RecipeService } from '../../../services/recipe.service';
 import { Recipe, RecipeSearchRequest } from '../../../models/recipe.model';
@@ -26,7 +27,8 @@ import { Recipe, RecipeSearchRequest } from '../../../models/recipe.model';
     MatChipsModule,
     MatPaginatorModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatButtonToggleModule
   ],
   templateUrl: './recipe-list.component.html',
   styleUrl: './recipe-list.component.scss'
@@ -36,7 +38,8 @@ export class RecipeListComponent implements OnInit {
   loading = false;
   error = '';
   searchTitle = '';
-  
+  viewMode: 'mine' | 'public' = 'mine';
+
   // Pagination
   pageNumber = 1;
   pageSize = 12;
@@ -61,6 +64,11 @@ export class RecipeListComponent implements OnInit {
       title: this.searchTitle || undefined
     };
 
+    if (this.viewMode === 'public') {
+      request.includePublic = true;
+      request.isPublic = true;
+    }
+
     this.recipeService.searchRecipes(request).subscribe({
       next: (response) => {
         this.recipes = response.items || [];
@@ -73,6 +81,11 @@ export class RecipeListComponent implements OnInit {
         console.error('Error loading recipes:', err);
       }
     });
+  }
+
+  onViewModeChange() {
+    this.pageNumber = 1;
+    this.loadRecipes();
   }
 
   onSearch() {
@@ -103,7 +116,7 @@ export class RecipeListComponent implements OnInit {
     if (recipe.totalTimeMinutes) {
       return this.formatTime(recipe.totalTimeMinutes);
     }
-    
+
     const total = (recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0);
     return total > 0 ? this.formatTime(total) : 'N/A';
   }

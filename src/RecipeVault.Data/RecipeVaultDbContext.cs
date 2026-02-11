@@ -15,6 +15,8 @@ namespace RecipeVault.Data {
         public DbSet<Recipe> Recipes { get; set; }
         public DbSet<Unit> Units { get; set; }
         public DbSet<UnitAlias> UnitAliases { get; set; }
+        public DbSet<MealPlan> MealPlans { get; set; }
+        public DbSet<MealPlanEntry> MealPlanEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.HasDefaultSchema("public");

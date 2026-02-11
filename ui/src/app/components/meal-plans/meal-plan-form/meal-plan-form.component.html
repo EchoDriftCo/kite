@@ -1,0 +1,73 @@
+<div class="meal-plan-form-container">
+  <div class="header">
+    <h1>{{ isEditMode ? 'Edit Meal Plan' : 'Create Meal Plan' }}</h1>
+  </div>
+
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Loading meal plan...</p>
+    </div>
+  }
+
+  @if (error && !saving) {
+    <div class="error-message">
+      <mat-icon>error</mat-icon>
+      <p>{{ error }}</p>
+    </div>
+  }
+
+  @if (!loading) {
+    <form [formGroup]="planForm" (ngSubmit)="onSubmit()">
+      <mat-card class="form-section">
+        <mat-card-header>
+          <mat-card-title>Plan Details</mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="form-grid">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Plan Name</mat-label>
+              <input matInput formControlName="name" placeholder="e.g., Week of Jan 5">
+              @if (planForm.get('name')?.hasError('required') && planForm.get('name')?.touched) {
+                <mat-error>Name is required</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Start Date</mat-label>
+              <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+              <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+              @if (planForm.get('startDate')?.hasError('required') && planForm.get('startDate')?.touched) {
+                <mat-error>Start date is required</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>End Date</mat-label>
+              <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+              <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+              @if (planForm.get('endDate')?.hasError('required') && planForm.get('endDate')?.touched) {
+                <mat-error>End date is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="form-actions">
+        <button mat-button type="button" (click)="cancel()">Cancel</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="saving">
+          @if (saving) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <mat-icon>save</mat-icon>
+          }
+          {{ isEditMode ? 'Update' : 'Create' }} Plan
+        </button>
+      </div>
+    </form>
+  }
+</div>

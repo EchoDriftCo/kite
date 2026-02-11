@@ -17,6 +17,39 @@ namespace RecipeVault.Integrations.Gemini {
         /// <returns>Parsed recipe response from Gemini</returns>
         /// <exception cref="GeminiApiException">Thrown when API returns error or no recipe detected</exception>
         Task<GeminiParseResponse> ParseRecipeAsync(string imageBase64, string mimeType, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Consolidate a grocery list by intelligently merging similar ingredients
+        /// </summary>
+        /// <param name="items">Raw grocery items to consolidate</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Consolidated grocery list response</returns>
+        Task<GeminiGroceryConsolidationResponse> ConsolidateGroceryListAsync(List<GeminiGroceryItem> items, CancellationToken cancellationToken = default);
+    }
+
+    /// <summary>
+    /// Input grocery item for consolidation
+    /// </summary>
+    public class GeminiGroceryItem {
+        public string Item { get; set; }
+        public decimal? Quantity { get; set; }
+        public string Unit { get; set; }
+    }
+
+    /// <summary>
+    /// Response from Gemini grocery list consolidation
+    /// </summary>
+    public class GeminiGroceryConsolidationResponse {
+        public List<GeminiConsolidatedItem> Items { get; set; } = new();
+    }
+
+    /// <summary>
+    /// A consolidated grocery item
+    /// </summary>
+    public class GeminiConsolidatedItem {
+        public string Item { get; set; }
+        public decimal? Quantity { get; set; }
+        public string Unit { get; set; }
     }
 
     /// <summary>

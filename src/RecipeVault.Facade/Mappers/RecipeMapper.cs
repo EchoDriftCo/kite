@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using RecipeVault.Data.Searches;
 using RecipeVault.Domain.Entities;
@@ -13,6 +14,10 @@ namespace RecipeVault.Facade.Mappers {
         }
 
         public RecipeDto MapToDto(Recipe entity) {
+            return MapToDto(entity, null);
+        }
+
+        public RecipeDto MapToDto(Recipe entity, Guid? currentSubjectId) {
             if (entity == null) {
                 return null;
             }
@@ -28,6 +33,8 @@ namespace RecipeVault.Facade.Mappers {
                 TotalTimeMinutes = entity.TotalTimeMinutes,
                 Source = entity.Source,
                 OriginalImageUrl = entity.OriginalImageUrl,
+                IsPublic = entity.IsPublic,
+                IsOwner = currentSubjectId.HasValue && entity.CreatedSubject?.SubjectId == currentSubjectId,
                 Ingredients = entity.Ingredients?.Select(i => new RecipeIngredientDto {
                     RecipeIngredientId = i.RecipeIngredientId,
                     SortOrder = i.SortOrder,
@@ -58,6 +65,8 @@ namespace RecipeVault.Facade.Mappers {
             return new RecipeSearch {
                 RecipeResourceId = dto.RecipeResourceId,
                 Title = dto.Title,
+                IsPublic = dto.IsPublic,
+                IncludePublic = dto.IncludePublic,
                 PageNumber = dto.PageNumber,
                 PageSize = dto.PageSize,
                 Sort = dto.Sort

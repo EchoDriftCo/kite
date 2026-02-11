@@ -13,5 +13,6 @@ namespace RecipeVault.Facade {
         Task<RecipeDto> UpdateRecipeAsync(Guid resourceId, UpdateRecipeDto dto);
         Task DeleteRecipeAsync(Guid resourceId);
         Task<ParseRecipeResponseDto> ParseRecipeImageAsync(ParseRecipeRequestDto request);
+        Task<RecipeDto> SetRecipeVisibilityAsync(Guid resourceId, bool isPublic);
     }
 }

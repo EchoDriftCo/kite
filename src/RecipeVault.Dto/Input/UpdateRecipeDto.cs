@@ -11,6 +11,7 @@ namespace RecipeVault.Dto.Input {
         public string OriginalImageUrl { get; set; }
         public List<UpdateRecipeIngredientDto> Ingredients { get; set; }
         public List<UpdateRecipeInstructionDto> Instructions { get; set; }
+        public bool IsPublic { get; set; }
     }
 
     public class UpdateRecipeIngredientDto {

@@ -61,6 +61,95 @@ namespace RecipeVault.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("RecipeVault.Domain.Entities.MealPlan", b =>
+                {
+                    b.Property<int>("MealPlanId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MealPlanId"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was created");
+
+                    b.Property<Guid>("CreatedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was last modified");
+
+                    b.Property<Guid>("LastModifiedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MealPlanResourceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("MealPlanId");
+
+                    b.HasIndex("CreatedSubjectId");
+
+                    b.HasIndex("LastModifiedSubjectId");
+
+                    b.HasIndex("MealPlanResourceId")
+                        .IsUnique();
+
+                    b.ToTable("MealPlan", "public", t =>
+                        {
+                            t.HasTrigger("trMealPlan");
+                        });
+                });
+
+            modelBuilder.Entity("RecipeVault.Domain.Entities.MealPlanEntry", b =>
+                {
+                    b.Property<int>("MealPlanEntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MealPlanEntryId"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsLeftover")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MealPlanId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MealSlot")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RecipeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Servings")
+                        .HasColumnType("integer");
+
+                    b.HasKey("MealPlanEntryId");
+
+                    b.HasIndex("MealPlanId");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("MealPlanEntry", "public", t =>
+                        {
+                            t.HasTrigger("trMealPlanEntry");
+                        });
+                });
+
             modelBuilder.Entity("RecipeVault.Domain.Entities.Recipe", b =>
                 {
                     b.Property<int>("RecipeId")
@@ -82,6 +171,9 @@ namespace RecipeVault.Data.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("LastModifiedDate")
                         .HasColumnType("timestamp with time zone")
@@ -365,6 +457,44 @@ namespace RecipeVault.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("RecipeVault.Domain.Entities.MealPlan", b =>
+                {
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "CreatedSubject")
+                        .WithMany()
+                        .HasForeignKey("CreatedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "LastModifiedSubject")
+                        .WithMany()
+                        .HasForeignKey("LastModifiedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("CreatedSubject");
+
+                    b.Navigation("LastModifiedSubject");
+                });
+
+            modelBuilder.Entity("RecipeVault.Domain.Entities.MealPlanEntry", b =>
+                {
+                    b.HasOne("RecipeVault.Domain.Entities.MealPlan", "MealPlan")
+                        .WithMany("Entries")
+                        .HasForeignKey("MealPlanId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("RecipeVault.Domain.Entities.Recipe", "Recipe")
+                        .WithMany()
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("MealPlan");
+
+                    b.Navigation("Recipe");
+                });
+
             modelBuilder.Entity("RecipeVault.Domain.Entities.Recipe", b =>
                 {
                     b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "CreatedSubject")
@@ -485,6 +615,11 @@ namespace RecipeVault.Data.Migrations
                     b.Navigation("LastModifiedSubject");
 
                     b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("RecipeVault.Domain.Entities.MealPlan", b =>
+                {
+                    b.Navigation("Entries");
                 });
 
             modelBuilder.Entity("RecipeVault.Domain.Entities.Recipe", b =>

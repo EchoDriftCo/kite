@@ -275,6 +275,128 @@ namespace RecipeVault.DomainService.Tests.Services {
         }
 
         [Fact]
+        public async Task GetRecipeAsync_WithPublicRecipeFromOtherUser_ReturnsRecipe() {
+            // Arrange
+            var otherUserId = Guid.NewGuid();
+            var recipe = new RecipeBuilder().WithIsPublic(true).Build();
+            recipe.CreatedSubject = new Subject(otherUserId, "Other User", "Other", "User", "other@example.com");
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
+
+            // Act
+            var result = await service.GetRecipeAsync(recipe.RecipeResourceId);
+
+            // Assert
+            result.ShouldBe(recipe);
+            result.IsPublic.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task UpdateRecipeAsync_WithOtherUsersPublicRecipe_ThrowsNotFoundException() {
+            // Arrange
+            var otherUserId = Guid.NewGuid();
+            var recipe = new RecipeBuilder().WithIsPublic(true).Build();
+            recipe.CreatedSubject = new Subject(otherUserId, "Other User", "Other", "User", "other@example.com");
+
+            var updateDto = new UpdateRecipeDtoBuilder().Build();
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
+
+            // Act & Assert
+            await Should.ThrowAsync<RecipeNotFoundException>(
+                () => service.UpdateRecipeAsync(recipe.RecipeResourceId, updateDto)
+            );
+        }
+
+        [Fact]
+        public async Task DeleteRecipeAsync_WithOtherUsersPublicRecipe_ThrowsNotFoundException() {
+            // Arrange
+            var otherUserId = Guid.NewGuid();
+            var recipe = new RecipeBuilder().WithIsPublic(true).Build();
+            recipe.CreatedSubject = new Subject(otherUserId, "Other User", "Other", "User", "other@example.com");
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
+
+            // Act & Assert
+            await Should.ThrowAsync<RecipeNotFoundException>(
+                () => service.DeleteRecipeAsync(recipe.RecipeResourceId)
+            );
+        }
+
+        [Fact]
+        public async Task SetRecipeVisibilityAsync_WithOwnRecipe_SetsVisibility() {
+            // Arrange
+            var recipe = BuildRecipeWithOwner(new RecipeBuilder().WithIsPublic(false));
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
+
+            // Act
+            await service.SetRecipeVisibilityAsync(recipe.RecipeResourceId, true);
+
+            // Assert
+            recipe.IsPublic.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task SetRecipeVisibilityAsync_WithOtherUsersRecipe_ThrowsNotFoundException() {
+            // Arrange
+            var otherUserId = Guid.NewGuid();
+            var recipe = new RecipeBuilder().Build();
+            recipe.CreatedSubject = new Subject(otherUserId, "Other User", "Other", "User", "other@example.com");
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockLogger = CreateMockLogger<RecipeService>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            var service = new RecipeService(mockRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
+
+            // Act & Assert
+            await Should.ThrowAsync<RecipeNotFoundException>(
+                () => service.SetRecipeVisibilityAsync(recipe.RecipeResourceId, true)
+            );
+        }
+
+        [Fact]
         public async Task SearchRecipesAsync_WithValidSearch_ReturnsPagedResults() {
             // Arrange
             var recipes = new List<Recipe>

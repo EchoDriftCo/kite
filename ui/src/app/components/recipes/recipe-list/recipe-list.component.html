@@ -1,8 +1,13 @@
 <div class="recipe-list-container">
   <div class="header">
-    <h1>My Recipes</h1>
-    
+    <h1>Recipes</h1>
+
     <div class="actions">
+      <mat-button-toggle-group [(ngModel)]="viewMode" (change)="onViewModeChange()">
+        <mat-button-toggle value="mine">My Recipes</mat-button-toggle>
+        <mat-button-toggle value="public">Public Recipes</mat-button-toggle>
+      </mat-button-toggle-group>
+
       <mat-form-field appearance="outline" class="search-field">
         <mat-label>Search recipes</mat-label>
         <input matInput [(ngModel)]="searchTitle" (keyup.enter)="onSearch()" placeholder="Search by title...">
@@ -37,11 +42,16 @@
     @if (recipes.length === 0) {
       <div class="empty-state">
         <mat-icon>restaurant_menu</mat-icon>
-        <h2>No recipes yet</h2>
-        <p>Get started by creating your first recipe!</p>
-        <button mat-raised-button color="primary" (click)="createNew()">
-          Create Recipe
-        </button>
+        @if (viewMode === 'mine') {
+          <h2>No recipes yet</h2>
+          <p>Get started by creating your first recipe!</p>
+          <button mat-raised-button color="primary" (click)="createNew()">
+            Create Recipe
+          </button>
+        } @else {
+          <h2>No public recipes found</h2>
+          <p>No one has shared any recipes yet.</p>
+        }
       </div>
     } @else {
       <div class="recipe-grid">
@@ -56,8 +66,13 @@
             }
 
             <mat-card-content>
-              <h3>{{ recipe.title }}</h3>
-              
+              <h3>
+                {{ recipe.title }}
+                @if (recipe.isPublic) {
+                  <mat-icon class="public-badge">public</mat-icon>
+                }
+              </h3>
+
               @if (recipe.description) {
                 <p class="description">{{ recipe.description }}</p>
               }
@@ -92,10 +107,12 @@
                 <mat-icon>visibility</mat-icon>
                 View
               </button>
-              <button mat-button (click)="editRecipe(recipe, $event)">
-                <mat-icon>edit</mat-icon>
-                Edit
-              </button>
+              @if (recipe.isOwner !== false) {
+                <button mat-button (click)="editRecipe(recipe, $event)">
+                  <mat-icon>edit</mat-icon>
+                  Edit
+                </button>
+              }
             </mat-card-actions>
           </mat-card>
         }

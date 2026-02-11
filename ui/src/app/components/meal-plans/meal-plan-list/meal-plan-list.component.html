@@ -1,0 +1,76 @@
+<div class="meal-plan-list-container">
+  <div class="header">
+    <h1>Meal Plans</h1>
+    <button mat-raised-button color="primary" (click)="createNew()">
+      <mat-icon>add</mat-icon>
+      New Meal Plan
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Loading meal plans...</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-message">
+      <mat-icon>error</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-button (click)="loadMealPlans()">Try Again</button>
+    </div>
+  }
+
+  @if (!loading && !error) {
+    @if (mealPlans.length === 0) {
+      <div class="empty-state">
+        <mat-icon>calendar_month</mat-icon>
+        <h2>No meal plans yet</h2>
+        <p>Create a meal plan to organize your weekly meals!</p>
+        <button mat-raised-button color="primary" (click)="createNew()">
+          Create Meal Plan
+        </button>
+      </div>
+    } @else {
+      <div class="plan-grid">
+        @for (plan of mealPlans; track plan.mealPlanResourceId) {
+          <mat-card class="plan-card" (click)="viewMealPlan(plan)">
+            <mat-card-content>
+              <h3>{{ plan.name }}</h3>
+              <p class="date-range">
+                <mat-icon>date_range</mat-icon>
+                {{ formatDateRange(plan) }}
+              </p>
+              <p class="entry-count">
+                <mat-icon>restaurant</mat-icon>
+                {{ plan.entries.length }} meals planned
+              </p>
+            </mat-card-content>
+            <mat-card-actions>
+              <button mat-button (click)="viewMealPlan(plan)">
+                <mat-icon>visibility</mat-icon>
+                View
+              </button>
+              <button mat-button (click)="editMealPlan(plan, $event)">
+                <mat-icon>edit</mat-icon>
+                Edit
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        }
+      </div>
+
+      @if (totalCount > pageSize) {
+        <mat-paginator
+          [length]="totalCount"
+          [pageSize]="pageSize"
+          [pageIndex]="pageNumber - 1"
+          [pageSizeOptions]="[12, 24]"
+          (page)="onPageChange($event)"
+          showFirstLastButtons>
+        </mat-paginator>
+      }
+    }
+  }
+</div>

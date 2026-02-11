@@ -7,5 +7,7 @@ namespace RecipeVault.WebApi.Models.Requests {
     public class RecipeSearchModel : SearchModel {
         public Guid? RecipeResourceId { get; set; }
         public string Title { get; set; }
+        public bool? IsPublic { get; set; }
+        public bool IncludePublic { get; set; }
     }
 }

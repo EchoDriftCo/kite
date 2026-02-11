@@ -1,0 +1,72 @@
+<div class="grocery-list-container">
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Generating grocery list...</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-message">
+      <mat-icon>error</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-button (click)="loadGroceryList()">Try Again</button>
+    </div>
+  }
+
+  @if (!loading && !error && groceryList) {
+    <div class="list-header">
+      <div class="header-actions">
+        <button mat-icon-button (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+
+        <div class="action-buttons">
+          <button mat-raised-button (click)="printList()">
+            <mat-icon>print</mat-icon>
+            Print
+          </button>
+        </div>
+      </div>
+
+      <h1>
+        <mat-icon>shopping_cart</mat-icon>
+        Grocery List
+      </h1>
+      <p class="progress">{{ checkedCount }} of {{ totalCount }} items checked</p>
+    </div>
+
+    @if (groceryList.items.length === 0) {
+      <div class="empty-state">
+        <mat-icon>shopping_basket</mat-icon>
+        <h2>No items needed</h2>
+        <p>Add some recipes to your meal plan to generate a grocery list.</p>
+      </div>
+    } @else {
+      <mat-card class="grocery-card">
+        <mat-card-content>
+          @for (item of groceryList.items; track $index) {
+            <div class="grocery-item" [class.checked]="isChecked($index)">
+              <mat-checkbox
+                [checked]="isChecked($index)"
+                (change)="toggleItem($index)">
+              </mat-checkbox>
+              <span class="item-text">
+                @if (item.quantity) {
+                  <strong>{{ formatQuantity(item) }}</strong>
+                }
+                @if (item.unit) {
+                  <strong>{{ item.unit }}</strong>
+                }
+                {{ item.item }}
+              </span>
+            </div>
+            @if (!$last) {
+              <mat-divider></mat-divider>
+            }
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+</div>

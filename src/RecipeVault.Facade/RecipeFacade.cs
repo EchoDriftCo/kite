@@ -33,25 +33,28 @@ namespace RecipeVault.Facade {
             return $"RecipeResourceId:{id}";
         }
 
+        private Guid CurrentSubjectId => Guid.Parse(subjectPrincipal.SubjectId);
+
         public async Task<RecipeDto> CreateRecipeAsync(UpdateRecipeDto dto) {
             var recipe = await recipeService.CreateRecipeAsync(dto).ConfigureAwait(false);
             await uow.SaveChangesAsync().ConfigureAwait(false);
-            return mapper.MapToDto(recipe);
+            return mapper.MapToDto(recipe, CurrentSubjectId);
         }
 
         public async Task<RecipeDto> GetRecipeAsync(Guid resourceId) {
             await using (var tx = uow.BeginNoTracking()) {
                 var recipe = await recipeService.GetRecipeAsync(resourceId);
-                return mapper.MapToDto(recipe);
+                return mapper.MapToDto(recipe, CurrentSubjectId);
             }
         }
 
         public async Task<PagedList<RecipeDto>> SearchRecipesAsync(RecipeSearchDto search) {
             var recipeSearch = mapper.Map(search);
-            recipeSearch.CreatedSubjectId = Guid.Parse(subjectPrincipal.SubjectId);
+            recipeSearch.CreatedSubjectId = CurrentSubjectId;
             await using (var tx = await uow.BeginReadUncommitedAsync().ConfigureAwait(false)) {
                 var recipes = await recipeService.SearchRecipesAsync(recipeSearch).ConfigureAwait(false);
-                return recipes.Convert(x => mapper.MapToDto(x));
+                var currentSubjectId = CurrentSubjectId;
+                return recipes.Convert(x => mapper.MapToDto(x, currentSubjectId));
             }
         }
 
@@ -64,7 +67,22 @@ namespace RecipeVault.Facade {
 
                 var recipe = await recipeService.UpdateRecipeAsync(resourceId, dto).ConfigureAwait(false);
                 await uow.SaveChangesAsync().ConfigureAwait(false);
-                return mapper.MapToDto(recipe);
+                return mapper.MapToDto(recipe, CurrentSubjectId);
+            }
+        }
+
+        public async Task<RecipeDto> SetRecipeVisibilityAsync(Guid resourceId, bool isPublic) {
+            var lockName = GetLockName(resourceId);
+
+            logger.LogDebug("Acquiring lock for {LockName}", lockName);
+            await using (await lockProvider.AcquireLockAsync(lockName).ConfigureAwait(false)) {
+                logger.LogDebug("Acquired lock for {LockName}", lockName);
+
+                await recipeService.SetRecipeVisibilityAsync(resourceId, isPublic).ConfigureAwait(false);
+                await uow.SaveChangesAsync().ConfigureAwait(false);
+
+                var recipe = await recipeService.GetRecipeAsync(resourceId).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId);
             }
         }
 

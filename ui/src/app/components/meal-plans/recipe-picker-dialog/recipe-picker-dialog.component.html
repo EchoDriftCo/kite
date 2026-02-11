@@ -1,0 +1,64 @@
+<h2 mat-dialog-title>Select a Recipe</h2>
+
+<mat-dialog-content>
+  <mat-form-field appearance="outline" class="search-field">
+    <mat-label>Search recipes</mat-label>
+    <input matInput
+           [(ngModel)]="searchTerm"
+           (ngModelChange)="onSearch($event)"
+           placeholder="Type to search...">
+    <mat-icon matPrefix>search</mat-icon>
+  </mat-form-field>
+
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+  }
+
+  @if (!loading && recipes.length === 0) {
+    <div class="empty-state">
+      <mat-icon>search_off</mat-icon>
+      <p>No recipes found</p>
+    </div>
+  }
+
+  @if (!loading && recipes.length > 0) {
+    <mat-selection-list [multiple]="false" class="recipe-list">
+      @for (recipe of recipes; track recipe.recipeResourceId) {
+        <mat-list-option [value]="recipe"
+                         [selected]="selectedRecipe?.recipeResourceId === recipe.recipeResourceId"
+                         (click)="selectRecipe(recipe)">
+          <div class="recipe-option">
+            <span class="recipe-title">{{ recipe.title }}</span>
+            <span class="recipe-meta">
+              Serves {{ recipe.yield }}
+              @if (recipe.totalTimeMinutes) {
+                &middot; {{ recipe.totalTimeMinutes }} min
+              }
+            </span>
+          </div>
+        </mat-list-option>
+      }
+    </mat-selection-list>
+  }
+
+  @if (selectedRecipe) {
+    <div class="servings-section">
+      <mat-form-field appearance="outline" class="servings-field">
+        <mat-label>Servings</mat-label>
+        <input matInput type="number" [(ngModel)]="servings" min="1" max="100">
+        <mat-hint>Recipe yields {{ selectedRecipe.yield }}</mat-hint>
+      </mat-form-field>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button color="primary"
+          [disabled]="!selectedRecipe"
+          (click)="confirm()">
+    Add to Plan
+  </button>
+</mat-dialog-actions>

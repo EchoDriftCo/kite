@@ -1,0 +1,93 @@
+<div class="meal-plan-detail-container">
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Loading meal plan...</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-message">
+      <mat-icon>error</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-button (click)="loadPlan()">Try Again</button>
+    </div>
+  }
+
+  @if (!loading && !error && plan) {
+    <div class="plan-header">
+      <div class="header-actions">
+        <button mat-icon-button (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+
+        <div class="action-buttons">
+          <button mat-raised-button color="accent" (click)="viewGroceryList()">
+            <mat-icon>shopping_cart</mat-icon>
+            Grocery List
+          </button>
+          <button mat-raised-button color="primary" (click)="editPlan()">
+            <mat-icon>edit</mat-icon>
+            Edit
+          </button>
+          <button mat-raised-button color="warn" (click)="deletePlan()">
+            <mat-icon>delete</mat-icon>
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <h1>{{ plan.name }}</h1>
+      <p class="date-range">
+        <mat-icon>date_range</mat-icon>
+        {{ calendarDays[0].dayLabel }} &ndash; {{ calendarDays[calendarDays.length - 1].dayLabel }}
+      </p>
+    </div>
+
+    <div class="calendar">
+      <div class="calendar-header">
+        <div class="slot-label-col"></div>
+        @for (day of calendarDays; track day.dateStr) {
+          <div class="day-header">{{ day.dayLabel }}</div>
+        }
+      </div>
+
+      @for (slot of mealSlots; track slot) {
+        <div class="calendar-row">
+          <div class="slot-label">{{ mealSlotLabels[slot] }}</div>
+          @for (day of calendarDays; track day.dateStr) {
+            <div class="calendar-cell">
+              @for (entry of getEntriesForSlot(day, slot); track entry.recipeResourceId) {
+                <div class="entry-card" [class.leftover]="entry.isLeftover">
+                  <span class="entry-title">{{ entry.recipeTitle || 'Recipe' }}</span>
+                  @if (entry.servings) {
+                    <span class="entry-servings">{{ entry.servings }} servings</span>
+                  }
+                  <div class="entry-actions">
+                    <button mat-icon-button
+                            (click)="toggleLeftover(entry)"
+                            [matTooltip]="entry.isLeftover ? 'Mark as fresh' : 'Mark as leftover'"
+                            class="entry-action-btn">
+                      <mat-icon>{{ entry.isLeftover ? 'recycling' : 'restaurant' }}</mat-icon>
+                    </button>
+                    <button mat-icon-button
+                            (click)="removeEntry(entry)"
+                            matTooltip="Remove"
+                            class="entry-action-btn">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+              <button mat-icon-button class="add-entry-btn"
+                      (click)="addEntry(day, slot)"
+                      matTooltip="Add recipe">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

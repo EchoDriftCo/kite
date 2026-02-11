@@ -73,6 +73,12 @@
               <mat-label>Image URL</mat-label>
               <input matInput formControlName="originalImageUrl" placeholder="https://example.com/image.jpg">
             </mat-form-field>
+
+            <div class="visibility-toggle">
+              <mat-slide-toggle formControlName="isPublic">
+                Make this recipe public
+              </mat-slide-toggle>
+            </div>
           </div>
         </mat-card-content>
       </mat-card>

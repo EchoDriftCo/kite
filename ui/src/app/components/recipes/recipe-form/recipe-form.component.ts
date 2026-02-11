@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDialog } from '@angular/material/dialog';
 import { RecipeService } from '../../../services/recipe.service';
 import { Recipe, CreateRecipeRequest, RecipeIngredient, RecipeInstruction, ParsedRecipe } from '../../../models/recipe.model';
@@ -27,7 +28,8 @@ import { RecipeImportDialogComponent, ImportResult } from '../recipe-import-dial
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatDividerModule
+    MatDividerModule,
+    MatSlideToggleModule
   ],
   templateUrl: './recipe-form.component.html',
   styleUrl: './recipe-form.component.scss'
@@ -72,6 +74,7 @@ export class RecipeFormComponent implements OnInit {
       cookTimeMinutes: [null, [Validators.min(0), Validators.max(1440)]],
       source: ['', Validators.maxLength(500)],
       originalImageUrl: ['', Validators.maxLength(2000)],
+      isPublic: [false],
       ingredients: this.fb.array([]),
       instructions: this.fb.array([])
     });
@@ -112,7 +115,8 @@ export class RecipeFormComponent implements OnInit {
       prepTimeMinutes: recipe.prepTimeMinutes,
       cookTimeMinutes: recipe.cookTimeMinutes,
       source: recipe.source,
-      originalImageUrl: recipe.originalImageUrl
+      originalImageUrl: recipe.originalImageUrl,
+      isPublic: recipe.isPublic || false
     });
 
     // Clear and populate ingredients
@@ -229,6 +233,7 @@ export class RecipeFormComponent implements OnInit {
       cookTimeMinutes: formValue.cookTimeMinutes || undefined,
       source: formValue.source || undefined,
       originalImageUrl: formValue.originalImageUrl || undefined,
+      isPublic: formValue.isPublic || false,
       ingredients: formValue.ingredients,
       instructions: formValue.instructions
     };

@@ -8,6 +8,8 @@ namespace RecipeVault.Data {
         DbSet<Recipe> Recipes { get; set; }
         DbSet<Unit> Units { get; set; }
         DbSet<UnitAlias> UnitAliases { get; set; }
+        DbSet<MealPlan> MealPlans { get; set; }
+        DbSet<MealPlanEntry> MealPlanEntries { get; set; }
 
         void RemoveRange(IEnumerable<object> entities);
         EntityEntry Remove(object entity);

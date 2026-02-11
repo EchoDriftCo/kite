@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { RecipeService } from '../../../services/recipe.service';
 import { Recipe } from '../../../models/recipe.model';
 import { FractionPipe } from '../../../pipes/fraction.pipe';
@@ -24,6 +25,7 @@ import { FractionPipe } from '../../../pipes/fraction.pipe';
     MatChipsModule,
     MatDividerModule,
     MatDialogModule,
+    MatTooltipModule,
     FractionPipe
   ],
   templateUrl: './recipe-detail.component.html',
@@ -115,6 +117,21 @@ export class RecipeDetailComponent implements OnInit {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return mins > 0 ? `${hours} hour${hours > 1 ? 's' : ''} ${mins} minutes` : `${hours} hour${hours > 1 ? 's' : ''}`;
+  }
+
+  toggleVisibility() {
+    if (!this.recipeId || !this.recipe) return;
+
+    const newVisibility = !this.recipe.isPublic;
+    this.recipeService.setVisibility(this.recipeId, newVisibility).subscribe({
+      next: (updated) => {
+        this.recipe = updated;
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to update visibility';
+        console.error('Error toggling visibility:', err);
+      }
+    });
   }
 
   printRecipe() {

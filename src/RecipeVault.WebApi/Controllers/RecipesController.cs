@@ -100,6 +100,20 @@ namespace RecipeVault.WebApi.Controllers {
         }
 
         /// <summary>
+        /// Set recipe visibility (public/private)
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        /// <param name="input"></param>
+        [HttpPut("{id}/visibility")]
+        [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SetRecipeVisibilityAsync(Guid id, [FromBody] SetVisibilityModel input) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var dto = await facade.SetRecipeVisibilityAsync(id, input.IsPublic).ConfigureAwait(false);
+                return Ok(recipeMapper.Map(dto));
+            }
+        }
+
+        /// <summary>
         /// Parse a recipe image using AI
         /// </summary>
         /// <param name="input"></param>

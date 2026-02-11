@@ -1,0 +1,247 @@
+.meal-plan-detail-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 0;
+  gap: 16px;
+
+  p {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px;
+  background-color: rgba(127, 29, 29, 0.3);
+  border-radius: 8px;
+  gap: 8px;
+
+  mat-icon {
+    color: #fca5a5;
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+  }
+
+  p {
+    color: #fca5a5;
+    margin: 0;
+  }
+}
+
+.plan-header {
+  margin-bottom: 24px;
+
+  .header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+  }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 500;
+    margin: 0 0 8px;
+  }
+
+  .date-range {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+.calendar {
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}
+
+.calendar-header {
+  display: grid;
+  grid-template-columns: 100px repeat(auto-fit, minmax(0, 1fr));
+  border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+
+  .slot-label-col {
+    padding: 12px;
+  }
+
+  .day-header {
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.875rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+  }
+}
+
+.calendar-row {
+  display: grid;
+  grid-template-columns: 100px repeat(auto-fit, minmax(0, 1fr));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .slot-label {
+    padding: 12px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: flex-start;
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+  }
+}
+
+.calendar-cell {
+  padding: 8px;
+  min-height: 80px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .add-entry-btn {
+    opacity: 0;
+    transition: opacity 0.2s;
+    align-self: center;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  &:hover .add-entry-btn {
+    opacity: 0.6;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.entry-card {
+  background-color: rgba(63, 81, 181, 0.2);
+  border: 1px solid rgba(63, 81, 181, 0.4);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 0.75rem;
+  position: relative;
+
+  &.leftover {
+    background-color: rgba(255, 152, 0, 0.15);
+    border-color: rgba(255, 152, 0, 0.4);
+  }
+
+  .entry-title {
+    display: block;
+    font-weight: 500;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .entry-servings {
+    display: block;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.7rem;
+  }
+
+  .entry-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 2px;
+    margin-top: 2px;
+    opacity: 0;
+    transition: opacity 0.2s;
+
+    .entry-action-btn {
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+
+      mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
+
+  &:hover .entry-actions {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .meal-plan-detail-container {
+    padding: 16px;
+  }
+
+  .plan-header {
+    .header-actions {
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-start;
+
+      .action-buttons {
+        flex-wrap: wrap;
+      }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+    }
+  }
+
+  .calendar {
+    font-size: 0.8rem;
+  }
+
+  .calendar-header .day-header {
+    font-size: 0.75rem;
+    padding: 8px 4px;
+  }
+
+  .calendar-row .slot-label {
+    font-size: 0.7rem;
+    padding: 8px;
+  }
+
+  .calendar-cell {
+    min-height: 60px;
+    padding: 4px;
+  }
+}

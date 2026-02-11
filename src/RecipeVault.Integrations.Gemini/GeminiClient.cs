@@ -21,6 +21,29 @@ namespace RecipeVault.Integrations.Gemini {
         private readonly IConfiguration configuration;
         private readonly ILogger<GeminiClient> logger;
 
+        private const string GroceryConsolidationPrompt = @"You are a grocery list optimizer. Given a list of grocery items (some with quantities and units, some without), consolidate them into a clean, deduplicated shopping list.
+
+Return ONLY valid JSON matching this schema:
+{
+  ""items"": [
+    {
+      ""item"": ""string (normalized ingredient name)"",
+      ""quantity"": ""number or null"",
+      ""unit"": ""string or null (normalize to: cup, tbsp, tsp, oz, lb, g, kg, ml, l, piece, pinch, dash)""
+    }
+  ]
+}
+
+Rules:
+- Merge items that are clearly the same ingredient (e.g., ""cooking oil"" and ""oil"" → ""oil"", ""cheddar cheese"" and ""cheese"" → ""cheddar cheese"")
+- When merging, keep the more specific name (""cheddar cheese"" over ""cheese"", ""olive oil"" over ""oil"")
+- Combine quantities when units match or are compatible (e.g., 2 tsp + 1 tbsp = 1 tbsp + 2 tsp, or just sum as 5 tsp)
+- If one entry has a quantity and another doesn't, include the quantity and add a note like ""+ more""
+- If units are incompatible and can't be converted, list them separately (e.g., ""2 cups milk"" and ""1 lb milk"" stay separate)
+- Normalize unit names (tablespoon → tbsp, teaspoon → tsp, etc.)
+- Sort alphabetically by item name
+- Do NOT merge items that are genuinely different ingredients";
+
         private const string RecipeParserPrompt = @"You are a recipe parser. Extract structured data from this recipe image.
 
 Return ONLY valid JSON matching this schema:
@@ -189,6 +212,163 @@ Rules:
                 logger.LogError(ex, "Unexpected error while parsing recipe with Gemini");
                 throw new GeminiApiException("Unexpected error while parsing recipe", ex);
             }
+        }
+
+        /// <summary>
+        /// Consolidate a grocery list using Gemini AI
+        /// </summary>
+        public async Task<GeminiGroceryConsolidationResponse> ConsolidateGroceryListAsync(List<GeminiGroceryItem> items, CancellationToken cancellationToken = default) {
+            if (items == null || items.Count == 0) {
+                return new GeminiGroceryConsolidationResponse();
+            }
+
+            // Build a text representation of the items
+            var itemLines = items.Select(i => {
+                var parts = new List<string>();
+                if (i.Quantity.HasValue) {
+                    parts.Add(i.Quantity.Value.ToString("G", System.Globalization.CultureInfo.InvariantCulture));
+                }
+                if (!string.IsNullOrWhiteSpace(i.Unit)) {
+                    parts.Add(i.Unit);
+                }
+                parts.Add(i.Item);
+                return string.Join(" ", parts);
+            });
+
+            var prompt = GroceryConsolidationPrompt + "\n\nHere are the grocery items to consolidate:\n" +
+                         string.Join("\n", itemLines.Select(l => $"- {l}"));
+
+            logger.LogInformation("Sending grocery consolidation request to Gemini API, itemCount={ItemCount}", items.Count);
+
+            var textPart = await SendTextPromptAsync(prompt, cancellationToken).ConfigureAwait(false);
+
+            var result = JsonSerializer.Deserialize<GeminiGroceryConsolidationResult>(textPart,
+                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+            if (result?.Items == null) {
+                logger.LogWarning("Failed to deserialize grocery consolidation result, returning original items");
+                return new GeminiGroceryConsolidationResponse {
+                    Items = items.Select(i => new GeminiConsolidatedItem {
+                        Item = i.Item,
+                        Quantity = i.Quantity,
+                        Unit = i.Unit
+                    }).ToList()
+                };
+            }
+
+            logger.LogInformation("Successfully consolidated grocery list from {OriginalCount} to {ConsolidatedCount} items",
+                items.Count, result.Items.Count);
+
+            return new GeminiGroceryConsolidationResponse {
+                Items = result.Items.Select(i => new GeminiConsolidatedItem {
+                    Item = i.Item,
+                    Quantity = i.Quantity,
+                    Unit = i.Unit
+                }).ToList()
+            };
+        }
+
+        /// <summary>
+        /// Send a text-only prompt to Gemini and return the text response
+        /// </summary>
+        private async Task<string> SendTextPromptAsync(string prompt, CancellationToken cancellationToken) {
+            var apiKey = configuration["Gemini:ApiKey"] ??
+                        Environment.GetEnvironmentVariable("GEMINI_API_KEY");
+
+            if (string.IsNullOrWhiteSpace(apiKey)) {
+                throw new GeminiApiException("Gemini API key is not configured");
+            }
+
+            var model = configuration["Gemini:Model"] ??
+                       Environment.GetEnvironmentVariable("GEMINI_MODEL") ??
+                       "gemini-1.5-flash";
+
+            var requestUri = $"/v1beta/models/{model}:generateContent?key={apiKey}";
+
+            try {
+                var request = BuildTextOnlyRequest(prompt);
+                var requestContent = new StringContent(
+                    JsonSerializer.Serialize(request),
+                    Encoding.UTF8,
+                    "application/json");
+
+                var response = await httpClient.PostAsync(requestUri, requestContent, cancellationToken)
+                    .ConfigureAwait(false);
+
+                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (!response.IsSuccessStatusCode) {
+                    logger.LogError("Gemini API error {StatusCode}: {ResponseContent}",
+                        response.StatusCode, responseContent);
+                    throw new GeminiApiException(
+                        $"Gemini API request failed with status {response.StatusCode}",
+                        (int)response.StatusCode,
+                        responseContent);
+                }
+
+                var geminiResponse = JsonSerializer.Deserialize<GeminiGenerateContentResponse>(
+                    responseContent,
+                    new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+                if (geminiResponse?.Error != null) {
+                    throw new GeminiApiException(
+                        $"Gemini API error: {geminiResponse.Error.Message}",
+                        geminiResponse.Error.Code,
+                        geminiResponse.Error.Message);
+                }
+
+                if (geminiResponse?.Candidates == null || geminiResponse.Candidates.Count == 0) {
+                    throw new GeminiApiException("Gemini API returned no response candidates");
+                }
+
+                var candidate = geminiResponse.Candidates[0];
+                if (candidate?.Content?.Parts == null || candidate.Content.Parts.Count == 0) {
+                    throw new GeminiApiException("Gemini API returned no content");
+                }
+
+                var textPart = candidate.Content.Parts.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.Text))?.Text;
+                if (string.IsNullOrWhiteSpace(textPart)) {
+                    throw new GeminiApiException("Gemini API returned no text response");
+                }
+
+                return textPart;
+            }
+            catch (HttpRequestException ex) {
+                logger.LogError(ex, "HTTP request to Gemini API failed");
+                throw new GeminiApiException("Failed to communicate with Gemini API", ex);
+            }
+            catch (TaskCanceledException ex) {
+                logger.LogError(ex, "Gemini API request timed out");
+                throw new GeminiApiException("Gemini API request timed out", ex);
+            }
+            catch (GeminiApiException) {
+                throw;
+            }
+            catch (Exception ex) {
+                logger.LogError(ex, "Unexpected error communicating with Gemini API");
+                throw new GeminiApiException("Unexpected error communicating with Gemini API", ex);
+            }
+        }
+
+        /// <summary>
+        /// Build a text-only request (no image) for Gemini generateContent API
+        /// </summary>
+        private GeminiGenerateContentRequest BuildTextOnlyRequest(string prompt) {
+            return new GeminiGenerateContentRequest {
+                Contents = new List<GeminiContent> {
+                    new GeminiContent {
+                        Parts = new List<GeminiPart> {
+                            new GeminiPart {
+                                Text = prompt
+                            }
+                        }
+                    }
+                },
+                GenerationConfig = new GeminiGenerationConfig {
+                    ResponseMimeType = "application/json"
+                }
+            };
         }
 
         /// <summary>

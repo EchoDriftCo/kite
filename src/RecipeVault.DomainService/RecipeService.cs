@@ -28,7 +28,7 @@ namespace RecipeVault.DomainService {
         }
 
         public async Task<Recipe> CreateRecipeAsync(UpdateRecipeDto dto) {
-            var entity = new Recipe(dto.Title, dto.Yield, dto.PrepTimeMinutes, dto.CookTimeMinutes, dto.Description, dto.Source, dto.OriginalImageUrl);
+            var entity = new Recipe(dto.Title, dto.Yield, dto.PrepTimeMinutes, dto.CookTimeMinutes, dto.Description, dto.Source, dto.OriginalImageUrl, dto.IsPublic);
 
             if (dto.Ingredients != null) {
                 entity.SetIngredients(dto.Ingredients.Select(i => new RecipeIngredient(i.SortOrder, i.Quantity, i.Unit, i.Item, i.Preparation, i.RawText)).ToList());
@@ -47,10 +47,25 @@ namespace RecipeVault.DomainService {
 
         public async Task<Recipe> GetRecipeAsync(Guid recipeResourceId) {
             var entity = await recipeRepository.GetAsync(recipeResourceId).ConfigureAwait(false);
-            if (entity == null || entity.CreatedSubject?.SubjectId != Guid.Parse(subjectPrincipal.SubjectId)) {
+            if (entity == null) {
                 throw new RecipeNotFoundException($"Recipe with id {recipeResourceId} not found");
             }
 
+            var currentSubjectId = Guid.Parse(subjectPrincipal.SubjectId);
+            var isOwner = entity.CreatedSubject?.SubjectId == currentSubjectId;
+
+            if (!isOwner && !entity.IsPublic) {
+                throw new RecipeNotFoundException($"Recipe with id {recipeResourceId} not found");
+            }
+
+            return entity;
+        }
+
+        private async Task<Recipe> GetOwnRecipeAsync(Guid recipeResourceId) {
+            var entity = await recipeRepository.GetAsync(recipeResourceId).ConfigureAwait(false);
+            if (entity == null || entity.CreatedSubject?.SubjectId != Guid.Parse(subjectPrincipal.SubjectId)) {
+                throw new RecipeNotFoundException($"Recipe with id {recipeResourceId} not found");
+            }
             return entity;
         }
 
@@ -59,10 +74,11 @@ namespace RecipeVault.DomainService {
         }
 
         public async Task<Recipe> UpdateRecipeAsync(Guid resourceId, UpdateRecipeDto dto) {
-            var entity = await GetRecipeAsync(resourceId).ConfigureAwait(false);
+            var entity = await GetOwnRecipeAsync(resourceId).ConfigureAwait(false);
 
             using (logger.PushProperty("RecipeResourceId", entity.RecipeResourceId)) {
                 entity.Update(dto.Title, dto.Yield, dto.PrepTimeMinutes, dto.CookTimeMinutes, dto.Description, dto.Source, dto.OriginalImageUrl);
+                entity.SetVisibility(dto.IsPublic);
 
                 if (dto.Ingredients != null) {
                     entity.SetIngredients(dto.Ingredients.Select(i => new RecipeIngredient(i.SortOrder, i.Quantity, i.Unit, i.Item, i.Preparation, i.RawText)).ToList());
@@ -77,8 +93,16 @@ namespace RecipeVault.DomainService {
             }
         }
 
+        public async Task SetRecipeVisibilityAsync(Guid recipeResourceId, bool isPublic) {
+            var entity = await GetOwnRecipeAsync(recipeResourceId).ConfigureAwait(false);
+            using (logger.PushProperty("RecipeResourceId", entity.RecipeResourceId)) {
+                entity.SetVisibility(isPublic);
+                logger.LogInformation("Set recipe visibility to {IsPublic}", isPublic);
+            }
+        }
+
         public async Task DeleteRecipeAsync(Guid resourceId) {
-            var entity = await GetRecipeAsync(resourceId).ConfigureAwait(false);
+            var entity = await GetOwnRecipeAsync(resourceId).ConfigureAwait(false);
 
             using (logger.PushProperty("RecipeResourceId", entity.RecipeResourceId)) {
                 await recipeRepository.RemoveAsync(entity);

@@ -15,10 +15,11 @@ namespace RecipeVault.Domain.Entities {
         protected Recipe() {
         }
 
-        public Recipe(string title, int yield, int? prepTimeMinutes, int? cookTimeMinutes, string description, string source, string originalImageUrl) {
+        public Recipe(string title, int yield, int? prepTimeMinutes, int? cookTimeMinutes, string description, string source, string originalImageUrl, bool isPublic = false) {
             RecipeResourceId = Uuid.NewDatabaseFriendly(Database.SqlServer);
             ingredients = new List<RecipeIngredient>();
             instructions = new List<RecipeInstruction>();
+            IsPublic = isPublic;
             Update(title, yield, prepTimeMinutes, cookTimeMinutes, description, source, originalImageUrl);
         }
 
@@ -52,6 +53,8 @@ namespace RecipeVault.Domain.Entities {
         [StringLength(1000)]
         public string OriginalImageUrl { get; private set; }
 
+        public bool IsPublic { get; private set; }
+
         private readonly List<RecipeIngredient> ingredients = new();
         public virtual IReadOnlyList<RecipeIngredient> Ingredients => ingredients;
 
@@ -71,6 +74,10 @@ namespace RecipeVault.Domain.Entities {
             Description = description;
             Source = source;
             OriginalImageUrl = originalImageUrl;
+        }
+
+        public void SetVisibility(bool isPublic) {
+            IsPublic = isPublic;
         }
 
         public void SetIngredients(List<RecipeIngredient> newIngredients) {

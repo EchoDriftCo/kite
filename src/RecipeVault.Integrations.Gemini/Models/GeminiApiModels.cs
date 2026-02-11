@@ -176,4 +176,26 @@ namespace RecipeVault.Integrations.Gemini.Models {
         [JsonPropertyName("rawText")]
         public string RawText { get; set; }
     }
+
+    /// <summary>
+    /// Expected grocery consolidation result from Gemini model
+    /// </summary>
+    public class GeminiGroceryConsolidationResult {
+        [JsonPropertyName("items")]
+        public List<GeminiGroceryConsolidatedItem> Items { get; set; }
+    }
+
+    /// <summary>
+    /// Single consolidated grocery item from Gemini
+    /// </summary>
+    public class GeminiGroceryConsolidatedItem {
+        [JsonPropertyName("item")]
+        public string Item { get; set; }
+
+        [JsonPropertyName("quantity")]
+        public decimal? Quantity { get; set; }
+
+        [JsonPropertyName("unit")]
+        public string Unit { get; set; }
+    }
 }
