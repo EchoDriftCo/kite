@@ -76,7 +76,16 @@ Rules:
 - Separate preparation notes from ingredient names
 - Number instructions sequentially even if source doesn't
 - If information is unclear or missing, use null rather than guessing
-- Always preserve raw text from image";
+- Always preserve raw text from image
+
+Time extraction:
+- If the recipe explicitly states prep/cook times, use those values
+- If times are NOT explicitly stated, calculate them from the instructions:
+  - prepTimeMinutes = sum of active hands-on work (chopping, mixing, browning, assembling, etc.)
+  - cookTimeMinutes = sum of ALL passive cooking times found in instructions (baking, simmering, boiling, roasting, resting, marinating, etc.)
+  - Include every timed step — e.g. ""simmer 20 minutes"" + ""bake 1.5 hours"" = 110 cookTimeMinutes
+- Convert all time units to minutes (1 hour = 60, 1.5 hours = 90, etc.)
+- Do NOT double-count — if prep and cook overlap (e.g. ""while that bakes, prepare...""), keep them separate";
 
         /// <summary>
         /// Initializes a new instance of GeminiClient

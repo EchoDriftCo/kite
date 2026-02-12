@@ -14,12 +14,15 @@ export class AuthService {
   private sessionSubject = new BehaviorSubject<Session | null>(null);
   public session$ = this.sessionSubject.asObservable();
 
+  /** Resolves once the initial session check has completed. */
+  public readonly ready: Promise<void>;
+
   constructor(
     private supabase: SupabaseService,
     private router: Router
   ) {
     // Initialize auth state
-    this.supabase.client.auth.getSession().then(({ data: { session } }) => {
+    this.ready = this.supabase.client.auth.getSession().then(({ data: { session } }) => {
       this.sessionSubject.next(session);
       this.currentUserSubject.next(session?.user ?? null);
     });
