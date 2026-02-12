@@ -14,8 +14,12 @@
     font-size: 1.25rem;
     font-weight: 500;
     cursor: pointer;
-    color: inherit;
+    color: white;
     text-decoration: none;
+
+    &:visited, &:hover, &:active {
+      color: white;
+    }
   }
 
   .spacer {
