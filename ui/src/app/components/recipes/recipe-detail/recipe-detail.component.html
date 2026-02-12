@@ -89,6 +89,15 @@
           <p class="source">Source: {{ recipe.source }}</p>
         }
       </div>
+
+      @if (recipe.tags && recipe.tags.length > 0) {
+        <div class="recipe-tags">
+          <app-tag-selector
+            [selectedTags]="recipe.tags"
+            [readonly]="true">
+          </app-tag-selector>
+        </div>
+      }
     </div>
 
     <mat-divider></mat-divider>

@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RecipeService } from '../../../services/recipe.service';
 import { Recipe } from '../../../models/recipe.model';
 import { FractionPipe } from '../../../pipes/fraction.pipe';
+import { TagSelectorComponent } from '../../shared/tag-selector/tag-selector.component';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -26,7 +27,8 @@ import { FractionPipe } from '../../../pipes/fraction.pipe';
     MatDividerModule,
     MatDialogModule,
     MatTooltipModule,
-    FractionPipe
+    FractionPipe,
+    TagSelectorComponent
   ],
   templateUrl: './recipe-detail.component.html',
   styleUrl: './recipe-detail.component.scss'
