@@ -24,6 +24,37 @@ namespace RecipeVault.Data {
             modelBuilder.HasDefaultSchema("public");
             modelBuilder.SetDateTime();
             modelBuilder.SetCascadeDelete();
+
+            // Override restrict → cascade for entities owned by a Recipe
+            modelBuilder.Entity<RecipeIngredient>()
+                .HasOne<Recipe>()
+                .WithMany(r => r.Ingredients)
+                .HasForeignKey(ri => ri.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RecipeInstruction>()
+                .HasOne<Recipe>()
+                .WithMany(r => r.Instructions)
+                .HasForeignKey(ri => ri.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RecipeTag>()
+                .HasOne(rt => rt.Recipe)
+                .WithMany(r => r.RecipeTags)
+                .HasForeignKey(rt => rt.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MealPlanEntry>()
+                .HasOne(me => me.Recipe)
+                .WithMany()
+                .HasForeignKey(me => me.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MealPlanEntry>()
+                .HasOne(me => me.MealPlan)
+                .WithMany(mp => mp.Entries)
+                .HasForeignKey(me => me.MealPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
