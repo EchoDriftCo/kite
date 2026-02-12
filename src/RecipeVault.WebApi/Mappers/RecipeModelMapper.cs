@@ -30,6 +30,7 @@ namespace RecipeVault.WebApi.Mappers {
                 TotalTimeMinutes = dto.TotalTimeMinutes,
                 Source = dto.Source,
                 OriginalImageUrl = dto.OriginalImageUrl,
+                SourceImageUrl = dto.SourceImageUrl,
                 IsPublic = dto.IsPublic,
                 IsOwner = dto.IsOwner,
                 Ingredients = dto.Ingredients?.Select(i => new RecipeIngredientModel {
@@ -94,6 +95,7 @@ namespace RecipeVault.WebApi.Mappers {
                 CookTimeMinutes = model.CookTimeMinutes,
                 Source = model.Source,
                 OriginalImageUrl = model.OriginalImageUrl,
+                SourceImageUrl = model.SourceImageUrl,
                 Ingredients = model.Ingredients?.Select(i => new UpdateRecipeIngredientDto {
                     SortOrder = i.SortOrder,
                     Quantity = i.Quantity,

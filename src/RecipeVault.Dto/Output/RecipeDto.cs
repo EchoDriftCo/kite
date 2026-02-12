@@ -14,6 +14,7 @@ namespace RecipeVault.Dto.Output {
         public int? TotalTimeMinutes { get; set; }
         public string Source { get; set; }
         public string OriginalImageUrl { get; set; }
+        public string SourceImageUrl { get; set; }
         public List<RecipeIngredientDto> Ingredients { get; set; }
         public List<RecipeInstructionDto> Instructions { get; set; }
         public bool IsPublic { get; set; }

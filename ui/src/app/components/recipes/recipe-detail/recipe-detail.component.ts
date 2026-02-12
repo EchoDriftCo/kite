@@ -9,6 +9,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { RecipeService } from '../../../services/recipe.service';
 import { Recipe } from '../../../models/recipe.model';
 import { FractionPipe } from '../../../pipes/fraction.pipe';
@@ -27,6 +28,7 @@ import { TagSelectorComponent } from '../../shared/tag-selector/tag-selector.com
     MatDividerModule,
     MatDialogModule,
     MatTooltipModule,
+    MatExpansionModule,
     FractionPipe,
     TagSelectorComponent
   ],

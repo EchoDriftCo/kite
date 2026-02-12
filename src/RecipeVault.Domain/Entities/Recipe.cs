@@ -54,6 +54,9 @@ namespace RecipeVault.Domain.Entities {
         [StringLength(1000)]
         public string OriginalImageUrl { get; private set; }
 
+        [StringLength(1000)]
+        public string SourceImageUrl { get; private set; }
+
         public bool IsPublic { get; private set; }
 
         private readonly List<RecipeIngredient> ingredients = new();
@@ -78,6 +81,10 @@ namespace RecipeVault.Domain.Entities {
             Description = description;
             Source = source;
             OriginalImageUrl = originalImageUrl;
+        }
+
+        public void SetSourceImageUrl(string sourceImageUrl) {
+            SourceImageUrl = sourceImageUrl;
         }
 
         public void SetVisibility(bool isPublic) {

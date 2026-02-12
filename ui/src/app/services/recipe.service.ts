@@ -100,6 +100,13 @@ export class RecipeService {
   }
 
   /**
+   * Upload a recipe image and get back a URL
+   */
+  uploadImage(imageData: string, mimeType: string): Observable<{ url: string }> {
+    return this.api.post<{ url: string }>(`${this.endpoint}/images`, { imageData, mimeType });
+  }
+
+  /**
    * Assign tags to a recipe
    */
   assignTags(recipeId: string, request: AssignTagsRequest): Observable<Recipe> {

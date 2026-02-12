@@ -16,6 +16,7 @@ import { Recipe, CreateRecipeRequest, RecipeIngredient, RecipeInstruction, Parse
 import { RecipeImportDialogComponent, ImportResult } from '../recipe-import-dialog/recipe-import-dialog.component';
 import { TagSelectorComponent } from '../../shared/tag-selector/tag-selector.component';
 import { RecipeTag, AssignTagItem } from '../../../models/tag.model';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-recipe-form',
@@ -45,6 +46,8 @@ export class RecipeFormComponent implements OnInit {
   recipeId: string | null = null;
   isEditMode = false;
   currentRecipeTags: RecipeTag[] = [];
+  pendingImageData: string | null = null;
+  pendingImageMimeType: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -78,6 +81,7 @@ export class RecipeFormComponent implements OnInit {
       cookTimeMinutes: [null, [Validators.min(0), Validators.max(1440)]],
       source: ['', Validators.maxLength(500)],
       originalImageUrl: ['', Validators.maxLength(2000)],
+      sourceImageUrl: [''],
       isPublic: [false],
       ingredients: this.fb.array([]),
       instructions: this.fb.array([])
@@ -120,6 +124,7 @@ export class RecipeFormComponent implements OnInit {
       cookTimeMinutes: recipe.cookTimeMinutes,
       source: recipe.source,
       originalImageUrl: recipe.originalImageUrl,
+      sourceImageUrl: recipe.sourceImageUrl || '',
       isPublic: recipe.isPublic || false
     });
 
@@ -224,45 +229,66 @@ export class RecipeFormComponent implements OnInit {
     });
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.recipeForm.invalid) {
       this.recipeForm.markAllAsTouched();
       this.error = 'Please fix the errors in the form';
       return;
     }
 
-    const formValue = this.recipeForm.value;
-    const request: CreateRecipeRequest = {
-      title: formValue.title,
-      description: formValue.description || undefined,
-      yield: formValue.yield,
-      prepTimeMinutes: formValue.prepTimeMinutes || undefined,
-      cookTimeMinutes: formValue.cookTimeMinutes || undefined,
-      source: formValue.source || undefined,
-      originalImageUrl: formValue.originalImageUrl || undefined,
-      isPublic: formValue.isPublic || false,
-      ingredients: formValue.ingredients,
-      instructions: formValue.instructions
-    };
-
     this.saving = true;
     this.error = '';
 
-    const operation = this.isEditMode && this.recipeId
-      ? this.recipeService.updateRecipe(this.recipeId, request)
-      : this.recipeService.createRecipe(request);
-
-    operation.subscribe({
-      next: (recipe) => {
-        this.saving = false;
-        this.router.navigate(['/recipes', recipe.recipeResourceId]);
-      },
-      error: (err) => {
-        this.error = err.message || 'Failed to save recipe';
-        this.saving = false;
-        console.error('Error saving recipe:', err);
+    try {
+      // Upload pending image first if present
+      if (this.pendingImageData && this.pendingImageMimeType) {
+        const uploadResult = await this.recipeService.uploadImage(
+          this.pendingImageData, this.pendingImageMimeType
+        ).toPromise();
+        if (uploadResult?.url) {
+          // Resolve relative path against API host
+          const apiBase = environment.apiUrl.replace(/\/api\/v\d+$/, '');
+          this.recipeForm.patchValue({ sourceImageUrl: apiBase + uploadResult.url });
+        }
+        this.pendingImageData = null;
+        this.pendingImageMimeType = null;
       }
-    });
+
+      const formValue = this.recipeForm.value;
+      const request: CreateRecipeRequest = {
+        title: formValue.title,
+        description: formValue.description || undefined,
+        yield: formValue.yield,
+        prepTimeMinutes: formValue.prepTimeMinutes || undefined,
+        cookTimeMinutes: formValue.cookTimeMinutes || undefined,
+        source: formValue.source || undefined,
+        originalImageUrl: formValue.originalImageUrl || undefined,
+        sourceImageUrl: formValue.sourceImageUrl || undefined,
+        isPublic: formValue.isPublic || false,
+        ingredients: formValue.ingredients,
+        instructions: formValue.instructions
+      };
+
+      const operation = this.isEditMode && this.recipeId
+        ? this.recipeService.updateRecipe(this.recipeId, request)
+        : this.recipeService.createRecipe(request);
+
+      operation.subscribe({
+        next: (recipe) => {
+          this.saving = false;
+          this.router.navigate(['/recipes', recipe.recipeResourceId]);
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to save recipe';
+          this.saving = false;
+          console.error('Error saving recipe:', err);
+        }
+      });
+    } catch (err: any) {
+      this.error = err.message || 'Failed to upload image';
+      this.saving = false;
+      console.error('Error uploading image:', err);
+    }
   }
 
   cancel() {
@@ -283,11 +309,15 @@ export class RecipeFormComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result: ImportResult) => {
       if (result?.success && result.parsedData) {
         this.populateFromParsedData(result.parsedData);
-        
-        // Show success message with warnings if any
+
+        // Store image data for upload on save
+        if (result.imageData) {
+          this.pendingImageData = result.imageData;
+          this.pendingImageMimeType = result.imageMimeType || 'image/png';
+        }
+
         if (result.warnings && result.warnings.length > 0) {
           console.warn('Import warnings:', result.warnings);
-          // Could show a snackbar here with warnings
         }
       }
     });

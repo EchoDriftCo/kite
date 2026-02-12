@@ -178,6 +178,9 @@ namespace RecipeVault.WebApi {
                 app.UseDeveloperExceptionPage();
             }
 
+            // Serve uploaded images from wwwroot
+            app.UseStaticFiles();
+
             // order of the following matters
             app.UseCors();
             app.UseAuthentication();

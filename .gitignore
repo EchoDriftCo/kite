@@ -60,5 +60,8 @@ nunit-*.xml
 src/RecipeVault.WebApi/appsettings.local.json
 .env
 
+# Uploaded images (stored locally for now; move to cloud storage for production)
+**/wwwroot/uploads/
+
 # Visual Studio cache files
 .vs/*

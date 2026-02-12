@@ -14,6 +14,7 @@ namespace RecipeVault.WebApi.Models.Requests {
         public int? CookTimeMinutes { get; set; }
         public string Source { get; set; }
         public string OriginalImageUrl { get; set; }
+        public string SourceImageUrl { get; set; }
         public List<UpdateRecipeIngredientModel> Ingredients { get; set; }
         public List<UpdateRecipeInstructionModel> Instructions { get; set; }
         public bool IsPublic { get; set; }

@@ -92,6 +92,10 @@
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">
+    <mat-slide-toggle [(ngModel)]="saveImage" [disabled]="loading" class="save-image-toggle">
+      Save image with recipe
+    </mat-slide-toggle>
+    <span class="action-spacer"></span>
     <button mat-button (click)="cancel()" [disabled]="loading">
       Cancel
     </button>

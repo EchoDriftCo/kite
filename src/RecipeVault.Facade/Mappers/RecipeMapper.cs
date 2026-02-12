@@ -35,6 +35,7 @@ namespace RecipeVault.Facade.Mappers {
                 TotalTimeMinutes = entity.TotalTimeMinutes,
                 Source = entity.Source,
                 OriginalImageUrl = entity.OriginalImageUrl,
+                SourceImageUrl = entity.SourceImageUrl,
                 IsPublic = entity.IsPublic,
                 IsOwner = currentSubjectId.HasValue && entity.CreatedSubject?.SubjectId == currentSubjectId,
                 Ingredients = entity.Ingredients?.Select(i => new RecipeIngredientDto {

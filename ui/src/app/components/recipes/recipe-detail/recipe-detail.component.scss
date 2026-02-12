@@ -211,6 +211,23 @@ mat-divider {
   }
 }
 
+.source-image {
+  text-align: center;
+
+  img {
+    max-width: 100%;
+    max-height: 600px;
+    border-radius: 8px;
+    object-fit: contain;
+  }
+}
+
+mat-expansion-panel-header {
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
 .recipe-footer {
   padding: 16px 0;
   display: flex;

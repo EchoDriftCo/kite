@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
 using Cortside.Common.Security;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Shouldly;
@@ -47,7 +48,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(pagedList)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper);
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
 
             // Act
             var result = await controller.GetRecipesAsync(search);
@@ -77,7 +78,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(recipeDto)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper);
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
 
             // Act
             var result = await controller.GetRecipeAsync(recipeId);
@@ -118,7 +119,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(createdDto)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper);
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
 
             // Act
             var result = await controller.CreateRecipeAsync(input);
@@ -160,7 +161,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(updatedDto)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper);
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
 
             // Act
             var result = await controller.UpdateRecipeAsync(recipeId, input);
@@ -190,7 +191,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper);
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
 
             // Act
             var result = await controller.DeleteRecipeAsync(recipeId);

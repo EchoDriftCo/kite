@@ -28,6 +28,7 @@ export interface Recipe {
   totalTimeMinutes?: number;
   source?: string;
   originalImageUrl?: string;
+  sourceImageUrl?: string;
   isPublic?: boolean;
   isOwner?: boolean;
   ingredients: RecipeIngredient[];
@@ -48,6 +49,7 @@ export interface CreateRecipeRequest {
   totalTimeMinutes?: number;
   source?: string;
   originalImageUrl?: string;
+  sourceImageUrl?: string;
   isPublic?: boolean;
   ingredients: RecipeIngredient[];
   instructions: RecipeInstruction[];

@@ -144,6 +144,26 @@
       </div>
     </div>
 
+    @if (recipe.sourceImageUrl) {
+      <mat-divider></mat-divider>
+      <mat-accordion>
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>photo_library</mat-icon>
+              Original Source Image
+            </mat-panel-title>
+            <mat-panel-description>
+              Photo used to import this recipe
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+          <div class="source-image">
+            <img [src]="recipe.sourceImageUrl" [alt]="recipe.title + ' - source image'">
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
+    }
+
     @if (recipe.createdDate || recipe.lastModifiedDate) {
       <mat-divider></mat-divider>
       <div class="recipe-footer">

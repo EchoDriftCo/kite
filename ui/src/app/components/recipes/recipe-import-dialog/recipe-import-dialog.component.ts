@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ImageCropperComponent, ImageCroppedEvent, LoadedImage } from 'ngx-image-cropper';
 import { RecipeService } from '../../../services/recipe.service';
 
@@ -15,6 +17,8 @@ export interface ImportResult {
   confidence?: number;
   warnings?: string[];
   error?: string;
+  imageData?: string;
+  imageMimeType?: string;
 }
 
 @Component({
@@ -22,12 +26,14 @@ export interface ImportResult {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
     MatTabsModule,
     MatTooltipModule,
+    MatSlideToggleModule,
     ImageCropperComponent
   ],
   templateUrl: './recipe-import-dialog.component.html',
@@ -42,6 +48,7 @@ export class RecipeImportDialogComponent {
   croppedImageBase64: string | null = null;
   rotation: number = 0;
   cropperReady = false;
+  saveImage = true;
 
   constructor(
     private dialogRef: MatDialogRef<RecipeImportDialogComponent>,
@@ -171,13 +178,20 @@ export class RecipeImportDialogComponent {
         throw new Error('Failed to parse recipe from image');
       }
 
-      // Close dialog with parsed data
-      this.dialogRef.close({
+      // Close dialog with parsed data (and image if save toggle is on)
+      const result: ImportResult = {
         success: true,
         parsedData: response.recipe,
         confidence: response.confidence,
         warnings: response.warnings
-      } as ImportResult);
+      };
+
+      if (this.saveImage) {
+        result.imageData = base64Data;
+        result.imageMimeType = mimeType;
+      }
+
+      this.dialogRef.close(result);
 
     } catch (err: any) {
       this.error = err.message || 'Failed to parse recipe. Please try again.';

@@ -36,6 +36,10 @@ namespace RecipeVault.DomainService {
         public async Task<Recipe> CreateRecipeAsync(UpdateRecipeDto dto) {
             var entity = new Recipe(dto.Title, dto.Yield, dto.PrepTimeMinutes, dto.CookTimeMinutes, dto.Description, dto.Source, dto.OriginalImageUrl, dto.IsPublic);
 
+            if (!string.IsNullOrWhiteSpace(dto.SourceImageUrl)) {
+                entity.SetSourceImageUrl(dto.SourceImageUrl);
+            }
+
             if (dto.Ingredients != null) {
                 entity.SetIngredients(dto.Ingredients.Select(i => new RecipeIngredient(i.SortOrder, i.Quantity, i.Unit, i.Item, i.Preparation, i.RawText)).ToList());
             }
@@ -85,6 +89,10 @@ namespace RecipeVault.DomainService {
             using (logger.PushProperty("RecipeResourceId", entity.RecipeResourceId)) {
                 entity.Update(dto.Title, dto.Yield, dto.PrepTimeMinutes, dto.CookTimeMinutes, dto.Description, dto.Source, dto.OriginalImageUrl);
                 entity.SetVisibility(dto.IsPublic);
+
+                if (!string.IsNullOrWhiteSpace(dto.SourceImageUrl)) {
+                    entity.SetSourceImageUrl(dto.SourceImageUrl);
+                }
 
                 if (dto.Ingredients != null) {
                     entity.SetIngredients(dto.Ingredients.Select(i => new RecipeIngredient(i.SortOrder, i.Quantity, i.Unit, i.Item, i.Preparation, i.RawText)).ToList());

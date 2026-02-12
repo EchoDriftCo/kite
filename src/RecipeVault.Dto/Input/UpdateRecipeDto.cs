@@ -9,6 +9,7 @@ namespace RecipeVault.Dto.Input {
         public int? CookTimeMinutes { get; set; }
         public string Source { get; set; }
         public string OriginalImageUrl { get; set; }
+        public string SourceImageUrl { get; set; }
         public List<UpdateRecipeIngredientDto> Ingredients { get; set; }
         public List<UpdateRecipeInstructionDto> Instructions { get; set; }
         public bool IsPublic { get; set; }
