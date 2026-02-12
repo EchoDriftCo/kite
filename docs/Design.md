@@ -2,7 +2,7 @@
 
 **Project Codename:** RecipeVault  
 **Version:** 0.1  
-**Last Updated:** 2025-01-31
+**Last Updated:** 2026-02-11
 
 ---
 
@@ -36,12 +36,11 @@ Build the core recipe ingestion pipeline that transforms images of recipes into 
 
 ### Features OUT of Scope (Future Phases)
 
-- Photo cleanup/de-warping (Phase 1b)
-- Video/TikTok import (Phase 1c)
-- Dietary auto-tagging (Phase 2)
-- Substitution suggestions (Phase 2)
-- Sharing/collaboration (Phase 3)
-- Meal planning (Phase 3)
+- User tagging and recipe categorization (Phase 2)
+- Dietary auto-tagging and allergen inference (Phase 3)
+- Recipe forking from public recipes (Phase 4)
+- Photo cleanup/de-warping (Future)
+- Video/TikTok import (Future)
 
 ---
 
@@ -62,8 +61,8 @@ Build the core recipe ingestion pipeline that transforms images of recipes into 
 
 | Component | Technology | Notes |
 |-----------|------------|-------|
-| Framework | Angular 17+ | Standalone components |
-| UI Library | TBD | |
+| Framework | Angular 19 | Standalone components |
+| UI Library | Angular Material | Dark theme, Material Design 3 |
 | State | Signals | Angular's native reactivity |
 
 ### Architecture Reference
@@ -152,20 +151,113 @@ RecipeInstruction
 └── RawText (string - original parsed text)
 ```
 
-### Value Objects (Future - Phase 2)
+### Sharing & Visibility
 
 ```
-NormalizedIngredient - maps "flour" to canonical ingredient for dietary analysis
-DietaryTag - Vegan, GlutenFree, DairyFree, etc.
+Recipe (extended)
+├── IsPublic (bool, default false)
+└── Visibility toggled via PUT /api/v1/recipes/{id}/visibility
 ```
+
+- Public recipes are readable by any authenticated user
+- Only the owner can update, delete, or toggle visibility
+- Search supports `IncludePublic` flag to show public recipes alongside owned ones
+- Response includes `IsOwner` flag for UI to conditionally render edit/delete controls
+
+### Meal Planning
+
+```
+MealPlan (Aggregate Root)
+├── MealPlanId (int, DB primary key)
+├── MealPlanResourceId (Guid, API-facing)
+├── Name (string)
+├── StartDate (DateTime)
+├── EndDate (DateTime)
+├── Entries (List<MealPlanEntry>)
+└── CreatedBySubjectId (AuditableEntity)
+
+MealPlanEntry
+├── MealPlanEntryId (int, DB primary key)
+├── MealPlanId (int, FK)
+├── Date (DateTime)
+├── MealSlot (enum: Breakfast, Lunch, Dinner, Snack)
+├── RecipeId (int, FK → Recipe)
+├── Recipe (navigation property)
+├── Servings (int?, override for scaling)
+└── IsLeftover (bool)
+```
+
+- Grocery list generation aggregates ingredients across non-leftover entries
+- Scales quantities by `entry.Servings / recipe.Yield`
+- AI-powered consolidation merges similar ingredients (e.g., "cooking oil" + "oil") via Gemini
+
+### User Tags (Phase 2)
+
+```
+Tag
+├── TagId (int, DB primary key)
+├── TagResourceId (Guid, API-facing)
+├── Name (string, required - "Quick Weeknight", "Holiday", "Kid-Friendly")
+├── Color (string, optional - hex color for UI display)
+└── CreatedBySubjectId (AuditableEntity)
+
+RecipeTag (join entity)
+├── RecipeTagId (int, DB primary key)
+├── RecipeId (int, FK → Recipe)
+├── TagId (int, FK → Tag)
+└── CreatedDate
+```
+
+- Tags are user-scoped — each user manages their own tag vocabulary
+- Recipes can have multiple tags, tags can apply to multiple recipes
+- Search supports filtering by tag(s)
+- Predefined "starter" tags are not seeded — users create their own organically
+
+### Dietary Intelligence (Phase 3)
+
+```
+DietaryFlag (enum)
+├── Vegan, Vegetarian, GlutenFree, DairyFree, NutFree, Shellfish
+├── LowCarb, HighProtein, Keto, Paleo
+└── (extensible - new values added without migration)
+
+RecipeDietaryFlag
+├── RecipeDietaryFlagId (int, DB primary key)
+├── RecipeId (int, FK → Recipe)
+├── Flag (DietaryFlag enum, stored as string)
+├── Confidence (decimal, 0-1 - AI confidence score)
+├── IsOverridden (bool - user manually corrected)
+└── CreatedDate
+```
+
+- AI auto-analyzes ingredients on recipe create/update
+- Flags inferred from ingredient list (e.g., no dairy items → DairyFree)
+- Users can override AI flags (mark/unmark) — overrides are preserved across re-analysis
+- Allergen warnings surfaced on recipe detail and meal plan entries
+- Substitution suggestions: AI recommends ingredient swaps for dietary goals
+
+### Recipe Forking (Phase 4)
+
+```
+Recipe (extended)
+├── ForkedFromRecipeId (int?, FK → Recipe, nullable)
+├── ForkedFromRecipe (navigation property)
+└── ForkCount (int, computed or denormalized)
+```
+
+- Fork creates a full copy of a public recipe into the user's collection
+- Fork preserves attribution: "Forked from {original title} by {original author}"
+- Forked recipe is fully editable — changes don't affect the original
+- Original recipe tracks fork count for social proof
+- Forking a private recipe is not allowed — only public recipes can be forked
 
 ### Data Ownership
 
 Recipes are user-scoped via `CreatedBySubjectId`, populated automatically by `AuditableEntity` from the Supabase Auth JWT subject claim.
 
-- All recipe queries are filtered to the authenticated user's subject ID
-- Supabase Row Level Security (RLS) policies enforce ownership at the database level
-- Users cannot read, update, or delete recipes belonging to other users
+- Private recipes: only the owner can read, update, or delete
+- Public recipes: any authenticated user can read; only the owner can update/delete
+- Meal plans are strictly user-scoped — no sharing
 
 ---
 
@@ -177,10 +269,42 @@ Recipes are user-scoped via `CreatedBySubjectId`, populated automatically by `Au
 |--------|----------|-------------|
 | POST | `/api/v1/recipes/parse` | Upload image, returns parsed recipe (not saved) |
 | POST | `/api/v1/recipes` | Create recipe (from parsed or manual entry) |
-| GET | `/api/v1/recipes` | List recipes (paginated) |
-| GET | `/api/v1/recipes/{id}` | Get single recipe |
-| PUT | `/api/v1/recipes/{id}` | Update recipe |
-| DELETE | `/api/v1/recipes/{id}` | Delete recipe |
+| GET | `/api/v1/recipes` | List recipes (paginated, supports `includePublic` filter) |
+| GET | `/api/v1/recipes/{id}` | Get single recipe (owner or public) |
+| PUT | `/api/v1/recipes/{id}` | Update recipe (owner only) |
+| DELETE | `/api/v1/recipes/{id}` | Delete recipe (owner only) |
+| PUT | `/api/v1/recipes/{id}/visibility` | Toggle public/private (owner only) |
+| POST | `/api/v1/recipes/{id}/fork` | Fork a public recipe into user's collection (Phase 4) |
+
+### Meal Plans
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/meal-plans` | Create meal plan |
+| GET | `/api/v1/meal-plans` | List meal plans (paginated, user-scoped) |
+| GET | `/api/v1/meal-plans/{id}` | Get single meal plan |
+| PUT | `/api/v1/meal-plans/{id}` | Update meal plan (name, dates, entries) |
+| DELETE | `/api/v1/meal-plans/{id}` | Delete meal plan |
+| GET | `/api/v1/meal-plans/{id}/grocery-list` | Generate AI-consolidated grocery list |
+
+### Tags (Phase 2)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/tags` | Create tag |
+| GET | `/api/v1/tags` | List user's tags |
+| PUT | `/api/v1/tags/{id}` | Update tag (name, color) |
+| DELETE | `/api/v1/tags/{id}` | Delete tag (removes from all recipes) |
+| PUT | `/api/v1/recipes/{id}/tags` | Set tags for a recipe (replace all) |
+
+### Dietary Analysis (Phase 3)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/recipes/{id}/dietary` | Get dietary flags for a recipe |
+| PUT | `/api/v1/recipes/{id}/dietary/{flag}` | Override a dietary flag (user correction) |
+| POST | `/api/v1/recipes/{id}/dietary/analyze` | Re-trigger AI analysis |
+| GET | `/api/v1/recipes/{id}/substitutions` | Get AI substitution suggestions for dietary goals |
 
 ### Parse Endpoint Detail
 
@@ -300,55 +424,94 @@ src/
 │   ├── Entities/
 │   │   ├── Recipe.cs
 │   │   ├── RecipeIngredient.cs
-│   │   └── RecipeInstruction.cs
+│   │   ├── RecipeInstruction.cs
+│   │   ├── MealPlan.cs
+│   │   └── MealPlanEntry.cs
+│   ├── Enums/
+│   │   └── MealSlot.cs
 │   └── Events/
 │       └── RecipeCreatedEvent.cs
 ├── RecipeVault.DomainService/
 │   ├── IRecipeService.cs
-│   └── RecipeService.cs
+│   ├── RecipeService.cs
+│   ├── IMealPlanService.cs
+│   └── MealPlanService.cs
 ├── RecipeVault.Exceptions/
-│   └── RecipeNotFoundException.cs
+│   ├── RecipeNotFoundException.cs
+│   └── MealPlanNotFoundException.cs
 ├── RecipeVault.Data/
 │   ├── RecipeVaultDbContext.cs
+│   ├── IRecipeVaultDbContext.cs
 │   ├── Repositories/
 │   │   ├── IRecipeRepository.cs
-│   │   └── RecipeRepository.cs
+│   │   ├── RecipeRepository.cs
+│   │   ├── IMealPlanRepository.cs
+│   │   └── MealPlanRepository.cs
+│   ├── Searches/
+│   │   ├── IRecipeSearch.cs
+│   │   ├── RecipeSearch.cs
+│   │   ├── IMealPlanSearch.cs
+│   │   └── MealPlanSearch.cs
 │   └── Migrations/
 ├── RecipeVault.Dto/
 │   ├── Input/
-│   │   ├── CreateRecipeDto.cs
 │   │   ├── UpdateRecipeDto.cs
+│   │   ├── UpdateMealPlanDto.cs
 │   │   └── ParseRecipeRequestDto.cs
 │   ├── Output/
 │   │   ├── RecipeDto.cs
 │   │   ├── RecipeIngredientDto.cs
 │   │   ├── RecipeInstructionDto.cs
-│   │   └── ParseRecipeResponseDto.cs
+│   │   ├── ParseRecipeResponseDto.cs
+│   │   ├── MealPlanDto.cs
+│   │   └── GroceryListDto.cs
 │   └── Search/
-│       └── RecipeSearchDto.cs
+│       ├── RecipeSearchDto.cs
+│       └── MealPlanSearchDto.cs
 ├── RecipeVault.Facade/
 │   ├── IRecipeFacade.cs
 │   ├── RecipeFacade.cs
+│   ├── IMealPlanFacade.cs
+│   ├── MealPlanFacade.cs
 │   └── Mappers/
-│       └── RecipeMapper.cs
+│       ├── RecipeMapper.cs
+│       └── MealPlanMapper.cs
+├── RecipeVault.Integrations.Gemini/
+│   ├── IGeminiClient.cs
+│   ├── GeminiClient.cs
+│   └── Models/
+│       └── GeminiApiModels.cs
 ├── RecipeVault.Health/
 │   └── GeminiHealthCheck.cs
 ├── RecipeVault.WebApi/
 │   ├── Controllers/
-│   │   └── RecipesController.cs
+│   │   ├── RecipesController.cs
+│   │   └── MealPlansController.cs
 │   ├── Models/
 │   │   ├── Requests/
-│   │   │   ├── CreateRecipeModel.cs
 │   │   │   ├── UpdateRecipeModel.cs
+│   │   │   ├── UpdateMealPlanModel.cs
+│   │   │   ├── RecipeSearchModel.cs
+│   │   │   ├── MealPlanSearchModel.cs
+│   │   │   ├── SetVisibilityModel.cs
 │   │   │   └── ParseRecipeRequestModel.cs
 │   │   └── Responses/
 │   │       ├── RecipeModel.cs
+│   │       ├── MealPlanModel.cs
+│   │       ├── GroceryListModel.cs
 │   │       └── ParseRecipeResponseModel.cs
 │   ├── Mappers/
-│   │   └── RecipeModelMapper.cs
+│   │   ├── RecipeModelMapper.cs
+│   │   └── MealPlanModelMapper.cs
 │   ├── Program.cs
 │   ├── Startup.cs
 │   └── appsettings.json
+├── RecipeVault.TestUtilities/
+│   └── Builders/
+│       ├── RecipeBuilder.cs
+│       └── MealPlanBuilder.cs
+├── RecipeVault.DomainService.Tests/
+├── RecipeVault.Facade.Tests/
 └── RecipeVault.WebApi.IntegrationTests/
 ```
 
@@ -402,39 +565,74 @@ Required settings (appsettings.json):
 
 ## Development Phases
 
-### Phase 1a: Multimodal Scanner (Current)
-- [ ] Solution scaffolding (cortside template)
-- [ ] Domain entities
-- [ ] Database context + migrations
-- [ ] Supabase storage integration
-- [ ] Gemini integration service
-- [ ] Parse endpoint
-- [ ] Recipe CRUD endpoints
-- [ ] Basic Angular UI (upload + display)
+### Phase 1: Foundation (Complete)
+- [x] Solution scaffolding (Cortside template)
+- [x] Domain entities (Recipe, RecipeIngredient, RecipeInstruction)
+- [x] Database context + migrations (PostgreSQL via Supabase)
+- [x] Supabase storage integration (recipe images)
+- [x] Gemini integration service (image parsing)
+- [x] Parse endpoint (multimodal AI recipe extraction)
+- [x] Recipe CRUD endpoints with ownership enforcement
+- [x] Angular UI (upload, list, detail, edit)
+- [x] Public/private recipe sharing with visibility toggle
+- [x] Meal planning with weekly calendar view
+- [x] AI-powered grocery list generation with ingredient consolidation
 
-### Phase 1b: Photo Cleanup (Future)
-- Image straightening/de-warping
-- Brightness/contrast adjustment
-- Preserve original alongside cleaned version
+### Phase 2: User Tagging & Organization
+- [ ] Tag entity + migration (user-scoped tags with optional color)
+- [ ] RecipeTag join entity + migration
+- [ ] Tag CRUD endpoints
+- [ ] Recipe-tag assignment endpoint
+- [ ] Search filtering by tag(s)
+- [ ] Tag management UI (create, edit, delete, color picker)
+- [ ] Tag chips on recipe cards and detail view
+- [ ] Tag filter in recipe list sidebar/toolbar
+- [ ] Bulk tag operations (tag multiple recipes at once)
 
-### Phase 1c: Video Import (Future)
-- Share extension architecture
-- Audio transcription
-- Caption extraction
+### Phase 3: Dietary Intelligence
+- [ ] DietaryFlag enum + RecipeDietaryFlag entity + migration
+- [ ] AI analysis service (infer dietary flags from ingredient list via Gemini)
+- [ ] Auto-analyze on recipe create/update
+- [ ] Dietary flags display on recipe detail (badges/chips)
+- [ ] User override capability (correct AI mistakes, persisted across re-analysis)
+- [ ] Allergen warnings on meal plan entries
+- [ ] Dietary filter in recipe search (e.g., show only Vegan, GlutenFree)
+- [ ] AI substitution suggestions (swap ingredients for dietary goals)
+- [ ] Dietary summary on meal plan (weekly nutritional balance view)
+
+### Phase 4: Recipe Forking
+- [ ] ForkedFromRecipeId field + migration
+- [ ] Fork endpoint (deep-copy public recipe into user's collection)
+- [ ] Fork attribution display ("Forked from X by Y")
+- [ ] Fork count on public recipe detail (social proof)
+- [ ] Fork button on public recipe detail view
+- [ ] "Forked recipes" filter/tab in recipe list
+- [ ] Diff view (optional: show changes from original)
+
+### Future Ideas (Unscheduled)
+- Image cleanup/de-warping (straighten, adjust brightness/contrast)
+- Video/TikTok import (share extension, audio transcription, caption extraction)
+- Nutritional data integration (USDA/OpenFoodFacts API for calorie/macro estimation)
+- Social features (follow users, activity feed, recipe ratings)
+- Collections/cookbooks (group recipes beyond tags)
+- Recipe scaling calculator (adjust servings with unit conversion)
+- Cooking mode (step-by-step guided view with timers)
 
 ---
 
 ## Constraints & Principles
 
-1. **Errors are errors.** No silent fallbacks. Missing config = startup failure. Bad data = 4xx/5xx response.
+1. **Errors are errors.** No silent fallbacks. Missing config = startup failure. Bad data = 4xx/5xx response. Exception: AI-enhanced features (grocery consolidation, dietary analysis) gracefully degrade — return raw data with a warning log if AI fails.
 
 2. **Follow Cortside patterns.** Reference `cortside/coeus/shoppingcart-api` for architectural decisions.
 
-3. **Stay in scope.** Phase 1 is ONLY the multimodal scanner. Resist feature creep.
+3. **Ownership first.** All user data is scoped by `CreatedBySubjectId`. Public visibility is opt-in. Users can never modify another user's data.
 
-4. **Free tier friendly.** Design for Supabase/Gemini free limits. Warn before hitting them.
+4. **Free tier friendly.** Design for Supabase/Gemini free limits. Batch AI calls where possible. Cache results when practical.
 
-5. **AI is fallible.** Always preserve raw text. Always allow manual correction.
+5. **AI is fallible.** Always preserve raw text. Always allow manual correction. AI-inferred data (dietary flags, ingredient parsing) must be overridable by the user.
+
+6. **Phase discipline.** Complete the current phase before starting the next. Each phase should be independently shippable.
 
 ---
 

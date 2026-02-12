@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
 using RecipeVault.Dto.Input;
@@ -14,5 +15,8 @@ namespace RecipeVault.Facade {
         Task DeleteRecipeAsync(Guid resourceId);
         Task<ParseRecipeResponseDto> ParseRecipeImageAsync(ParseRecipeRequestDto request);
         Task<RecipeDto> SetRecipeVisibilityAsync(Guid resourceId, bool isPublic);
+        Task<RecipeDto> AssignTagsAsync(Guid recipeResourceId, List<AssignTagDto> tags);
+        Task<RecipeDto> RemoveTagAsync(Guid recipeResourceId, Guid tagResourceId);
+        Task<RecipeDto> AnalyzeDietaryTagsAsync(Guid recipeResourceId);
     }
 }

@@ -8,9 +8,11 @@ using RecipeVault.Dto.Search;
 namespace RecipeVault.Facade.Mappers {
     public class RecipeMapper {
         private readonly SubjectMapper subjectMapper;
+        private readonly TagMapper tagMapper;
 
-        public RecipeMapper(SubjectMapper subjectMapper) {
+        public RecipeMapper(SubjectMapper subjectMapper, TagMapper tagMapper) {
             this.subjectMapper = subjectMapper;
+            this.tagMapper = tagMapper;
         }
 
         public RecipeDto MapToDto(Recipe entity) {
@@ -50,6 +52,10 @@ namespace RecipeVault.Facade.Mappers {
                     Instruction = i.Instruction,
                     RawText = i.RawText
                 }).ToList(),
+                Tags = entity.RecipeTags?
+                    .Where(rt => !rt.IsOverridden)
+                    .Select(rt => tagMapper.MapToRecipeTagDto(rt))
+                    .ToList(),
                 CreatedDate = entity.CreatedDate,
                 LastModifiedDate = entity.LastModifiedDate,
                 CreatedSubject = subjectMapper.MapToDto(entity.CreatedSubject),
@@ -67,6 +73,8 @@ namespace RecipeVault.Facade.Mappers {
                 Title = dto.Title,
                 IsPublic = dto.IsPublic,
                 IncludePublic = dto.IncludePublic,
+                TagResourceIds = dto.TagResourceIds,
+                TagCategory = dto.TagCategory,
                 PageNumber = dto.PageNumber,
                 PageSize = dto.PageSize,
                 Sort = dto.Sort

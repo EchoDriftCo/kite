@@ -19,5 +19,6 @@ namespace RecipeVault.WebApi.Models.Responses {
         public bool IsOwner { get; set; }
         public List<RecipeIngredientModel> Ingredients { get; set; }
         public List<RecipeInstructionModel> Instructions { get; set; }
+        public List<RecipeTagModel> Tags { get; set; }
     }
 }

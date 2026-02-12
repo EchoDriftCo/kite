@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Asp.Versioning;
@@ -6,6 +8,7 @@ using Cortside.AspNetCore.Common.Paging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RecipeVault.Dto.Input;
 using RecipeVault.Facade;
 using RecipeVault.WebApi.Mappers;
 using RecipeVault.WebApi.Models.Requests;
@@ -126,6 +129,52 @@ namespace RecipeVault.WebApi.Controllers {
             var responseDto = await facade.ParseRecipeImageAsync(requestDto).ConfigureAwait(false);
             var responseModel = recipeMapper.Map(responseDto);
             return Ok(responseModel);
+        }
+
+        /// <summary>
+        /// Assign tags to a recipe
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        /// <param name="input"></param>
+        [HttpPost("{id}/tags")]
+        [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> AssignTagsAsync(Guid id, [FromBody] AssignTagsModel input) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var tagDtos = input.Tags?.Select(t => new AssignTagDto {
+                    TagResourceId = t.TagResourceId,
+                    Name = t.Name,
+                    Category = t.Category
+                }).ToList() ?? new List<AssignTagDto>();
+                var dto = await facade.AssignTagsAsync(id, tagDtos).ConfigureAwait(false);
+                return Ok(recipeMapper.Map(dto));
+            }
+        }
+
+        /// <summary>
+        /// Remove a tag from a recipe
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        /// <param name="tagId">the resource id of the tag to remove</param>
+        [HttpDelete("{id}/tags/{tagId}")]
+        [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> RemoveTagAsync(Guid id, Guid tagId) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var dto = await facade.RemoveTagAsync(id, tagId).ConfigureAwait(false);
+                return Ok(recipeMapper.Map(dto));
+            }
+        }
+
+        /// <summary>
+        /// Trigger AI dietary tag analysis for a recipe
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        [HttpPost("{id}/analyze-tags")]
+        [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> AnalyzeTagsAsync(Guid id) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var dto = await facade.AnalyzeDietaryTagsAsync(id).ConfigureAwait(false);
+                return Ok(recipeMapper.Map(dto));
+            }
         }
     }
 }

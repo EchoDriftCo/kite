@@ -8,6 +8,7 @@ namespace RecipeVault.Data.Repositories {
     public interface IRecipeRepository {
         Task<Recipe> AddAsync(Recipe recipe);
         Task<Recipe> GetAsync(Guid id);
+        Task<Recipe> GetByIdAsync(int recipeId);
         Task<PagedList<Recipe>> SearchAsync(RecipeSearch model);
         Task RemoveAsync(Recipe recipe);
     }

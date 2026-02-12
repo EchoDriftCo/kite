@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Cortside.AspNetCore.EntityFramework.Searches;
 using RecipeVault.Domain.Entities;
 
@@ -9,5 +10,7 @@ namespace RecipeVault.Data.Searches {
         Guid? CreatedSubjectId { get; set; }
         bool? IsPublic { get; set; }
         bool IncludePublic { get; set; }
+        List<Guid> TagResourceIds { get; set; }
+        int? TagCategory { get; set; }
     }
 }

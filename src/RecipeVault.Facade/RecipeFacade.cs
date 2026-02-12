@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
 using Cortside.AspNetCore.EntityFramework;
@@ -38,6 +39,14 @@ namespace RecipeVault.Facade {
         public async Task<RecipeDto> CreateRecipeAsync(UpdateRecipeDto dto) {
             var recipe = await recipeService.CreateRecipeAsync(dto).ConfigureAwait(false);
             await uow.SaveChangesAsync().ConfigureAwait(false);
+
+            try {
+                await recipeService.AnalyzeAndApplyDietaryTagsAsync(recipe).ConfigureAwait(false);
+                await uow.SaveChangesAsync().ConfigureAwait(false);
+            } catch (Exception ex) {
+                logger.LogWarning(ex, "Dietary tag analysis failed for recipe {RecipeResourceId}", recipe.RecipeResourceId);
+            }
+
             return mapper.MapToDto(recipe, CurrentSubjectId);
         }
 
@@ -67,6 +76,14 @@ namespace RecipeVault.Facade {
 
                 var recipe = await recipeService.UpdateRecipeAsync(resourceId, dto).ConfigureAwait(false);
                 await uow.SaveChangesAsync().ConfigureAwait(false);
+
+                try {
+                    await recipeService.AnalyzeAndApplyDietaryTagsAsync(recipe).ConfigureAwait(false);
+                    await uow.SaveChangesAsync().ConfigureAwait(false);
+                } catch (Exception ex) {
+                    logger.LogWarning(ex, "Dietary tag analysis failed for recipe {RecipeResourceId}", recipe.RecipeResourceId);
+                }
+
                 return mapper.MapToDto(recipe, CurrentSubjectId);
             }
         }
@@ -102,6 +119,46 @@ namespace RecipeVault.Facade {
             // No transaction needed - read-only external API call
             var result = await recipeService.ParseRecipeImageAsync(request).ConfigureAwait(false);
             return result;
+        }
+
+        public async Task<RecipeDto> AssignTagsAsync(Guid recipeResourceId, List<AssignTagDto> tags) {
+            var lockName = GetLockName(recipeResourceId);
+
+            logger.LogDebug("Acquiring lock for {LockName}", lockName);
+            await using (await lockProvider.AcquireLockAsync(lockName).ConfigureAwait(false)) {
+                logger.LogDebug("Acquired lock for {LockName}", lockName);
+
+                var recipe = await recipeService.AssignTagsToRecipeAsync(recipeResourceId, tags).ConfigureAwait(false);
+                await uow.SaveChangesAsync().ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId);
+            }
+        }
+
+        public async Task<RecipeDto> RemoveTagAsync(Guid recipeResourceId, Guid tagResourceId) {
+            var lockName = GetLockName(recipeResourceId);
+
+            logger.LogDebug("Acquiring lock for {LockName}", lockName);
+            await using (await lockProvider.AcquireLockAsync(lockName).ConfigureAwait(false)) {
+                logger.LogDebug("Acquired lock for {LockName}", lockName);
+
+                var recipe = await recipeService.RemoveTagFromRecipeAsync(recipeResourceId, tagResourceId).ConfigureAwait(false);
+                await uow.SaveChangesAsync().ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId);
+            }
+        }
+
+        public async Task<RecipeDto> AnalyzeDietaryTagsAsync(Guid recipeResourceId) {
+            var lockName = GetLockName(recipeResourceId);
+
+            logger.LogDebug("Acquiring lock for {LockName}", lockName);
+            await using (await lockProvider.AcquireLockAsync(lockName).ConfigureAwait(false)) {
+                logger.LogDebug("Acquired lock for {LockName}", lockName);
+
+                var recipe = await recipeService.GetRecipeAsync(recipeResourceId).ConfigureAwait(false);
+                await recipeService.AnalyzeAndApplyDietaryTagsAsync(recipe).ConfigureAwait(false);
+                await uow.SaveChangesAsync().ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId);
+            }
         }
     }
 }

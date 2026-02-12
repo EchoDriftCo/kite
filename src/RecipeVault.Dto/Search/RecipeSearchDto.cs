@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Cortside.AspNetCore.Common.Dtos;
 
 namespace RecipeVault.Dto.Search {
@@ -7,5 +8,7 @@ namespace RecipeVault.Dto.Search {
         public string Title { get; set; }
         public bool? IsPublic { get; set; }
         public bool IncludePublic { get; set; }
+        public List<Guid> TagResourceIds { get; set; }
+        public int? TagCategory { get; set; }
     }
 }

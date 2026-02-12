@@ -198,4 +198,23 @@ namespace RecipeVault.Integrations.Gemini.Models {
         [JsonPropertyName("unit")]
         public string Unit { get; set; }
     }
+
+    /// <summary>
+    /// Expected dietary analysis result from Gemini model
+    /// </summary>
+    public class GeminiDietaryAnalysisResult {
+        [JsonPropertyName("tags")]
+        public List<GeminiDietaryTagResult> Tags { get; set; }
+    }
+
+    /// <summary>
+    /// Single dietary tag result from Gemini
+    /// </summary>
+    public class GeminiDietaryTagResult {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("confidence")]
+        public decimal Confidence { get; set; }
+    }
 }

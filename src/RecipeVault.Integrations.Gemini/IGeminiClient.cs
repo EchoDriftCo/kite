@@ -25,6 +25,29 @@ namespace RecipeVault.Integrations.Gemini {
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Consolidated grocery list response</returns>
         Task<GeminiGroceryConsolidationResponse> ConsolidateGroceryListAsync(List<GeminiGroceryItem> items, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Analyze recipe ingredients to infer dietary tags
+        /// </summary>
+        /// <param name="ingredients">List of ingredient text strings to analyze</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Dietary tags inferred from the ingredient list</returns>
+        Task<GeminiDietaryAnalysisResponse> AnalyzeDietaryTagsAsync(List<string> ingredients, CancellationToken cancellationToken = default);
+    }
+
+    /// <summary>
+    /// Response from Gemini dietary tag analysis
+    /// </summary>
+    public class GeminiDietaryAnalysisResponse {
+        public List<GeminiDietaryTag> Tags { get; set; } = new();
+    }
+
+    /// <summary>
+    /// A single dietary tag inferred by Gemini
+    /// </summary>
+    public class GeminiDietaryTag {
+        public string Name { get; set; }
+        public decimal Confidence { get; set; }
     }
 
     /// <summary>

@@ -47,6 +47,15 @@ namespace RecipeVault.WebApi.Mappers {
                     Instruction = i.Instruction,
                     RawText = i.RawText
                 }).ToList(),
+                Tags = dto.Tags?.Select(t => new RecipeTagModel {
+                    TagResourceId = t.TagResourceId,
+                    Name = t.Name,
+                    Category = t.Category,
+                    CategoryName = t.CategoryName,
+                    IsAiAssigned = t.IsAiAssigned,
+                    Confidence = t.Confidence,
+                    IsOverridden = t.IsOverridden
+                }).ToList(),
                 CreatedDate = dto.CreatedDate,
                 CreatedSubject = subjectModelMapper.Map(dto.CreatedSubject),
                 LastModifiedDate = dto.LastModifiedDate,
@@ -64,6 +73,8 @@ namespace RecipeVault.WebApi.Mappers {
                 Title = model.Title,
                 IsPublic = model.IsPublic,
                 IncludePublic = model.IncludePublic,
+                TagResourceIds = model.TagResourceIds,
+                TagCategory = model.TagCategory,
                 PageNumber = model.PageNumber,
                 PageSize = model.PageSize,
                 Sort = model.Sort

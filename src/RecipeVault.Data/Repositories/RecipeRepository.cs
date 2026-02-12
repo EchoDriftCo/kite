@@ -18,6 +18,7 @@ namespace RecipeVault.Data.Repositories {
             var recipes = model.Build(context.Recipes
                 .Include(x => x.Ingredients)
                 .Include(x => x.Instructions)
+                .Include(x => x.RecipeTags).ThenInclude(rt => rt.Tag)
                 .Include(x => x.CreatedSubject)
                 .Include(x => x.LastModifiedSubject));
 
@@ -43,9 +44,18 @@ namespace RecipeVault.Data.Repositories {
             return context.Recipes
                 .Include(x => x.Ingredients)
                 .Include(x => x.Instructions)
+                .Include(x => x.RecipeTags).ThenInclude(rt => rt.Tag)
                 .Include(x => x.CreatedSubject)
                 .Include(x => x.LastModifiedSubject)
                 .FirstOrDefaultAsync(r => r.RecipeResourceId == id);
+        }
+
+        public Task<Recipe> GetByIdAsync(int recipeId) {
+            return context.Recipes
+                .Include(x => x.Ingredients)
+                .Include(x => x.RecipeTags).ThenInclude(rt => rt.Tag)
+                .Include(x => x.CreatedSubject)
+                .FirstOrDefaultAsync(r => r.RecipeId == recipeId);
         }
 
         public Task RemoveAsync(Recipe recipe) {

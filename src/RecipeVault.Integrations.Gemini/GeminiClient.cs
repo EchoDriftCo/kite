@@ -268,6 +268,68 @@ Rules:
             };
         }
 
+        private const string DietaryAnalysisPrompt = @"You are a dietary analysis expert. Given a list of recipe ingredients, determine which dietary categories this recipe qualifies for.
+
+Return ONLY valid JSON matching this schema:
+{
+  ""tags"": [
+    {
+      ""name"": ""string (exactly one of: Vegan, Vegetarian, Gluten-Free, Dairy-Free, Nut-Free, Keto, Paleo, Low-Carb, Sugar-Free, Whole30, Halal, Kosher)"",
+      ""confidence"": number (0.0-1.0)
+    }
+  ]
+}
+
+Rules:
+- Only include tags where confidence >= 0.6
+- Vegan: no animal products whatsoever (no meat, dairy, eggs, honey)
+- Vegetarian: no meat or fish, but dairy/eggs are allowed
+- Gluten-Free: no wheat, barley, rye, or ingredients that typically contain gluten
+- Dairy-Free: no milk, cheese, butter, cream, yogurt, whey
+- Nut-Free: no tree nuts or peanuts
+- Keto: very low carb (no grains, minimal sugar, starchy vegetables)
+- Paleo: no grains, legumes, dairy, refined sugar, or processed foods
+- Low-Carb: limited grains, sugar, and starchy vegetables
+- Sugar-Free: no added sugars or sweet ingredients
+- Whole30: no grains, dairy, legumes, sugar, alcohol, or soy
+- Halal: no pork or alcohol; meat must be halal-slaughtered
+- Kosher: no pork, shellfish; no mixing meat and dairy
+- Be conservative — if uncertain, do NOT include the tag
+- An empty tags array is a valid response if no categories apply";
+
+        /// <summary>
+        /// Analyze recipe ingredients to infer dietary tags
+        /// </summary>
+        public async Task<GeminiDietaryAnalysisResponse> AnalyzeDietaryTagsAsync(List<string> ingredients, CancellationToken cancellationToken = default) {
+            if (ingredients == null || ingredients.Count == 0) {
+                return new GeminiDietaryAnalysisResponse();
+            }
+
+            var prompt = DietaryAnalysisPrompt + "\n\nHere are the recipe ingredients to analyze:\n" +
+                         string.Join("\n", ingredients.Select(i => $"- {i}"));
+
+            logger.LogInformation("Sending dietary analysis request to Gemini API, ingredientCount={IngredientCount}", ingredients.Count);
+
+            var textPart = await SendTextPromptAsync(prompt, cancellationToken).ConfigureAwait(false);
+
+            var result = JsonSerializer.Deserialize<GeminiDietaryAnalysisResult>(textPart,
+                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+            if (result?.Tags == null) {
+                logger.LogWarning("Failed to deserialize dietary analysis result, returning empty tags");
+                return new GeminiDietaryAnalysisResponse();
+            }
+
+            logger.LogInformation("Dietary analysis found {TagCount} tags", result.Tags.Count);
+
+            return new GeminiDietaryAnalysisResponse {
+                Tags = result.Tags.Select(t => new GeminiDietaryTag {
+                    Name = t.Name,
+                    Confidence = t.Confidence
+                }).ToList()
+            };
+        }
+
         /// <summary>
         /// Send a text-only prompt to Gemini and return the text response
         /// </summary>

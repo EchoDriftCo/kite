@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
 using RecipeVault.Data.Searches;
@@ -15,5 +16,8 @@ namespace RecipeVault.DomainService {
         Task DeleteRecipeAsync(Guid resourceId);
         Task<ParseRecipeResponseDto> ParseRecipeImageAsync(ParseRecipeRequestDto request);
         Task SetRecipeVisibilityAsync(Guid recipeResourceId, bool isPublic);
+        Task<Recipe> AssignTagsToRecipeAsync(Guid recipeResourceId, List<AssignTagDto> tags);
+        Task<Recipe> RemoveTagFromRecipeAsync(Guid recipeResourceId, Guid tagResourceId);
+        Task AnalyzeAndApplyDietaryTagsAsync(Recipe recipe);
     }
 }

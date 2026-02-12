@@ -18,5 +18,6 @@ namespace RecipeVault.Dto.Output {
         public List<RecipeInstructionDto> Instructions { get; set; }
         public bool IsPublic { get; set; }
         public bool IsOwner { get; set; }
+        public List<RecipeTagDto> Tags { get; set; }
     }
 }

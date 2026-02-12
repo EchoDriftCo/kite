@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using RecipeVault.Data.Repositories;
 using RecipeVault.Data.Searches;
 using RecipeVault.Domain.Entities;
+using RecipeVault.Domain.Enums;
 using RecipeVault.Dto.Input;
 using RecipeVault.Dto.Output;
 using RecipeVault.Exceptions;
@@ -17,12 +19,16 @@ namespace RecipeVault.DomainService {
     public class RecipeService : IRecipeService {
         private readonly ILogger<RecipeService> logger;
         private readonly IRecipeRepository recipeRepository;
+        private readonly ITagRepository tagRepository;
         private readonly IGeminiClient geminiClient;
         private readonly ISubjectPrincipal subjectPrincipal;
 
-        public RecipeService(IRecipeRepository recipeRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger, ISubjectPrincipal subjectPrincipal) {
+        private static readonly Guid SystemSubjectId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
+        public RecipeService(IRecipeRepository recipeRepository, ITagRepository tagRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger, ISubjectPrincipal subjectPrincipal) {
             this.logger = logger;
             this.recipeRepository = recipeRepository;
+            this.tagRepository = tagRepository;
             this.geminiClient = geminiClient;
             this.subjectPrincipal = subjectPrincipal;
         }
@@ -107,6 +113,112 @@ namespace RecipeVault.DomainService {
             using (logger.PushProperty("RecipeResourceId", entity.RecipeResourceId)) {
                 await recipeRepository.RemoveAsync(entity);
                 logger.LogInformation("Deleted recipe");
+            }
+        }
+
+        public async Task<Recipe> AssignTagsToRecipeAsync(Guid recipeResourceId, List<AssignTagDto> tags) {
+            var entity = await GetOwnRecipeAsync(recipeResourceId).ConfigureAwait(false);
+            var currentSubjectId = Guid.Parse(subjectPrincipal.SubjectId);
+
+            using (logger.PushProperty("RecipeResourceId", entity.RecipeResourceId)) {
+                foreach (var tagDto in tags) {
+                    Tag tag;
+                    if (tagDto.TagResourceId.HasValue) {
+                        tag = await tagRepository.GetAsync(tagDto.TagResourceId.Value).ConfigureAwait(false);
+                        if (tag == null) {
+                            throw new TagNotFoundException($"Tag with id {tagDto.TagResourceId} not found");
+                        }
+                    } else {
+                        var category = (TagCategory)(tagDto.Category ?? (int)TagCategory.Custom);
+                        tag = await tagRepository.GetByNameAndCategoryAsync(tagDto.Name, category).ConfigureAwait(false);
+                        if (tag == null) {
+                            tag = new Tag(tagDto.Name, category, isGlobal: false);
+                            await tagRepository.AddAsync(tag);
+                        }
+                    }
+
+                    // Skip if already assigned and not overridden
+                    var existing = entity.RecipeTags.FirstOrDefault(rt => rt.TagId == tag.TagId);
+                    if (existing != null) {
+                        if (existing.IsOverridden) {
+                            existing.ClearOverride();
+                        }
+                        continue;
+                    }
+
+                    entity.AddTag(new RecipeTag(entity.RecipeId, tag.TagId, currentSubjectId, isAiAssigned: false, confidence: null));
+                }
+
+                logger.LogInformation("Assigned {TagCount} tags to recipe", tags.Count);
+                return entity;
+            }
+        }
+
+        public async Task<Recipe> RemoveTagFromRecipeAsync(Guid recipeResourceId, Guid tagResourceId) {
+            var entity = await GetOwnRecipeAsync(recipeResourceId).ConfigureAwait(false);
+            var tag = await tagRepository.GetAsync(tagResourceId).ConfigureAwait(false);
+            if (tag == null) {
+                throw new TagNotFoundException($"Tag with id {tagResourceId} not found");
+            }
+
+            using (logger.PushProperty("RecipeResourceId", entity.RecipeResourceId)) {
+                var recipeTag = entity.RecipeTags.FirstOrDefault(rt => rt.TagId == tag.TagId);
+                if (recipeTag != null) {
+                    if (recipeTag.IsAiAssigned) {
+                        // Mark overridden to prevent re-assignment on future AI analysis
+                        recipeTag.MarkOverridden();
+                    } else {
+                        entity.RemoveTag(recipeTag);
+                    }
+                }
+
+                logger.LogInformation("Removed tag {TagResourceId} from recipe", tagResourceId);
+                return entity;
+            }
+        }
+
+        public async Task AnalyzeAndApplyDietaryTagsAsync(Recipe recipe) {
+            var ingredientTexts = recipe.Ingredients?.Select(i => {
+                var parts = new List<string>();
+                if (i.Quantity.HasValue) {
+                    parts.Add(i.Quantity.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                }
+                if (!string.IsNullOrWhiteSpace(i.Unit)) {
+                    parts.Add(i.Unit);
+                }
+                if (!string.IsNullOrWhiteSpace(i.Item)) {
+                    parts.Add(i.Item);
+                }
+                return string.Join(" ", parts);
+            }).Where(s => !string.IsNullOrWhiteSpace(s)).ToList() ?? new List<string>();
+
+            if (ingredientTexts.Count == 0) {
+                return;
+            }
+
+            try {
+                var analysis = await geminiClient.AnalyzeDietaryTagsAsync(ingredientTexts).ConfigureAwait(false);
+
+                foreach (var dietaryTag in analysis.Tags) {
+                    var globalTag = await tagRepository.GetByNameAndCategoryAsync(dietaryTag.Name, TagCategory.Dietary).ConfigureAwait(false);
+                    if (globalTag == null) {
+                        logger.LogWarning("AI returned dietary tag '{TagName}' which does not exist in global tags, skipping", dietaryTag.Name);
+                        continue;
+                    }
+
+                    var existing = recipe.RecipeTags.FirstOrDefault(rt => rt.TagId == globalTag.TagId);
+                    if (existing != null) {
+                        // Already assigned — skip even if IsOverridden, as the user explicitly removed it
+                        continue;
+                    }
+
+                    recipe.AddTag(new RecipeTag(recipe.RecipeId, globalTag.TagId, SystemSubjectId, isAiAssigned: true, confidence: dietaryTag.Confidence));
+                }
+
+                logger.LogInformation("AI dietary analysis applied {TagCount} tags to recipe {RecipeResourceId}", analysis.Tags.Count, recipe.RecipeResourceId);
+            }
+            catch (Exception ex) {
+                logger.LogWarning(ex, "AI dietary analysis failed for recipe {RecipeResourceId}, skipping", recipe.RecipeResourceId);
             }
         }
 

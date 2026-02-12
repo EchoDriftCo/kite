@@ -19,6 +19,7 @@ namespace RecipeVault.Domain.Entities {
             RecipeResourceId = Uuid.NewDatabaseFriendly(Database.SqlServer);
             ingredients = new List<RecipeIngredient>();
             instructions = new List<RecipeInstruction>();
+            recipeTags = new List<RecipeTag>();
             IsPublic = isPublic;
             Update(title, yield, prepTimeMinutes, cookTimeMinutes, description, source, originalImageUrl);
         }
@@ -61,6 +62,9 @@ namespace RecipeVault.Domain.Entities {
         private readonly List<RecipeInstruction> instructions = new();
         public virtual IReadOnlyList<RecipeInstruction> Instructions => instructions;
 
+        private readonly List<RecipeTag> recipeTags = new();
+        public virtual IReadOnlyList<RecipeTag> RecipeTags => recipeTags;
+
         public void Update(string title, int yield, int? prepTimeMinutes, int? cookTimeMinutes, string description, string source, string originalImageUrl) {
             var messages = new MessageList();
             messages.Aggregate(() => string.IsNullOrWhiteSpace(title), () => new InvalidValueError(nameof(title), title));
@@ -88,6 +92,14 @@ namespace RecipeVault.Domain.Entities {
         public void SetInstructions(List<RecipeInstruction> newInstructions) {
             instructions.Clear();
             instructions.AddRange(newInstructions);
+        }
+
+        public void AddTag(RecipeTag recipeTag) {
+            recipeTags.Add(recipeTag);
+        }
+
+        public void RemoveTag(RecipeTag recipeTag) {
+            recipeTags.Remove(recipeTag);
         }
     }
 }

@@ -4,7 +4,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Cortside.AspNetCore.Auditable.Entities;
 using Cortside.AspNetCore.EntityFramework;
+using Cortside.Common.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -12,10 +14,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using Moq;
 using Xunit;
 using RecipeVault.Data;
 using RecipeVault.Integrations.Gemini;
 using RecipeVault.Integrations.Gemini.Tests.Mocks;
+using RecipeVault.WebApi.IntegrationTests.Helpers;
 
 namespace RecipeVault.WebApi.IntegrationTests.Base {
     public class IntegrationFixture : IAsyncLifetime, IDisposable {
@@ -140,9 +144,27 @@ namespace RecipeVault.WebApi.IntegrationTests.Base {
 
         public async Task<TEntity> AddToDbAsync<TEntity>(TEntity entity) where TEntity : class {
             using (var scope = Services.CreateScope()) {
+                // Create a mock ISubjectPrincipal that returns the test user ID
+                var mockSubjectPrincipal = new Mock<ISubjectPrincipal>();
+                mockSubjectPrincipal.Setup(x => x.SubjectId).Returns(AuthenticationHelper.TestSubjectId);
+
+                // Get the original DbContext and replace its subject principal via reflection
                 var dbContext = scope.ServiceProvider.GetRequiredService<RecipeVaultDbContext>();
-                await dbContext.AddAsync(entity);
-                await dbContext.SaveChangesAsync();
+                var baseType = dbContext.GetType().BaseType;
+                var subjectPrincipalField = baseType?.GetField("subjectPrincipal",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var originalSubjectPrincipal = subjectPrincipalField?.GetValue(dbContext);
+
+                try {
+                    // Replace with mock
+                    subjectPrincipalField?.SetValue(dbContext, mockSubjectPrincipal.Object);
+
+                    await dbContext.AddAsync(entity);
+                    await dbContext.SaveChangesAsync();
+                } finally {
+                    // Restore original (though scope is about to be disposed anyway)
+                    subjectPrincipalField?.SetValue(dbContext, originalSubjectPrincipal);
+                }
             }
 
             return entity;

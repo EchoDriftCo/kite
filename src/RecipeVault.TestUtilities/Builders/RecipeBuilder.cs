@@ -14,7 +14,7 @@ namespace RecipeVault.TestUtilities.Builders {
         private string _originalImageUrl = "https://example.com/image.jpg";
         private List<RecipeIngredient> _ingredients = new();
         private List<RecipeInstruction> _instructions = new();
-        private bool _isPublic;
+        private bool _isPublic = true; // Default to public for test recipes
 
         public RecipeBuilder WithTitle(string title) {
             _title = title;

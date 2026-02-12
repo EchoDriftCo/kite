@@ -33,6 +33,10 @@ namespace RecipeVault.Facade.Tests.Facades {
             return mock;
         }
 
+        private RecipeMapper CreateMapper() {
+            return new RecipeMapper(subjectMapper, new TagMapper(subjectMapper));
+        }
+
         [Fact]
         public async Task CreateRecipeAsync_WithValidDto_CreatesAndReturnsMappedDto() {
             // Arrange
@@ -52,12 +56,16 @@ namespace RecipeVault.Facade.Tests.Facades {
             var stubLockProvider = new StubDistributedLockProvider();
             var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
 
-            var mapper = new RecipeMapper(subjectMapper);
+            var mapper = CreateMapper();
 
             mockService
                 .Setup(x => x.CreateRecipeAsync(dto))
                 .ReturnsAsync(recipe)
                 .Verifiable();
+
+            mockService
+                .Setup(x => x.AnalyzeAndApplyDietaryTagsAsync(recipe))
+                .Returns(Task.CompletedTask);
 
             mockUow
                 .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -75,7 +83,7 @@ namespace RecipeVault.Facade.Tests.Facades {
             result.Yield.ShouldBe(dto.Yield);
 
             mockService.Verify(x => x.CreateRecipeAsync(dto), Times.Once);
-            mockUow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+            mockUow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         }
 
         [Fact]
@@ -89,7 +97,7 @@ namespace RecipeVault.Facade.Tests.Facades {
             var stubLockProvider = new StubDistributedLockProvider();
             var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
 
-            var mapper = new RecipeMapper(subjectMapper);
+            var mapper = CreateMapper();
 
             var mockTransaction = MockRepository.Create<IDbContextTransaction>();
             mockTransaction
@@ -137,7 +145,6 @@ namespace RecipeVault.Facade.Tests.Facades {
                 TotalItems = 2
             };
             var searchDto = new RecipeSearchDto { PageNumber = 1, PageSize = 10 };
-            var recipeSearch = new RecipeSearch { PageNumber = 1, PageSize = 10 };
 
             var mockUow = MockRepository.Create<IUnitOfWork>();
             var mockService = MockRepository.Create<IRecipeService>();
@@ -145,7 +152,7 @@ namespace RecipeVault.Facade.Tests.Facades {
             var stubLockProvider = new StubDistributedLockProvider();
             var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
 
-            var mapper = new RecipeMapper(subjectMapper);
+            var mapper = CreateMapper();
 
             var mockTransaction = MockRepository.Create<IDbContextTransaction>();
             mockTransaction
@@ -190,16 +197,19 @@ namespace RecipeVault.Facade.Tests.Facades {
             var mockService = MockRepository.Create<IRecipeService>();
             var mockLogger = CreateMockLogger<RecipeFacade>();
 
-            // Use a stub lock provider that returns a no-op handle
             var stubLockProvider = new StubDistributedLockProvider();
             var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
 
-            var mapper = new RecipeMapper(subjectMapper);
+            var mapper = CreateMapper();
 
             mockService
                 .Setup(x => x.UpdateRecipeAsync(recipe.RecipeResourceId, It.IsAny<UpdateRecipeDto>()))
                 .ReturnsAsync(recipe)
                 .Verifiable();
+
+            mockService
+                .Setup(x => x.AnalyzeAndApplyDietaryTagsAsync(recipe))
+                .Returns(Task.CompletedTask);
 
             mockUow
                 .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -215,7 +225,7 @@ namespace RecipeVault.Facade.Tests.Facades {
             result.ShouldNotBeNull();
 
             mockService.Verify(x => x.UpdateRecipeAsync(recipe.RecipeResourceId, It.IsAny<UpdateRecipeDto>()), Times.Once);
-            mockUow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+            mockUow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         }
 
         [Fact]
@@ -230,7 +240,7 @@ namespace RecipeVault.Facade.Tests.Facades {
             var stubLockProvider = new StubDistributedLockProvider();
             var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
 
-            var mapper = new RecipeMapper(subjectMapper);
+            var mapper = CreateMapper();
 
             mockService
                 .Setup(x => x.SetRecipeVisibilityAsync(recipe.RecipeResourceId, true))
@@ -272,8 +282,7 @@ namespace RecipeVault.Facade.Tests.Facades {
             var stubLockProvider = new StubDistributedLockProvider();
             var mockSubjectPrincipal = CreateMockSubjectPrincipal();
 
-            var mapper = new RecipeMapper(subjectMapper);
-
+            var mapper = CreateMapper();
 
             mockService
                 .Setup(x => x.DeleteRecipeAsync(recipe.RecipeResourceId))

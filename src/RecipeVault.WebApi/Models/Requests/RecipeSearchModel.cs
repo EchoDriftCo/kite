@@ -1,6 +1,7 @@
 #pragma warning disable CS1591 // Missing XML comments
 
 using System;
+using System.Collections.Generic;
 using Cortside.AspNetCore.Common.Models;
 
 namespace RecipeVault.WebApi.Models.Requests {
@@ -9,5 +10,7 @@ namespace RecipeVault.WebApi.Models.Requests {
         public string Title { get; set; }
         public bool? IsPublic { get; set; }
         public bool IncludePublic { get; set; }
+        public List<Guid> TagResourceIds { get; set; }
+        public int? TagCategory { get; set; }
     }
 }

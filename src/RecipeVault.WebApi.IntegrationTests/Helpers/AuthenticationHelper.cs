@@ -8,8 +8,9 @@ using Microsoft.IdentityModel.Tokens;
 namespace RecipeVault.WebApi.IntegrationTests.Helpers {
     public static class AuthenticationHelper {
         private const string TestSecret = "bUWJ9VWAx24G11fJOornAd1YeKRTokg8SV3IftX/WH4MFQlknXzaKGY7qO2fNhU4S7shnPS9TLf8t9Z/My0X/g==";
+        public const string TestSubjectId = "550e8400-e29b-41d4-a716-446655440000"; // Test user GUID
 
-        public static string GenerateTestJwt(string subject = "test-user", Dictionary<string, object> claims = null) {
+        public static string GenerateTestJwt(string subject = TestSubjectId, Dictionary<string, object> claims = null) {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestSecret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
