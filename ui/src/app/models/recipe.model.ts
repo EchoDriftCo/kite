@@ -1,4 +1,5 @@
 // Models matching backend API structure
+import { RecipeTag } from './tag.model';
 
 export interface RecipeIngredient {
   recipeIngredientId?: number;
@@ -31,6 +32,7 @@ export interface Recipe {
   isOwner?: boolean;
   ingredients: RecipeIngredient[];
   instructions: RecipeInstruction[];
+  tags?: RecipeTag[];
   createdBy?: string;
   createdDate?: string;
   lastModifiedBy?: string;
@@ -63,6 +65,8 @@ export interface RecipeSearchRequest {
   title?: string;
   isPublic?: boolean;
   includePublic?: boolean;
+  tagResourceIds?: string[];
+  tagCategory?: number;
 }
 
 export interface PagedResult<T> {
@@ -76,6 +80,7 @@ export interface PagedResult<T> {
 export interface ParseRecipeRequest {
   imageUrl?: string;
   imageData?: string;  // base64 encoded
+  mimeType?: string;   // MIME type of the image (e.g., 'image/jpeg', 'image/png')
   recipeText?: string;
 }
 

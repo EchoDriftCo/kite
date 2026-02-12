@@ -14,6 +14,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { RecipeService } from '../../../services/recipe.service';
 import { Recipe, CreateRecipeRequest, RecipeIngredient, RecipeInstruction, ParsedRecipe } from '../../../models/recipe.model';
 import { RecipeImportDialogComponent, ImportResult } from '../recipe-import-dialog/recipe-import-dialog.component';
+import { TagSelectorComponent } from '../../shared/tag-selector/tag-selector.component';
+import { RecipeTag, AssignTagItem } from '../../../models/tag.model';
 
 @Component({
   selector: 'app-recipe-form',
@@ -29,7 +31,8 @@ import { RecipeImportDialogComponent, ImportResult } from '../recipe-import-dial
     MatIconModule,
     MatProgressSpinnerModule,
     MatDividerModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    TagSelectorComponent
   ],
   templateUrl: './recipe-form.component.html',
   styleUrl: './recipe-form.component.scss'
@@ -41,6 +44,7 @@ export class RecipeFormComponent implements OnInit {
   error = '';
   recipeId: string | null = null;
   isEditMode = false;
+  currentRecipeTags: RecipeTag[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -118,6 +122,9 @@ export class RecipeFormComponent implements OnInit {
       originalImageUrl: recipe.originalImageUrl,
       isPublic: recipe.isPublic || false
     });
+
+    // Store tags
+    this.currentRecipeTags = recipe.tags || [];
 
     // Clear and populate ingredients
     this.ingredients.clear();
@@ -268,8 +275,8 @@ export class RecipeFormComponent implements OnInit {
 
   openImportDialog() {
     const dialogRef = this.dialog.open(RecipeImportDialogComponent, {
-      width: '600px',
-      maxWidth: '90vw',
+      width: '700px',
+      maxWidth: '95vw',
       disableClose: false
     });
 
@@ -327,5 +334,33 @@ export class RecipeFormComponent implements OnInit {
       // Add one empty if none parsed
       this.addInstruction();
     }
+  }
+
+  onTagsChanged(tags: AssignTagItem[]) {
+    if (!this.isEditMode || !this.recipeId) return;
+
+    this.recipeService.assignTags(this.recipeId, { tags }).subscribe({
+      next: (recipe) => {
+        this.currentRecipeTags = recipe.tags || [];
+      },
+      error: (err) => {
+        console.error('Error assigning tags:', err);
+        this.error = 'Failed to assign tags';
+      }
+    });
+  }
+
+  onTagRemoved(tag: RecipeTag) {
+    if (!this.isEditMode || !this.recipeId) return;
+
+    this.recipeService.removeTag(this.recipeId, tag.tagResourceId).subscribe({
+      next: (recipe) => {
+        this.currentRecipeTags = recipe.tags || [];
+      },
+      error: (err) => {
+        console.error('Error removing tag:', err);
+        this.error = 'Failed to remove tag';
+      }
+    });
   }
 }

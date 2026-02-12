@@ -182,8 +182,38 @@ Rules:
                         throw new GeminiApiException("Gemini API returned no text response");
                     }
 
-                    var parseResult = JsonSerializer.Deserialize<GeminiRecipeParseResult>(textPart,
-                        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                    // Strip markdown code fences if present
+                    var jsonText = textPart.Trim();
+                    if (jsonText.StartsWith("```", StringComparison.Ordinal))
+                    {
+                        var firstNewline = jsonText.IndexOf('\n');
+                        if (firstNewline > 0)
+                            jsonText = jsonText.Substring(firstNewline + 1);
+                        if (jsonText.EndsWith("```", StringComparison.Ordinal))
+                            jsonText = jsonText.Substring(0, jsonText.Length - 3).Trim();
+                    }
+
+                    var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                    GeminiRecipeParseResult parseResult;
+
+                    // Handle Gemini returning an array of recipes (multi-recipe photos)
+                    if (jsonText.TrimStart().StartsWith('['))
+                    {
+                        var results = JsonSerializer.Deserialize<List<GeminiRecipeParseResult>>(jsonText, jsonOptions);
+                        if (results == null || results.Count == 0)
+                        {
+                            logger.LogWarning("Gemini returned an empty array of recipes");
+                            throw new GeminiApiException("Could not parse Gemini response as recipe data");
+                        }
+
+                        logger.LogInformation("Gemini returned {Count} recipes, using first one: {Title}",
+                            results.Count, results[0].Title);
+                        parseResult = results[0];
+                    }
+                    else
+                    {
+                        parseResult = JsonSerializer.Deserialize<GeminiRecipeParseResult>(jsonText, jsonOptions);
+                    }
 
                     if (parseResult == null) {
                         logger.LogWarning("Failed to deserialize recipe parse result");

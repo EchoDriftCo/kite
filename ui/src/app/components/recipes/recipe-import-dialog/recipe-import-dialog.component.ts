@@ -5,6 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ImageCropperComponent, ImageCroppedEvent, LoadedImage } from 'ngx-image-cropper';
 import { RecipeService } from '../../../services/recipe.service';
 
 export interface ImportResult {
@@ -24,7 +26,9 @@ export interface ImportResult {
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatTabsModule
+    MatTabsModule,
+    MatTooltipModule,
+    ImageCropperComponent
   ],
   templateUrl: './recipe-import-dialog.component.html',
   styleUrl: './recipe-import-dialog.component.scss'
@@ -35,6 +39,9 @@ export class RecipeImportDialogComponent {
   selectedFile: File | null = null;
   previewUrl: string | null = null;
   dragOver = false;
+  croppedImageBase64: string | null = null;
+  rotation: number = 0;
+  cropperReady = false;
 
   constructor(
     private dialogRef: MatDialogRef<RecipeImportDialogComponent>,
@@ -96,6 +103,33 @@ export class RecipeImportDialogComponent {
     this.selectedFile = null;
     this.previewUrl = null;
     this.error = '';
+    this.croppedImageBase64 = null;
+    this.rotation = 0;
+    this.cropperReady = false;
+  }
+
+  rotateLeft() {
+    this.rotation = (this.rotation - 1 + 4) % 4;
+  }
+
+  rotateRight() {
+    this.rotation = (this.rotation + 1) % 4;
+  }
+
+  onImageCropped(event: ImageCroppedEvent) {
+    this.croppedImageBase64 = event.base64 || null;
+  }
+
+  onImageLoaded(image: LoadedImage) {
+    // Image loaded successfully
+  }
+
+  onCropperReady() {
+    this.cropperReady = true;
+  }
+
+  onLoadImageFailed() {
+    this.error = 'Failed to load image. Please try a different file.';
   }
 
   async importRecipe() {
@@ -108,15 +142,27 @@ export class RecipeImportDialogComponent {
     this.error = '';
 
     try {
-      // Convert image to base64
-      const base64 = await this.fileToBase64(this.selectedFile);
-      
-      // Remove data URL prefix if present
-      const base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
+      let base64Data: string;
+      let mimeType: string;
+
+      // Use cropped image if available, otherwise use full file
+      if (this.croppedImageBase64) {
+        // Cropped image is already base64 from the cropper
+        base64Data = this.croppedImageBase64.includes(',')
+          ? this.croppedImageBase64.split(',')[1]
+          : this.croppedImageBase64;
+        mimeType = 'image/png'; // Cropper outputs PNG
+      } else {
+        // No crop applied, use original file
+        const base64 = await this.fileToBase64(this.selectedFile);
+        base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
+        mimeType = this.selectedFile.type;
+      }
 
       // Call parse API
       const response = await this.recipeService.parseRecipe({
         imageData: base64Data,
+        mimeType: mimeType,
         imageUrl: undefined,
         recipeText: undefined
       }).toPromise();

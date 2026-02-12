@@ -1,0 +1,72 @@
+<div class="tag-selector">
+  <!-- Tag Chips Display -->
+  <div class="tags-display" *ngIf="selectedTags && selectedTags.length > 0">
+    <mat-chip-set aria-label="Recipe tags">
+      <mat-chip
+        *ngFor="let tag of selectedTags"
+        [class]="getTagColorClass(tag.category)"
+        [removable]="!readonly && !tag.isOverridden"
+        (removed)="removeTag(tag)">
+        <span class="tag-content">
+          <!-- AI indicator icon -->
+          <mat-icon *ngIf="tag.isAiAssigned" class="ai-icon" [matTooltip]="'AI suggested (' + getConfidencePercent(tag.confidence) + '% confidence)'">
+            smart_toy
+          </mat-icon>
+          <!-- Tag name -->
+          <span class="tag-name">{{ tag.name }}</span>
+          <!-- Category badge -->
+          <span class="tag-category-badge">{{ getTagCategoryName(tag.category) }}</span>
+        </span>
+        <button matChipRemove *ngIf="!readonly && !tag.isOverridden" aria-label="Remove tag">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </mat-chip>
+    </mat-chip-set>
+  </div>
+
+  <!-- Tag Search/Add (only if not readonly) -->
+  <div class="tag-search" *ngIf="!readonly">
+    <mat-form-field class="full-width" appearance="outline">
+      <mat-label>Add tags</mat-label>
+      <input
+        type="text"
+        matInput
+        [formControl]="tagSearchControl"
+        [matAutocomplete]="auto"
+        placeholder="Search tags...">
+      <mat-icon matSuffix>label</mat-icon>
+    </mat-form-field>
+
+    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onTagSelected($event.option.value)">
+      <!-- Grouped options by category -->
+      <ng-container *ngFor="let category of tagCategories">
+        <mat-optgroup [label]="category.name" *ngIf="getTagsForCategory((filteredTags$ | async) || [], category.value).length > 0">
+          <mat-option
+            *ngFor="let tag of getTagsForCategory((filteredTags$ | async) || [], category.value)"
+            [value]="tag">
+            <span class="autocomplete-option">
+              <mat-icon *ngIf="tag.isGlobal" class="global-icon">public</mat-icon>
+              <span>{{ tag.name }}</span>
+              <span class="category-label">{{ getTagCategoryName(tag.category) }}</span>
+            </span>
+          </mat-option>
+        </mat-optgroup>
+      </ng-container>
+
+      <!-- Create new tag option -->
+      <ng-container *ngIf="showCreateOption && searchTerm.length >= 2">
+        <mat-option disabled class="create-header">
+          <strong>Create new tag "{{ searchTerm }}" as:</strong>
+        </mat-option>
+        <mat-option
+          *ngFor="let category of tagCategories"
+          [value]="null"
+          (click)="createNewTag(category.value)"
+          class="create-option">
+          <mat-icon>add</mat-icon>
+          <span>{{ category.name }}</span>
+        </mat-option>
+      </ng-container>
+    </mat-autocomplete>
+  </div>
+</div>

@@ -10,6 +10,7 @@ import {
   ParseRecipeRequest,
   ParseRecipeResponse
 } from '../models/recipe.model';
+import { AssignTagsRequest } from '../models/tag.model';
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +25,7 @@ export class RecipeService {
    */
   searchRecipes(request: RecipeSearchRequest = {}): Observable<PagedResult<Recipe>> {
     const params: any = {};
-    
+
     if (request.pageNumber) params.pageNumber = request.pageNumber;
     if (request.pageSize) params.pageSize = request.pageSize || 20;
     if (request.sortBy) params.sortBy = request.sortBy;
@@ -32,14 +33,22 @@ export class RecipeService {
     if (request.title) params.title = request.title;
     if (request.isPublic != null) params.isPublic = request.isPublic;
     if (request.includePublic != null) params.includePublic = request.includePublic;
+    if (request.tagCategory != null) params.tagCategory = request.tagCategory;
 
-    // Build query string
-    const queryString = Object.keys(params)
+    // Handle array parameters for tag resource IDs
+    let queryString = Object.keys(params)
       .map(key => `${key}=${encodeURIComponent(params[key])}`)
       .join('&');
 
+    if (request.tagResourceIds && request.tagResourceIds.length > 0) {
+      const tagParams = request.tagResourceIds
+        .map(id => `tagResourceIds=${encodeURIComponent(id)}`)
+        .join('&');
+      queryString = queryString ? `${queryString}&${tagParams}` : tagParams;
+    }
+
     const url = queryString ? `${this.endpoint}?${queryString}` : this.endpoint;
-    
+
     return this.api.get<PagedResult<Recipe>>(url);
   }
 
@@ -85,8 +94,29 @@ export class RecipeService {
     // Backend expects { image: base64, mimeType: string }
     const payload = {
       image: request.imageData,
-      mimeType: 'image/jpeg'  // Default, could be determined from data URL prefix
+      mimeType: request.mimeType || 'image/jpeg'  // Use provided MIME type or default to jpeg
     };
     return this.api.post<ParseRecipeResponse>(`${this.endpoint}/parse`, payload);
+  }
+
+  /**
+   * Assign tags to a recipe
+   */
+  assignTags(recipeId: string, request: AssignTagsRequest): Observable<Recipe> {
+    return this.api.post<Recipe>(`${this.endpoint}/${recipeId}/tags`, request);
+  }
+
+  /**
+   * Remove a tag from a recipe
+   */
+  removeTag(recipeId: string, tagId: string): Observable<Recipe> {
+    return this.api.delete<Recipe>(`${this.endpoint}/${recipeId}/tags/${tagId}`);
+  }
+
+  /**
+   * Trigger AI dietary tag analysis for a recipe
+   */
+  analyzeDietaryTags(recipeId: string): Observable<Recipe> {
+    return this.api.post<Recipe>(`${this.endpoint}/${recipeId}/analyze-tags`, {});
   }
 }

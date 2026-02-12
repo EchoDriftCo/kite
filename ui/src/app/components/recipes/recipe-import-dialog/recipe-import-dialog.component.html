@@ -47,37 +47,48 @@
         <p class="file-info">Supports: JPG, PNG, HEIC (max 10MB)</p>
       </div>
     } @else {
-      <div class="preview-container">
-        @if (previewUrl) {
-          <img [src]="previewUrl" alt="Recipe preview" class="preview-image">
-        }
-        
-        <div class="file-details">
-          <p class="file-name">
-            <mat-icon>image</mat-icon>
-            {{ selectedFile.name }}
-          </p>
-          <p class="file-size">{{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</p>
+      <div class="cropper-container">
+        <div class="cropper-toolbar">
+          <button mat-icon-button (click)="rotateLeft()" [disabled]="loading" matTooltip="Rotate left">
+            <mat-icon>rotate_left</mat-icon>
+          </button>
+          <button mat-icon-button (click)="rotateRight()" [disabled]="loading" matTooltip="Rotate right">
+            <mat-icon>rotate_right</mat-icon>
+          </button>
+          <span class="toolbar-hint">Draw a box to crop, or import as-is</span>
+          <button mat-icon-button (click)="clearFile()" [disabled]="loading" matTooltip="Remove image">
+            <mat-icon>delete</mat-icon>
+          </button>
         </div>
 
-        <button mat-icon-button color="warn" (click)="clearFile()" [disabled]="loading">
-          <mat-icon>delete</mat-icon>
-        </button>
+        <image-cropper
+          [imageFile]="selectedFile"
+          [maintainAspectRatio]="false"
+          [canvasRotation]="rotation"
+          output="base64"
+          format="png"
+          (imageCropped)="onImageCropped($event)"
+          (imageLoaded)="onImageLoaded($event)"
+          (cropperReady)="onCropperReady()"
+          (loadImageFailed)="onLoadImageFailed()">
+        </image-cropper>
       </div>
     }
 
-    <div class="tips">
-      <h4>
-        <mat-icon>lightbulb</mat-icon>
-        Tips for best results:
-      </h4>
-      <ul>
-        <li>Use good lighting and avoid shadows</li>
-        <li>Make sure text is clear and legible</li>
-        <li>Capture the entire recipe in one photo</li>
-        <li>Avoid glare or reflections</li>
-      </ul>
-    </div>
+    @if (!selectedFile) {
+      <div class="tips">
+        <h4>
+          <mat-icon>lightbulb</mat-icon>
+          Tips for best results:
+        </h4>
+        <ul>
+          <li>Use good lighting and avoid shadows</li>
+          <li>Make sure text is clear and legible</li>
+          <li>Capture the entire recipe in one photo</li>
+          <li>Avoid glare or reflections</li>
+        </ul>
+      </div>
+    }
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">

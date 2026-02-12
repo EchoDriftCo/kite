@@ -19,6 +19,13 @@ namespace RecipeVault.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Insert system subject if not exists
+            migrationBuilder.Sql($@"
+                INSERT INTO public.""Subject"" (""SubjectId"", ""Name"", ""CreatedDate"")
+                VALUES ('{SystemSubjectId}', 'System', '{SeedDate:yyyy-MM-dd HH:mm:ss}')
+                ON CONFLICT (""SubjectId"") DO NOTHING;
+            ");
+
             // Dietary tags
             InsertTag(migrationBuilder, 1,  "Vegan",          Dietary);
             InsertTag(migrationBuilder, 2,  "Vegetarian",     Dietary);
