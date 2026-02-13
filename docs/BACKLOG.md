@@ -1,135 +1,121 @@
 # RecipeVault Backlog
 
-*Ideas and future work, captured 2026-02-04*
+*Last updated: 2026-02-11*
 
 ---
 
-## Phase 1 Remaining
+## Completed (MVP)
 
-### Frontend (MVP)
-- [ ] Angular 17 scaffold with standalone components
-- [ ] Recipe list view (my recipes)
-- [ ] Recipe detail view
-- [ ] Image upload + parse flow
-- [ ] Manual edit after AI parse
-- [ ] Supabase Auth integration (login/signup)
-
-### Backend Polish
-- [ ] Supabase JWT auth middleware configuration
-- [ ] Row-level security (filter by CreatedBySubjectId)
-- [ ] Image storage to Supabase bucket (currently just URL references?)
-- [ ] README.md expansion (setup instructions, architecture overview)
+- [x] Angular standalone component scaffold
+- [x] Recipe list view (my recipes)
+- [x] Recipe detail view
+- [x] Image upload + AI parse flow (Gemini 1.5 Flash)
+- [x] Image crop/rotate before parsing
+- [x] Manual edit after AI parse
+- [x] Recipe CRUD (create, read, update, delete)
+- [x] Supabase Auth integration (login/signup, session persistence)
+- [x] Subject-scoped data ownership (row-level filtering)
+- [x] Public/private recipe visibility
+- [x] Tag system (manual + AI dietary analysis)
+- [x] Meal planning with weekly calendar
+- [x] Grocery list generation (AI-consolidated)
+- [x] Source image preservation (separate from hero image)
+- [x] Recipe image upload endpoint (local storage, gitignored)
+- [x] Cascade delete for recipe children
+- [x] Print-friendly recipe view
 
 ---
 
-## Phase 2: Recipe Relationships (The Remix Feature)
+## v1 Roadmap
 
-### Domain Model Additions
-```csharp
-// Recipe.cs additions
-public int? ParentRecipeId { get; private set; }
-public virtual Recipe ParentRecipe { get; private set; }
-public virtual IReadOnlyList<Recipe> Derivations => derivations;
+### Recipe Ratings & Favorites
+- [ ] Rating system — personal 1-5 star rating on recipes
+- [ ] Favorites / bookmarks — quick-flag recipes (heart icon on list + detail)
+- [ ] Sort recipe list by rating
+- [ ] "My Favorites" filter on recipe list
 
-// New method
-public Recipe Fork(string newTitle) { ... }
-```
+### Recipe Scaling
+- [ ] Scale button on recipe detail page ("Make for X servings")
+- [ ] Frontend-only math — multiply ingredient quantities by scale factor
+- [ ] Display scaled quantities alongside originals
+- [ ] Fraction display for scaled values (e.g. 1.5 → 1 1/2)
 
-### Features
+### Search & Discovery
+- [ ] Full-text search across title, description, ingredients
+- [ ] Search/filter own recipes by tags, rating, cook time, etc.
+- [ ] Sort options on recipe list (date added, alphabetical, cook time, rating)
+- [ ] Public recipe browse — discover other users' public recipes
+- [ ] Search public recipes by title, tags, dietary filters
+
+### Share by Link
+- [ ] Generate shareable link for a recipe (no login required to view)
+- [ ] Public recipe detail page (read-only, no auth)
+- [ ] Copy-to-my-recipes button for logged-in users viewing shared recipe
+
+### Recipe Import from URL
+- [ ] Paste recipe website URL → scrape structured data
+- [ ] Parse JSON-LD schema.org/Recipe markup (most major recipe sites)
+- [ ] Fallback to AI parsing of page content
+- [ ] Preview parsed data before saving
+
+### Recipe Notes
+- [ ] Personal notes field on recipes ("Dad loved this", "use less salt")
+- [ ] Separate from description — private, not shared
+- [ ] Display on detail page in collapsible section
+
+### Meal Planning Improvements
+- [ ] Copy/repeat a previous meal plan as starting point
+- [ ] Quick-add to meal plan from recipe detail page
+- [ ] Grocery list: check off items as you shop
+- [ ] Grocery list: group by category (produce, dairy, pantry, etc.)
+
+### Image Storage (Production)
+- [ ] Move from local filesystem to cloud blob storage (Azure Blob / S3)
+- [ ] Configurable storage provider
+- [ ] CDN-served image URLs
+
+### Technical Polish
+- [ ] Move Gemini API key to user secrets
+- [ ] Rate limiting for parse endpoint
+- [ ] Dockerfile + docker-compose for local dev
+- [ ] Export recipe as PDF or text
+
+---
+
+## v2 Roadmap
+
+### Recipe Relationships (Forking / Remixes)
 - [ ] Fork recipe (creates copy with ParentRecipeId reference)
 - [ ] View derivation tree (upstream → this → downstream)
 - [ ] Diff view: see what changed from original
-- [ ] "Community remixes" endpoint (if made public)
+- [ ] "Community remixes" endpoint for public recipes
 
-### Open Questions
-- Can you fork someone else's recipe? (requires sharing model)
-- How deep can the fork tree go?
-- Should forks auto-update when parent changes? (probably not)
+### Social Features (Circles)
+- [ ] Family/Friends circles — invite-only groups
+- [ ] Share recipe to circle (reference, not copy)
+- [ ] Request recipe from circle member
+- [ ] "Mom's Cookbook" = curated circle with shared recipes
+- [ ] Privacy model: private → circles → public
 
----
+### Intelligence Layer
+- [ ] Nutrition integration (USDA FoodData Central API)
+- [ ] Ingredient normalization → macros per serving
+- [ ] Allergen warnings on meal plans
+- [ ] Smart substitutions ("I don't have X" → suggest Y)
+- [ ] Dietary mode: "Make this dairy-free" → auto-suggest all swaps
+- [ ] "What can I make?" — filter recipes by ingredients on hand
 
-## Phase 2: Tags & Categories
+### Advanced Import/Export
+- [ ] Browser extension: scrape recipe from any website
+- [ ] Import from Paprika, Whisk, AnyList export formats
+- [ ] Batch import for recipe books (queue + async processing)
 
-### Domain Model Additions
-```csharp
-// New entities
-Tag (TagId, Name, Type: System|User, Color?)
-RecipeTag (RecipeId, TagId)
-
-// Types
-- System tags: auto-generated (vegan, gluten-free, dairy-free, etc.)
-- User tags: custom categories (weeknight, company favorites, kid-approved)
-```
-
-### AI Auto-Tagging
-- Extend Gemini prompt to suggest dietary tags
-- Surface ingredient substitutions (dairy → oat milk)
-- Allergen detection from ingredient names
-
-### Categories vs Tags
-- Tags = flat, many-per-recipe
-- Categories = hierarchical? (Desserts > Pies > Fruit Pies)
-- Or just use tags with naming convention? (dessert, dessert:pie)
+### Future Ideas
+- [ ] Voice mode: "What's in grandma's spaghetti?"
+- [ ] Cooking mode: step-by-step with timers, read aloud
+- [ ] Auto-generate meal plans based on dietary goals
+- [ ] OpenTelemetry for distributed tracing
 
 ---
 
-## Phase 3: Social Features
-
-### Family/Friends Circles
-```csharp
-Circle (CircleId, Name, OwnerId)
-CircleMember (CircleId, UserId, Role: owner|admin|member)
-CircleRecipe (CircleId, RecipeId, SharedByUserId, SharedAt)
-```
-
-### Sharing Flows
-- Share recipe to circle (creates CircleRecipe reference, not copy)
-- Request recipe from circle member
-- "Mom's Cookbook" = curated circle with mom's recipes
-
-### Privacy Model
-- My recipes = private by default
-- Circles = invite-only groups
-- Public = opt-in per recipe (for global search)
-
----
-
-## Phase 4: Intelligence Layer
-
-### Nutrition
-- Integrate USDA FoodData Central API
-- Map normalized ingredients → nutrition data
-- Aggregate per-serving macros
-
-### Meal Planning
-- Weekly calendar view
-- Auto-generate shopping list from planned recipes
-- Scale recipes for planned servings
-
-### Smart Substitutions
-- "I don't have X" → suggest Y
-- Dietary mode: "Make this dairy-free" → auto-suggest all swaps
-
----
-
-## Technical Debt / Improvements
-
-- [ ] Move Gemini API key to user secrets (not appsettings.local.json)
-- [ ] Add rate limiting for parse endpoint (Gemini free tier: 15 req/min)
-- [ ] Consider batch parsing for recipe books (queue + async processing)
-- [ ] Add OpenTelemetry for distributed tracing
-- [ ] Dockerfile + docker-compose for local dev
-
----
-
-## Random Ideas
-
-- **Browser extension:** Scrape recipe from any website, auto-import
-- **Voice mode:** "Hey Nora, what's in grandma's spaghetti?" (me, hi 👋)
-- **Cooking mode:** Step-by-step with timers, read aloud
-- **Recipe scaling:** "Make this for 12 people" → auto-adjust quantities
-- **Import from other apps:** Paprika, Whisk, AnyList export formats
-
----
-
-*This backlog is for brainstorming. Actual prioritization happens in conversation.*
+*Prioritization happens in conversation. This document captures the vision.*
