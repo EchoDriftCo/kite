@@ -138,6 +138,39 @@ export class RecipeDetailComponent implements OnInit {
     });
   }
 
+  toggleFavorite() {
+    if (!this.recipeId || !this.recipe) return;
+
+    const newFavorite = !this.recipe.isFavorite;
+    this.recipeService.setFavorite(this.recipeId, newFavorite).subscribe({
+      next: (updated) => {
+        this.recipe = updated;
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to update favorite';
+        console.error('Error toggling favorite:', err);
+      }
+    });
+  }
+
+  setRating(stars: number) {
+    if (!this.recipeId || !this.recipe) return;
+
+    // Click same star to clear rating
+    const newRating = this.recipe.rating === stars ? null : stars;
+    this.recipeService.setRating(this.recipeId, newRating).subscribe({
+      next: (updated) => {
+        this.recipe = updated;
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to update rating';
+        console.error('Error setting rating:', err);
+      }
+    });
+  }
+
+  hoverRating = 0;
+
   printRecipe() {
     window.print();
   }

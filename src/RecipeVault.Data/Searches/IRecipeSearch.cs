@@ -12,5 +12,7 @@ namespace RecipeVault.Data.Searches {
         bool IncludePublic { get; set; }
         List<Guid> TagResourceIds { get; set; }
         int? TagCategory { get; set; }
+        bool? IsFavorite { get; set; }
+        int? MinRating { get; set; }
     }
 }

@@ -230,6 +230,22 @@ namespace RecipeVault.DomainService {
             }
         }
 
+        public async Task SetRecipeRatingAsync(Guid recipeResourceId, int? rating) {
+            var entity = await GetOwnRecipeAsync(recipeResourceId).ConfigureAwait(false);
+            using (logger.PushProperty("RecipeResourceId", entity.RecipeResourceId)) {
+                entity.SetRating(rating);
+                logger.LogInformation("Set recipe rating to {Rating}", rating);
+            }
+        }
+
+        public async Task SetRecipeFavoriteAsync(Guid recipeResourceId, bool isFavorite) {
+            var entity = await GetOwnRecipeAsync(recipeResourceId).ConfigureAwait(false);
+            using (logger.PushProperty("RecipeResourceId", entity.RecipeResourceId)) {
+                entity.SetFavorite(isFavorite);
+                logger.LogInformation("Set recipe favorite to {IsFavorite}", isFavorite);
+            }
+        }
+
         public async Task<ParseRecipeResponseDto> ParseRecipeImageAsync(ParseRecipeRequestDto request) {
             logger.LogInformation("Parsing recipe image, mimeType={MimeType}, imageSize={ImageSize}",
                 request.MimeType, request.Image?.Length ?? 0);

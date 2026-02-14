@@ -147,6 +147,36 @@ namespace RecipeVault.Facade {
             }
         }
 
+        public async Task<RecipeDto> SetRecipeRatingAsync(Guid resourceId, int? rating) {
+            var lockName = GetLockName(resourceId);
+
+            logger.LogDebug("Acquiring lock for {LockName}", lockName);
+            await using (await lockProvider.AcquireLockAsync(lockName).ConfigureAwait(false)) {
+                logger.LogDebug("Acquired lock for {LockName}", lockName);
+
+                await recipeService.SetRecipeRatingAsync(resourceId, rating).ConfigureAwait(false);
+                await uow.SaveChangesAsync().ConfigureAwait(false);
+
+                var recipe = await recipeService.GetRecipeAsync(resourceId).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId);
+            }
+        }
+
+        public async Task<RecipeDto> SetRecipeFavoriteAsync(Guid resourceId, bool isFavorite) {
+            var lockName = GetLockName(resourceId);
+
+            logger.LogDebug("Acquiring lock for {LockName}", lockName);
+            await using (await lockProvider.AcquireLockAsync(lockName).ConfigureAwait(false)) {
+                logger.LogDebug("Acquired lock for {LockName}", lockName);
+
+                await recipeService.SetRecipeFavoriteAsync(resourceId, isFavorite).ConfigureAwait(false);
+                await uow.SaveChangesAsync().ConfigureAwait(false);
+
+                var recipe = await recipeService.GetRecipeAsync(resourceId).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId);
+            }
+        }
+
         public async Task<RecipeDto> AnalyzeDietaryTagsAsync(Guid recipeResourceId) {
             var lockName = GetLockName(recipeResourceId);
 

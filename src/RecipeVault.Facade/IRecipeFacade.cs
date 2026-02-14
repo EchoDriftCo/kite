@@ -18,5 +18,7 @@ namespace RecipeVault.Facade {
         Task<RecipeDto> AssignTagsAsync(Guid recipeResourceId, List<AssignTagDto> tags);
         Task<RecipeDto> RemoveTagAsync(Guid recipeResourceId, Guid tagResourceId);
         Task<RecipeDto> AnalyzeDietaryTagsAsync(Guid recipeResourceId);
+        Task<RecipeDto> SetRecipeRatingAsync(Guid resourceId, int? rating);
+        Task<RecipeDto> SetRecipeFavoriteAsync(Guid resourceId, bool isFavorite);
     }
 }

@@ -104,6 +104,43 @@
   .recipe-tags {
     margin-top: 16px;
   }
+
+  .star-rating {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-bottom: 16px;
+
+    mat-icon {
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+
+      &.filled {
+        color: #ffc107;
+      }
+    }
+
+    &.interactive mat-icon {
+      cursor: pointer;
+      transition: color 0.15s, transform 0.15s;
+
+      &:hover {
+        transform: scale(1.15);
+      }
+    }
+
+    .rating-label {
+      margin-left: 8px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.875rem;
+    }
+  }
+
+  .favorited {
+    color: #e91e63 !important;
+  }
 }
 
 mat-divider {

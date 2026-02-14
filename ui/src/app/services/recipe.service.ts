@@ -34,6 +34,8 @@ export class RecipeService {
     if (request.isPublic != null) params.isPublic = request.isPublic;
     if (request.includePublic != null) params.includePublic = request.includePublic;
     if (request.tagCategory != null) params.tagCategory = request.tagCategory;
+    if (request.isFavorite != null) params.isFavorite = request.isFavorite;
+    if (request.minRating != null) params.minRating = request.minRating;
 
     // Handle array parameters for tag resource IDs
     let queryString = Object.keys(params)
@@ -125,5 +127,13 @@ export class RecipeService {
    */
   analyzeDietaryTags(recipeId: string): Observable<Recipe> {
     return this.api.post<Recipe>(`${this.endpoint}/${recipeId}/analyze-tags`, {});
+  }
+
+  setRating(id: string, rating: number | null): Observable<Recipe> {
+    return this.api.put<Recipe>(`${this.endpoint}/${id}/rating`, { rating });
+  }
+
+  setFavorite(id: string, isFavorite: boolean): Observable<Recipe> {
+    return this.api.put<Recipe>(`${this.endpoint}/${id}/favorite`, { isFavorite });
   }
 }

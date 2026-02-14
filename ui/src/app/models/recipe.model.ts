@@ -30,6 +30,8 @@ export interface Recipe {
   originalImageUrl?: string;
   sourceImageUrl?: string;
   isPublic?: boolean;
+  rating?: number;
+  isFavorite?: boolean;
   isOwner?: boolean;
   ingredients: RecipeIngredient[];
   instructions: RecipeInstruction[];
@@ -69,6 +71,8 @@ export interface RecipeSearchRequest {
   includePublic?: boolean;
   tagResourceIds?: string[];
   tagCategory?: number;
+  isFavorite?: boolean;
+  minRating?: number;
 }
 
 export interface PagedResult<T> {

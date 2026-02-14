@@ -8,6 +8,13 @@
         <mat-button-toggle value="public">Public Recipes</mat-button-toggle>
       </mat-button-toggle-group>
 
+      <button mat-icon-button
+              (click)="toggleFavoritesFilter()"
+              [matTooltip]="favoritesOnly ? 'Show all recipes' : 'Show favorites only'"
+              [class.favorites-active]="favoritesOnly">
+        <mat-icon>{{ favoritesOnly ? 'favorite' : 'favorite_border' }}</mat-icon>
+      </button>
+
       <mat-form-field appearance="outline" class="search-field">
         <mat-label>Search recipes</mat-label>
         <input matInput [(ngModel)]="searchTitle" (keyup.enter)="onSearch()" placeholder="Search by title...">
@@ -57,13 +64,21 @@
       <div class="recipe-grid">
         @for (recipe of recipes; track recipe.recipeResourceId) {
           <mat-card class="recipe-card" (click)="viewRecipe(recipe)">
-            @if (recipe.originalImageUrl) {
-              <img mat-card-image [src]="recipe.originalImageUrl" [alt]="recipe.title">
-            } @else {
-              <div class="placeholder-image">
-                <mat-icon>restaurant</mat-icon>
-              </div>
-            }
+            <div class="card-image-wrapper">
+              @if (recipe.originalImageUrl) {
+                <img mat-card-image [src]="recipe.originalImageUrl" [alt]="recipe.title">
+              } @else {
+                <div class="placeholder-image">
+                  <mat-icon>restaurant</mat-icon>
+                </div>
+              }
+              @if (recipe.isOwner !== false) {
+                <button class="favorite-overlay" (click)="toggleFavorite(recipe, $event)"
+                        [class.favorited]="recipe.isFavorite">
+                  <mat-icon>{{ recipe.isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
+                </button>
+              }
+            </div>
 
             <mat-card-content>
               <h3>
@@ -75,6 +90,16 @@
 
               @if (recipe.description) {
                 <p class="description">{{ recipe.description }}</p>
+              }
+
+              @if (recipe.rating) {
+                <div class="card-star-rating">
+                  @for (star of [1, 2, 3, 4, 5]; track star) {
+                    <mat-icon [class.filled]="star <= (recipe.rating || 0)">
+                      {{ star <= (recipe.rating || 0) ? 'star' : 'star_border' }}
+                    </mat-icon>
+                  }
+                </div>
               }
 
               <div class="recipe-meta">

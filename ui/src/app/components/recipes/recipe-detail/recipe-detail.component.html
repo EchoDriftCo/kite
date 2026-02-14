@@ -27,6 +27,11 @@
             <mat-icon>print</mat-icon>
           </button>
           @if (recipe.isOwner !== false) {
+            <button mat-icon-button (click)="toggleFavorite()"
+                    [matTooltip]="recipe.isFavorite ? 'Remove from favorites' : 'Add to favorites'"
+                    [class.favorited]="recipe.isFavorite">
+              <mat-icon>{{ recipe.isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
+            </button>
             <button mat-icon-button (click)="toggleVisibility()"
                     [matTooltip]="recipe.isPublic ? 'Make private' : 'Make public'">
               <mat-icon>{{ recipe.isPublic ? 'lock_open' : 'lock' }}</mat-icon>
@@ -50,6 +55,32 @@
       }
 
       <h1>{{ recipe.title }}</h1>
+
+      @if (recipe.isOwner !== false) {
+        <div class="star-rating interactive">
+          @for (star of [1, 2, 3, 4, 5]; track star) {
+            <mat-icon
+              (click)="setRating(star)"
+              (mouseenter)="hoverRating = star"
+              (mouseleave)="hoverRating = 0"
+              [class.filled]="star <= (hoverRating || recipe.rating || 0)">
+              {{ star <= (hoverRating || recipe.rating || 0) ? 'star' : 'star_border' }}
+            </mat-icon>
+          }
+          @if (recipe.rating) {
+            <span class="rating-label">{{ recipe.rating }} / 5</span>
+          }
+        </div>
+      } @else if (recipe.rating) {
+        <div class="star-rating">
+          @for (star of [1, 2, 3, 4, 5]; track star) {
+            <mat-icon [class.filled]="star <= (recipe.rating || 0)">
+              {{ star <= (recipe.rating || 0) ? 'star' : 'star_border' }}
+            </mat-icon>
+          }
+          <span class="rating-label">{{ recipe.rating }} / 5</span>
+        </div>
+      }
 
       @if (recipe.description) {
         <p class="description">{{ recipe.description }}</p>

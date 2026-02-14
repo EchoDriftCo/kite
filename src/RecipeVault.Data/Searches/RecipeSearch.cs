@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cortside.AspNetCore.EntityFramework.Searches;
+using Microsoft.EntityFrameworkCore;
 using RecipeVault.Domain.Entities;
 
 namespace RecipeVault.Data.Searches {
@@ -13,6 +14,8 @@ namespace RecipeVault.Data.Searches {
         public bool IncludePublic { get; set; }
         public List<Guid> TagResourceIds { get; set; }
         public int? TagCategory { get; set; }
+        public bool? IsFavorite { get; set; }
+        public int? MinRating { get; set; }
 
         public IQueryable<Recipe> Build(IQueryable<Recipe> entities) {
             if (IncludePublic && CreatedSubjectId.HasValue) {
@@ -30,7 +33,8 @@ namespace RecipeVault.Data.Searches {
             }
 
             if (!string.IsNullOrEmpty(Title)) {
-                entities = entities.Where(x => x.Title.Contains(Title));
+                var pattern = $"%{Title}%";
+                entities = entities.Where(x => EF.Functions.ILike(x.Title, pattern));
             }
 
             if (TagResourceIds != null && TagResourceIds.Count > 0) {
@@ -41,6 +45,14 @@ namespace RecipeVault.Data.Searches {
             if (TagCategory.HasValue) {
                 entities = entities.Where(x => x.RecipeTags.Any(rt =>
                     !rt.IsOverridden && (int)rt.Tag.Category == TagCategory.Value));
+            }
+
+            if (IsFavorite.HasValue) {
+                entities = entities.Where(x => x.IsFavorite == IsFavorite.Value);
+            }
+
+            if (MinRating.HasValue) {
+                entities = entities.Where(x => x.Rating.HasValue && x.Rating.Value >= MinRating.Value);
             }
 
             return entities;

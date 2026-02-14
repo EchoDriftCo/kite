@@ -17,6 +17,8 @@ namespace RecipeVault.WebApi.Models.Responses {
         public string OriginalImageUrl { get; set; }
         public string SourceImageUrl { get; set; }
         public bool IsPublic { get; set; }
+        public int? Rating { get; set; }
+        public bool IsFavorite { get; set; }
         public bool IsOwner { get; set; }
         public List<RecipeIngredientModel> Ingredients { get; set; }
         public List<RecipeInstructionModel> Instructions { get; set; }

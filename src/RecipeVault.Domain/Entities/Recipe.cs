@@ -59,6 +59,10 @@ namespace RecipeVault.Domain.Entities {
 
         public bool IsPublic { get; private set; }
 
+        public int? Rating { get; private set; }
+
+        public bool IsFavorite { get; private set; }
+
         private readonly List<RecipeIngredient> ingredients = new();
         public virtual IReadOnlyList<RecipeIngredient> Ingredients => ingredients;
 
@@ -89,6 +93,19 @@ namespace RecipeVault.Domain.Entities {
 
         public void SetVisibility(bool isPublic) {
             IsPublic = isPublic;
+        }
+
+        public void SetRating(int? rating) {
+            if (rating.HasValue && (rating.Value < 1 || rating.Value > 5)) {
+                var messages = new MessageList();
+                messages.Aggregate(() => true, () => new InvalidValueError(nameof(rating), rating.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                messages.ThrowIfAny<ValidationListException>();
+            }
+            Rating = rating;
+        }
+
+        public void SetFavorite(bool isFavorite) {
+            IsFavorite = isFavorite;
         }
 
         public void SetIngredients(List<RecipeIngredient> newIngredients) {

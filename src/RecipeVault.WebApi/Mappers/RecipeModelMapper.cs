@@ -32,6 +32,8 @@ namespace RecipeVault.WebApi.Mappers {
                 OriginalImageUrl = dto.OriginalImageUrl,
                 SourceImageUrl = dto.SourceImageUrl,
                 IsPublic = dto.IsPublic,
+                Rating = dto.Rating,
+                IsFavorite = dto.IsFavorite,
                 IsOwner = dto.IsOwner,
                 Ingredients = dto.Ingredients?.Select(i => new RecipeIngredientModel {
                     RecipeIngredientId = i.RecipeIngredientId,
@@ -76,6 +78,8 @@ namespace RecipeVault.WebApi.Mappers {
                 IncludePublic = model.IncludePublic,
                 TagResourceIds = model.TagResourceIds,
                 TagCategory = model.TagCategory,
+                IsFavorite = model.IsFavorite,
+                MinRating = model.MinRating,
                 PageNumber = model.PageNumber,
                 PageSize = model.PageSize,
                 Sort = model.Sort

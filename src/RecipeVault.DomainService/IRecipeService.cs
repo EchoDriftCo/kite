@@ -19,5 +19,7 @@ namespace RecipeVault.DomainService {
         Task<Recipe> AssignTagsToRecipeAsync(Guid recipeResourceId, List<AssignTagDto> tags);
         Task<Recipe> RemoveTagFromRecipeAsync(Guid recipeResourceId, Guid tagResourceId);
         Task AnalyzeAndApplyDietaryTagsAsync(Recipe recipe);
+        Task SetRecipeRatingAsync(Guid recipeResourceId, int? rating);
+        Task SetRecipeFavoriteAsync(Guid recipeResourceId, bool isFavorite);
     }
 }

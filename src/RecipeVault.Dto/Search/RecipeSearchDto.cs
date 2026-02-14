@@ -10,5 +10,7 @@ namespace RecipeVault.Dto.Search {
         public bool IncludePublic { get; set; }
         public List<Guid> TagResourceIds { get; set; }
         public int? TagCategory { get; set; }
+        public bool? IsFavorite { get; set; }
+        public int? MinRating { get; set; }
     }
 }

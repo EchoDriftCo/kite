@@ -182,6 +182,34 @@ namespace RecipeVault.WebApi.Controllers {
         }
 
         /// <summary>
+        /// Set recipe rating (1-5 stars, or null to clear)
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        /// <param name="input"></param>
+        [HttpPut("{id}/rating")]
+        [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SetRecipeRatingAsync(Guid id, [FromBody] SetRatingModel input) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var dto = await facade.SetRecipeRatingAsync(id, input.Rating).ConfigureAwait(false);
+                return Ok(recipeMapper.Map(dto));
+            }
+        }
+
+        /// <summary>
+        /// Set recipe favorite status
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        /// <param name="input"></param>
+        [HttpPut("{id}/favorite")]
+        [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SetRecipeFavoriteAsync(Guid id, [FromBody] SetFavoriteModel input) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var dto = await facade.SetRecipeFavoriteAsync(id, input.IsFavorite).ConfigureAwait(false);
+                return Ok(recipeMapper.Map(dto));
+            }
+        }
+
+        /// <summary>
         /// Upload a recipe image
         /// </summary>
         [HttpPost("images")]

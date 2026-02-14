@@ -37,6 +37,8 @@ namespace RecipeVault.Facade.Mappers {
                 OriginalImageUrl = entity.OriginalImageUrl,
                 SourceImageUrl = entity.SourceImageUrl,
                 IsPublic = entity.IsPublic,
+                Rating = entity.Rating,
+                IsFavorite = entity.IsFavorite,
                 IsOwner = currentSubjectId.HasValue && entity.CreatedSubject?.SubjectId == currentSubjectId,
                 Ingredients = entity.Ingredients?.Select(i => new RecipeIngredientDto {
                     RecipeIngredientId = i.RecipeIngredientId,
@@ -76,6 +78,8 @@ namespace RecipeVault.Facade.Mappers {
                 IncludePublic = dto.IncludePublic,
                 TagResourceIds = dto.TagResourceIds,
                 TagCategory = dto.TagCategory,
+                IsFavorite = dto.IsFavorite,
+                MinRating = dto.MinRating,
                 PageNumber = dto.PageNumber,
                 PageSize = dto.PageSize,
                 Sort = dto.Sort

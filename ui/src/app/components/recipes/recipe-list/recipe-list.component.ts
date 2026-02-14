@@ -10,6 +10,7 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
 import { RecipeService } from '../../../services/recipe.service';
 import { Recipe, RecipeSearchRequest } from '../../../models/recipe.model';
@@ -28,7 +29,8 @@ import { Recipe, RecipeSearchRequest } from '../../../models/recipe.model';
     MatPaginatorModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    MatTooltipModule
   ],
   templateUrl: './recipe-list.component.html',
   styleUrl: './recipe-list.component.scss'
@@ -39,6 +41,7 @@ export class RecipeListComponent implements OnInit {
   error = '';
   searchTitle = '';
   viewMode: 'mine' | 'public' = 'mine';
+  favoritesOnly = false;
 
   // Pagination
   pageNumber = 1;
@@ -67,6 +70,10 @@ export class RecipeListComponent implements OnInit {
     if (this.viewMode === 'public') {
       request.includePublic = true;
       request.isPublic = true;
+    }
+
+    if (this.favoritesOnly) {
+      request.isFavorite = true;
     }
 
     this.recipeService.searchRecipes(request).subscribe({
@@ -136,5 +143,27 @@ export class RecipeListComponent implements OnInit {
 
   getStepCount(recipe: Recipe): number {
     return recipe.instructions?.length || 0;
+  }
+
+  toggleFavoritesFilter() {
+    this.favoritesOnly = !this.favoritesOnly;
+    this.pageNumber = 1;
+    this.loadRecipes();
+  }
+
+  toggleFavorite(recipe: Recipe, event: Event) {
+    event.stopPropagation();
+    const newFavorite = !recipe.isFavorite;
+    this.recipeService.setFavorite(recipe.recipeResourceId, newFavorite).subscribe({
+      next: (updated) => {
+        const index = this.recipes.findIndex(r => r.recipeResourceId === updated.recipeResourceId);
+        if (index >= 0) {
+          this.recipes[index] = updated;
+        }
+      },
+      error: (err) => {
+        console.error('Error toggling favorite:', err);
+      }
+    });
   }
 }
