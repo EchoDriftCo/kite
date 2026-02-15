@@ -106,7 +106,7 @@
           </mat-chip>
           <mat-chip>
             <mat-icon>restaurant_menu</mat-icon>
-            Serves: {{ recipe.yield }}
+            Serves: {{ scaledServings }}@if (scaleFactor !== 1) { <span class="scale-indicator">({{ recipe.yield }} original)</span> }
           </mat-chip>
           @if (recipe.isPublic) {
             <mat-chip>
@@ -133,6 +133,30 @@
 
     <mat-divider></mat-divider>
 
+    <div class="scaling-controls">
+      <div class="scaling-label">
+        <mat-icon>straighten</mat-icon>
+        Scale
+      </div>
+      <div class="serving-input">
+        <mat-form-field appearance="outline" class="servings-field">
+          <mat-label>Servings</mat-label>
+          <input matInput type="number" [(ngModel)]="scaledServings" (ngModelChange)="updateScale()" min="1">
+        </mat-form-field>
+      </div>
+      <div class="multiplier-buttons">
+        <button mat-stroked-button [class.active]="scaleFactor === 0.5" (click)="setMultiplier(0.5)">½x</button>
+        <button mat-stroked-button [class.active]="scaleFactor === 1" (click)="setMultiplier(1)">1x</button>
+        <button mat-stroked-button [class.active]="scaleFactor === 2" (click)="setMultiplier(2)">2x</button>
+        <button mat-stroked-button [class.active]="scaleFactor === 3" (click)="setMultiplier(3)">3x</button>
+      </div>
+      @if (scaleFactor !== 1) {
+        <button mat-icon-button (click)="resetScale()" matTooltip="Reset to original">
+          <mat-icon>restart_alt</mat-icon>
+        </button>
+      }
+    </div>
+
     <div class="recipe-content">
       <div class="ingredients-section">
         <h2>
@@ -146,7 +170,7 @@
               <mat-icon class="check-circle">radio_button_unchecked</mat-icon>
               <span class="ingredient-text">
                 @if (ingredient.quantity || ingredient.unit) {
-                  <strong>{{ ingredient.quantity | fraction }} {{ ingredient.unit }}</strong>
+                  <strong>{{ getScaledQuantity(ingredient.quantity) | fraction }} {{ ingredient.unit }}</strong>
                 }
                 {{ ingredient.item }}
                 @if (ingredient.preparation) {

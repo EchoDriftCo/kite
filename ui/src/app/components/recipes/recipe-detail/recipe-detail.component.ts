@@ -10,6 +10,9 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
 import { RecipeService } from '../../../services/recipe.service';
 import { Recipe } from '../../../models/recipe.model';
 import { FractionPipe } from '../../../pipes/fraction.pipe';
@@ -29,6 +32,9 @@ import { TagSelectorComponent } from '../../shared/tag-selector/tag-selector.com
     MatDialogModule,
     MatTooltipModule,
     MatExpansionModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
     FractionPipe,
     TagSelectorComponent
   ],
@@ -40,6 +46,10 @@ export class RecipeDetailComponent implements OnInit {
   loading = false;
   error = '';
   recipeId: string | null = null;
+
+  // Scaling
+  scaledServings = 0;
+  scaleFactor = 1;
 
   constructor(
     private route: ActivatedRoute,
@@ -65,6 +75,8 @@ export class RecipeDetailComponent implements OnInit {
     this.recipeService.getRecipe(this.recipeId).subscribe({
       next: (recipe) => {
         this.recipe = recipe;
+        this.scaledServings = recipe.yield;
+        this.scaleFactor = 1;
         this.loading = false;
       },
       error: (err) => {
@@ -170,6 +182,28 @@ export class RecipeDetailComponent implements OnInit {
   }
 
   hoverRating = 0;
+
+  updateScale() {
+    if (!this.recipe || this.scaledServings < 1) return;
+    this.scaleFactor = this.scaledServings / this.recipe.yield;
+  }
+
+  setMultiplier(multiplier: number) {
+    if (!this.recipe) return;
+    this.scaleFactor = multiplier;
+    this.scaledServings = Math.round(this.recipe.yield * multiplier);
+  }
+
+  resetScale() {
+    if (!this.recipe) return;
+    this.scaledServings = this.recipe.yield;
+    this.scaleFactor = 1;
+  }
+
+  getScaledQuantity(quantity: number | undefined): number | undefined {
+    if (quantity == null) return undefined;
+    return quantity * this.scaleFactor;
+  }
 
   printRecipe() {
     window.print();
