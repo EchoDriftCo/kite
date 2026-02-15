@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -30,6 +31,7 @@ import { TagSelectorComponent } from '../../shared/tag-selector/tag-selector.com
     MatChipsModule,
     MatDividerModule,
     MatDialogModule,
+    MatSnackBarModule,
     MatTooltipModule,
     MatExpansionModule,
     MatFormFieldModule,
@@ -55,7 +57,8 @@ export class RecipeDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private recipeService: RecipeService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
@@ -207,5 +210,50 @@ export class RecipeDetailComponent implements OnInit {
 
   printRecipe() {
     window.print();
+  }
+
+  shareRecipe() {
+    if (!this.recipeId || !this.recipe) return;
+
+    if (this.recipe.shareToken) {
+      this.copyShareLink(this.recipe.shareToken);
+    } else {
+      this.recipeService.generateShareToken(this.recipeId).subscribe({
+        next: (updated) => {
+          this.recipe = updated;
+          if (updated.shareToken) {
+            this.copyShareLink(updated.shareToken);
+          }
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to generate share link';
+          console.error('Error generating share token:', err);
+        }
+      });
+    }
+  }
+
+  revokeShareLink() {
+    if (!this.recipeId || !this.recipe) return;
+
+    this.recipeService.revokeShareToken(this.recipeId).subscribe({
+      next: (updated) => {
+        this.recipe = updated;
+        this.snackBar.open('Share link revoked', 'OK', { duration: 3000 });
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to revoke share link';
+        console.error('Error revoking share token:', err);
+      }
+    });
+  }
+
+  private copyShareLink(token: string) {
+    const url = `${window.location.origin}/share/${token}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.snackBar.open('Share link copied to clipboard!', 'OK', { duration: 4000 });
+    }).catch(() => {
+      this.snackBar.open(`Share link: ${url}`, 'OK', { duration: 8000 });
+    });
   }
 }

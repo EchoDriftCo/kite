@@ -136,4 +136,16 @@ export class RecipeService {
   setFavorite(id: string, isFavorite: boolean): Observable<Recipe> {
     return this.api.put<Recipe>(`${this.endpoint}/${id}/favorite`, { isFavorite });
   }
+
+  generateShareToken(id: string): Observable<Recipe> {
+    return this.api.post<Recipe>(`${this.endpoint}/${id}/share-token`, {});
+  }
+
+  revokeShareToken(id: string): Observable<Recipe> {
+    return this.api.delete<Recipe>(`${this.endpoint}/${id}/share-token`);
+  }
+
+  getSharedRecipe(token: string): Observable<Recipe> {
+    return this.api.get<Recipe>(`${this.endpoint}/shared/${token}`);
+  }
 }

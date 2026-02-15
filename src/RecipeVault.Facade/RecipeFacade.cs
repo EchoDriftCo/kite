@@ -177,6 +177,43 @@ namespace RecipeVault.Facade {
             }
         }
 
+        public async Task<RecipeDto> GenerateShareTokenAsync(Guid resourceId) {
+            var lockName = GetLockName(resourceId);
+
+            logger.LogDebug("Acquiring lock for {LockName}", lockName);
+            await using (await lockProvider.AcquireLockAsync(lockName).ConfigureAwait(false)) {
+                logger.LogDebug("Acquired lock for {LockName}", lockName);
+
+                await recipeService.GenerateShareTokenAsync(resourceId).ConfigureAwait(false);
+                await uow.SaveChangesAsync().ConfigureAwait(false);
+
+                var recipe = await recipeService.GetRecipeAsync(resourceId).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId);
+            }
+        }
+
+        public async Task<RecipeDto> RevokeShareTokenAsync(Guid resourceId) {
+            var lockName = GetLockName(resourceId);
+
+            logger.LogDebug("Acquiring lock for {LockName}", lockName);
+            await using (await lockProvider.AcquireLockAsync(lockName).ConfigureAwait(false)) {
+                logger.LogDebug("Acquired lock for {LockName}", lockName);
+
+                await recipeService.RevokeShareTokenAsync(resourceId).ConfigureAwait(false);
+                await uow.SaveChangesAsync().ConfigureAwait(false);
+
+                var recipe = await recipeService.GetRecipeAsync(resourceId).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId);
+            }
+        }
+
+        public async Task<RecipeDto> GetRecipeByShareTokenAsync(string shareToken) {
+            await using (var tx = uow.BeginNoTracking()) {
+                var recipe = await recipeService.GetRecipeByShareTokenAsync(shareToken).ConfigureAwait(false);
+                return mapper.MapToDto(recipe);
+            }
+        }
+
         public async Task<RecipeDto> AnalyzeDietaryTagsAsync(Guid recipeResourceId) {
             var lockName = GetLockName(recipeResourceId);
 

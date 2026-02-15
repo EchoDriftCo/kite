@@ -62,5 +62,15 @@ namespace RecipeVault.Data.Repositories {
             context.Remove(recipe);
             return Task.CompletedTask;
         }
+
+        public Task<Recipe> GetByShareTokenAsync(string shareToken) {
+            return context.Recipes
+                .Include(x => x.Ingredients)
+                .Include(x => x.Instructions)
+                .Include(x => x.RecipeTags).ThenInclude(rt => rt.Tag)
+                .Include(x => x.CreatedSubject)
+                .Include(x => x.LastModifiedSubject)
+                .FirstOrDefaultAsync(r => r.ShareToken == shareToken);
+        }
     }
 }

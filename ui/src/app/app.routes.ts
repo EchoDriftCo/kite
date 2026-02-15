@@ -7,11 +7,13 @@ import { MealPlanFormComponent } from './components/meal-plans/meal-plan-form/me
 import { MealPlanDetailComponent } from './components/meal-plans/meal-plan-detail/meal-plan-detail.component';
 import { GroceryListComponent } from './components/meal-plans/grocery-list/grocery-list.component';
 import { LoginComponent } from './components/login/login.component';
+import { SharedRecipeComponent } from './components/recipes/shared-recipe/shared-recipe.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/recipes', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
+  { path: 'share/:token', component: SharedRecipeComponent },
   { path: 'recipes', component: RecipeListComponent, canActivate: [authGuard] },
   { path: 'recipes/new', component: RecipeFormComponent, canActivate: [authGuard] },
   { path: 'recipes/:id', component: RecipeDetailComponent, canActivate: [authGuard] },

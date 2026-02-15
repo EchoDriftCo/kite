@@ -21,6 +21,7 @@ namespace RecipeVault.Dto.Output {
         public int? Rating { get; set; }
         public bool IsFavorite { get; set; }
         public bool IsOwner { get; set; }
+        public string ShareToken { get; set; }
         public List<RecipeTagDto> Tags { get; set; }
     }
 }

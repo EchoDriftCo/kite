@@ -210,6 +210,44 @@ namespace RecipeVault.WebApi.Controllers {
         }
 
         /// <summary>
+        /// Generate a share link token for a recipe
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        [HttpPost("{id}/share-token")]
+        [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GenerateShareTokenAsync(Guid id) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var dto = await facade.GenerateShareTokenAsync(id).ConfigureAwait(false);
+                return Ok(recipeMapper.Map(dto));
+            }
+        }
+
+        /// <summary>
+        /// Revoke the share link token for a recipe
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        [HttpDelete("{id}/share-token")]
+        [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> RevokeShareTokenAsync(Guid id) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var dto = await facade.RevokeShareTokenAsync(id).ConfigureAwait(false);
+                return Ok(recipeMapper.Map(dto));
+            }
+        }
+
+        /// <summary>
+        /// View a shared recipe by share token (no authentication required)
+        /// </summary>
+        /// <param name="token">the share token</param>
+        [HttpGet("shared/{token}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetSharedRecipeAsync(string token) {
+            var dto = await facade.GetRecipeByShareTokenAsync(token).ConfigureAwait(false);
+            return Ok(recipeMapper.Map(dto));
+        }
+
+        /// <summary>
         /// Upload a recipe image
         /// </summary>
         [HttpPost("images")]

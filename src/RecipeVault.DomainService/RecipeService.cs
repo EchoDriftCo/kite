@@ -246,6 +246,30 @@ namespace RecipeVault.DomainService {
             }
         }
 
+        public async Task GenerateShareTokenAsync(Guid recipeResourceId) {
+            var entity = await GetOwnRecipeAsync(recipeResourceId).ConfigureAwait(false);
+            using (logger.PushProperty("RecipeResourceId", entity.RecipeResourceId)) {
+                entity.GenerateShareToken();
+                logger.LogInformation("Generated share token for recipe");
+            }
+        }
+
+        public async Task RevokeShareTokenAsync(Guid recipeResourceId) {
+            var entity = await GetOwnRecipeAsync(recipeResourceId).ConfigureAwait(false);
+            using (logger.PushProperty("RecipeResourceId", entity.RecipeResourceId)) {
+                entity.RevokeShareToken();
+                logger.LogInformation("Revoked share token for recipe");
+            }
+        }
+
+        public async Task<Recipe> GetRecipeByShareTokenAsync(string shareToken) {
+            var entity = await recipeRepository.GetByShareTokenAsync(shareToken).ConfigureAwait(false);
+            if (entity == null) {
+                throw new RecipeNotFoundException("Shared recipe not found");
+            }
+            return entity;
+        }
+
         public async Task<ParseRecipeResponseDto> ParseRecipeImageAsync(ParseRecipeRequestDto request) {
             logger.LogInformation("Parsing recipe image, mimeType={MimeType}, imageSize={ImageSize}",
                 request.MimeType, request.Image?.Length ?? 0);

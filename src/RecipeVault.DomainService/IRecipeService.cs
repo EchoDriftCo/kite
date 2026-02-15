@@ -21,5 +21,8 @@ namespace RecipeVault.DomainService {
         Task AnalyzeAndApplyDietaryTagsAsync(Recipe recipe);
         Task SetRecipeRatingAsync(Guid recipeResourceId, int? rating);
         Task SetRecipeFavoriteAsync(Guid recipeResourceId, bool isFavorite);
+        Task GenerateShareTokenAsync(Guid recipeResourceId);
+        Task RevokeShareTokenAsync(Guid recipeResourceId);
+        Task<Recipe> GetRecipeByShareTokenAsync(string shareToken);
     }
 }

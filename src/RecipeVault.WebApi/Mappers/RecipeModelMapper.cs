@@ -35,6 +35,7 @@ namespace RecipeVault.WebApi.Mappers {
                 Rating = dto.Rating,
                 IsFavorite = dto.IsFavorite,
                 IsOwner = dto.IsOwner,
+                ShareToken = dto.ShareToken,
                 Ingredients = dto.Ingredients?.Select(i => new RecipeIngredientModel {
                     RecipeIngredientId = i.RecipeIngredientId,
                     SortOrder = i.SortOrder,

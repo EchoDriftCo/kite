@@ -11,5 +11,6 @@ namespace RecipeVault.Data.Repositories {
         Task<Recipe> GetByIdAsync(int recipeId);
         Task<PagedList<Recipe>> SearchAsync(RecipeSearch model);
         Task RemoveAsync(Recipe recipe);
+        Task<Recipe> GetByShareTokenAsync(string shareToken);
     }
 }

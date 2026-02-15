@@ -10,6 +10,7 @@ using UUIDNext;
 
 namespace RecipeVault.Domain.Entities {
     [Index(nameof(RecipeResourceId), IsUnique = true)]
+    [Index(nameof(ShareToken), IsUnique = true)]
     [Table("Recipe")]
     public class Recipe : AuditableEntity {
         protected Recipe() {
@@ -63,6 +64,9 @@ namespace RecipeVault.Domain.Entities {
 
         public bool IsFavorite { get; private set; }
 
+        [StringLength(12)]
+        public string ShareToken { get; private set; }
+
         private readonly List<RecipeIngredient> ingredients = new();
         public virtual IReadOnlyList<RecipeIngredient> Ingredients => ingredients;
 
@@ -106,6 +110,24 @@ namespace RecipeVault.Domain.Entities {
 
         public void SetFavorite(bool isFavorite) {
             IsFavorite = isFavorite;
+        }
+
+        public void GenerateShareToken() {
+            ShareToken = GenerateRandomToken(10);
+        }
+
+        public void RevokeShareToken() {
+            ShareToken = null;
+        }
+
+        private static string GenerateRandomToken(int length) {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var bytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(length);
+            var result = new char[length];
+            for (int i = 0; i < length; i++) {
+                result[i] = chars[bytes[i] % chars.Length];
+            }
+            return new string(result);
         }
 
         public void SetIngredients(List<RecipeIngredient> newIngredients) {

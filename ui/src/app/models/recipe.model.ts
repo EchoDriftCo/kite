@@ -33,6 +33,7 @@ export interface Recipe {
   rating?: number;
   isFavorite?: boolean;
   isOwner?: boolean;
+  shareToken?: string;
   ingredients: RecipeIngredient[];
   instructions: RecipeInstruction[];
   tags?: RecipeTag[];

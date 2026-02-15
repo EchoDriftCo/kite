@@ -40,6 +40,9 @@ namespace RecipeVault.Facade.Mappers {
                 Rating = entity.Rating,
                 IsFavorite = entity.IsFavorite,
                 IsOwner = currentSubjectId.HasValue && entity.CreatedSubject?.SubjectId == currentSubjectId,
+                ShareToken = currentSubjectId.HasValue && entity.CreatedSubject?.SubjectId == currentSubjectId
+                    ? entity.ShareToken
+                    : null,
                 Ingredients = entity.Ingredients?.Select(i => new RecipeIngredientDto {
                     RecipeIngredientId = i.RecipeIngredientId,
                     SortOrder = i.SortOrder,

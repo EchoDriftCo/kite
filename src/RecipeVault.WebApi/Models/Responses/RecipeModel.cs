@@ -20,6 +20,7 @@ namespace RecipeVault.WebApi.Models.Responses {
         public int? Rating { get; set; }
         public bool IsFavorite { get; set; }
         public bool IsOwner { get; set; }
+        public string ShareToken { get; set; }
         public List<RecipeIngredientModel> Ingredients { get; set; }
         public List<RecipeInstructionModel> Instructions { get; set; }
         public List<RecipeTagModel> Tags { get; set; }

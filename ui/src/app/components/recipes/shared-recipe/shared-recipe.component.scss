@@ -1,4 +1,4 @@
-.recipe-detail-container {
+.shared-recipe-container {
   max-width: 900px;
   margin: 0 auto;
   padding: 24px;
@@ -21,20 +21,24 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 48px;
-  background-color: rgba(127, 29, 29, 0.3);
-  border-radius: 8px;
+  padding: 64px 24px;
+  text-align: center;
   gap: 8px;
 
   mat-icon {
-    color: #fca5a5;
-    font-size: 48px;
-    width: 48px;
-    height: 48px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 72px;
+    width: 72px;
+    height: 72px;
+  }
+
+  h2 {
+    margin: 16px 0 0;
+    font-weight: 400;
   }
 
   p {
-    color: #fca5a5;
+    color: rgba(255, 255, 255, 0.6);
     margin: 0;
   }
 }
@@ -44,14 +48,8 @@
 
   .header-actions {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: flex-end;
     margin-bottom: 16px;
-
-    .action-buttons {
-      display: flex;
-      gap: 8px;
-    }
   }
 
   .recipe-image {
@@ -122,35 +120,10 @@
       }
     }
 
-    &.interactive mat-icon {
-      cursor: pointer;
-      transition: color 0.15s, transform 0.15s;
-
-      &:hover {
-        transform: scale(1.15);
-      }
-    }
-
     .rating-label {
       margin-left: 8px;
       color: rgba(255, 255, 255, 0.5);
       font-size: 0.875rem;
-    }
-  }
-
-  .favorited {
-    color: #e91e63 !important;
-  }
-
-  .shared {
-    color: #4caf50 !important;
-  }
-
-  .revoke-share {
-    color: rgba(255, 255, 255, 0.5);
-
-    &:hover {
-      color: #f44336;
     }
   }
 }
@@ -258,12 +231,6 @@ mat-divider {
       width: 20px;
       height: 20px;
       flex-shrink: 0;
-      cursor: pointer;
-      transition: color 0.2s;
-
-      &:hover {
-        color: var(--primary-color, #3f51b5);
-      }
     }
 
     .ingredient-text {
@@ -328,19 +295,6 @@ mat-divider {
 mat-expansion-panel-header {
   mat-icon {
     margin-right: 8px;
-  }
-}
-
-.recipe-footer {
-  padding: 16px 0;
-  display: flex;
-  gap: 24px;
-  justify-content: center;
-
-  .meta-info {
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.75rem;
-    margin: 0;
   }
 }
 
