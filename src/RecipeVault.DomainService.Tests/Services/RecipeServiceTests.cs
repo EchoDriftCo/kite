@@ -441,5 +441,238 @@ namespace RecipeVault.DomainService.Tests.Services {
 
             mockRepository.Verify(x => x.SearchAsync(search), Times.Once);
         }
+
+        [Fact]
+        public async Task SetRecipeRatingAsync_WithOwnRecipe_SetsRating() {
+            // Arrange
+            var recipe = BuildRecipeWithOwner();
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            await service.SetRecipeRatingAsync(recipe.RecipeResourceId, 4);
+
+            // Assert
+            recipe.Rating.ShouldBe(4);
+        }
+
+        [Fact]
+        public async Task SetRecipeRatingAsync_WithNull_ClearsRating() {
+            // Arrange
+            var recipe = BuildRecipeWithOwner();
+            recipe.SetRating(3);
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            await service.SetRecipeRatingAsync(recipe.RecipeResourceId, null);
+
+            // Assert
+            recipe.Rating.ShouldBeNull();
+        }
+
+        [Fact]
+        public async Task SetRecipeRatingAsync_WithOtherUsersRecipe_ThrowsNotFoundException() {
+            // Arrange
+            var otherUserId = Guid.NewGuid();
+            var recipe = new RecipeBuilder().Build();
+            recipe.CreatedSubject = new Subject(otherUserId, "Other User", "Other", "User", "other@example.com");
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act & Assert
+            await Should.ThrowAsync<RecipeNotFoundException>(
+                () => service.SetRecipeRatingAsync(recipe.RecipeResourceId, 4)
+            );
+        }
+
+        [Fact]
+        public async Task SetRecipeFavoriteAsync_WithOwnRecipe_SetsFavorite() {
+            // Arrange
+            var recipe = BuildRecipeWithOwner();
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            await service.SetRecipeFavoriteAsync(recipe.RecipeResourceId, true);
+
+            // Assert
+            recipe.IsFavorite.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task SetRecipeFavoriteAsync_WithOtherUsersRecipe_ThrowsNotFoundException() {
+            // Arrange
+            var otherUserId = Guid.NewGuid();
+            var recipe = new RecipeBuilder().Build();
+            recipe.CreatedSubject = new Subject(otherUserId, "Other User", "Other", "User", "other@example.com");
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act & Assert
+            await Should.ThrowAsync<RecipeNotFoundException>(
+                () => service.SetRecipeFavoriteAsync(recipe.RecipeResourceId, true)
+            );
+        }
+
+        [Fact]
+        public async Task GenerateShareTokenAsync_WithOwnRecipe_GeneratesToken() {
+            // Arrange
+            var recipe = BuildRecipeWithOwner();
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            await service.GenerateShareTokenAsync(recipe.RecipeResourceId);
+
+            // Assert
+            recipe.ShareToken.ShouldNotBeNullOrWhiteSpace();
+            recipe.ShareToken.Length.ShouldBe(10);
+        }
+
+        [Fact]
+        public async Task GenerateShareTokenAsync_WithOtherUsersRecipe_ThrowsNotFoundException() {
+            // Arrange
+            var otherUserId = Guid.NewGuid();
+            var recipe = new RecipeBuilder().Build();
+            recipe.CreatedSubject = new Subject(otherUserId, "Other User", "Other", "User", "other@example.com");
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act & Assert
+            await Should.ThrowAsync<RecipeNotFoundException>(
+                () => service.GenerateShareTokenAsync(recipe.RecipeResourceId)
+            );
+        }
+
+        [Fact]
+        public async Task RevokeShareTokenAsync_WithOwnRecipe_RevokesToken() {
+            // Arrange
+            var recipe = BuildRecipeWithOwner();
+            recipe.GenerateShareToken();
+            recipe.ShareToken.ShouldNotBeNull();
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            await service.RevokeShareTokenAsync(recipe.RecipeResourceId);
+
+            // Assert
+            recipe.ShareToken.ShouldBeNull();
+        }
+
+        [Fact]
+        public async Task GetRecipeByShareTokenAsync_WithValidToken_ReturnsRecipe() {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+            recipe.GenerateShareToken();
+            var token = recipe.ShareToken;
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
+
+            mockRepository
+                .Setup(x => x.GetByShareTokenAsync(token))
+                .ReturnsAsync(recipe);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            var result = await service.GetRecipeByShareTokenAsync(token);
+
+            // Assert
+            result.ShouldBe(recipe);
+        }
+
+        [Fact]
+        public async Task GetRecipeByShareTokenAsync_WithInvalidToken_ThrowsNotFoundException() {
+            // Arrange
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
+
+            mockRepository
+                .Setup(x => x.GetByShareTokenAsync("invalidtoken"))
+                .ReturnsAsync((Recipe)null);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act & Assert
+            await Should.ThrowAsync<RecipeNotFoundException>(
+                () => service.GetRecipeByShareTokenAsync("invalidtoken")
+            );
+        }
     }
 }

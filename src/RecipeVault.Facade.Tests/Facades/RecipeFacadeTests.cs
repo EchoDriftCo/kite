@@ -303,6 +303,216 @@ namespace RecipeVault.Facade.Tests.Facades {
             mockService.Verify(x => x.DeleteRecipeAsync(recipe.RecipeResourceId), Times.Once);
             mockUow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
+
+        [Fact]
+        public async Task SetRecipeRatingAsync_WithValidRating_SetsRatingAndReturnsMappedDto() {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+            recipe.CreatedSubject = new Cortside.AspNetCore.Auditable.Entities.Subject(TestSubjectId, "Test User", "Test", "User", "test@example.com");
+
+            var mockUow = MockRepository.Create<IUnitOfWork>();
+            var mockService = MockRepository.Create<IRecipeService>();
+            var mockLogger = CreateMockLogger<RecipeFacade>();
+            var stubLockProvider = new StubDistributedLockProvider();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            var mapper = CreateMapper();
+
+            mockService
+                .Setup(x => x.SetRecipeRatingAsync(recipe.RecipeResourceId, 4))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            mockService
+                .Setup(x => x.GetRecipeAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe)
+                .Verifiable();
+
+            mockUow
+                .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1)
+                .Verifiable();
+
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+
+            // Act
+            var result = await facade.SetRecipeRatingAsync(recipe.RecipeResourceId, 4);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.RecipeResourceId.ShouldBe(recipe.RecipeResourceId);
+
+            mockService.Verify(x => x.SetRecipeRatingAsync(recipe.RecipeResourceId, 4), Times.Once);
+            mockUow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetRecipeFavoriteAsync_WithValidId_SetsFavoriteAndReturnsMappedDto() {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+            recipe.CreatedSubject = new Cortside.AspNetCore.Auditable.Entities.Subject(TestSubjectId, "Test User", "Test", "User", "test@example.com");
+
+            var mockUow = MockRepository.Create<IUnitOfWork>();
+            var mockService = MockRepository.Create<IRecipeService>();
+            var mockLogger = CreateMockLogger<RecipeFacade>();
+            var stubLockProvider = new StubDistributedLockProvider();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            var mapper = CreateMapper();
+
+            mockService
+                .Setup(x => x.SetRecipeFavoriteAsync(recipe.RecipeResourceId, true))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            mockService
+                .Setup(x => x.GetRecipeAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe)
+                .Verifiable();
+
+            mockUow
+                .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1)
+                .Verifiable();
+
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+
+            // Act
+            var result = await facade.SetRecipeFavoriteAsync(recipe.RecipeResourceId, true);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.RecipeResourceId.ShouldBe(recipe.RecipeResourceId);
+
+            mockService.Verify(x => x.SetRecipeFavoriteAsync(recipe.RecipeResourceId, true), Times.Once);
+            mockUow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GenerateShareTokenAsync_WithValidId_GeneratesTokenAndReturnsMappedDto() {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+            recipe.CreatedSubject = new Cortside.AspNetCore.Auditable.Entities.Subject(TestSubjectId, "Test User", "Test", "User", "test@example.com");
+
+            var mockUow = MockRepository.Create<IUnitOfWork>();
+            var mockService = MockRepository.Create<IRecipeService>();
+            var mockLogger = CreateMockLogger<RecipeFacade>();
+            var stubLockProvider = new StubDistributedLockProvider();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            var mapper = CreateMapper();
+
+            mockService
+                .Setup(x => x.GenerateShareTokenAsync(recipe.RecipeResourceId))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            mockService
+                .Setup(x => x.GetRecipeAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe)
+                .Verifiable();
+
+            mockUow
+                .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1)
+                .Verifiable();
+
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+
+            // Act
+            var result = await facade.GenerateShareTokenAsync(recipe.RecipeResourceId);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.RecipeResourceId.ShouldBe(recipe.RecipeResourceId);
+
+            mockService.Verify(x => x.GenerateShareTokenAsync(recipe.RecipeResourceId), Times.Once);
+            mockUow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RevokeShareTokenAsync_WithValidId_RevokesTokenAndReturnsMappedDto() {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+            recipe.CreatedSubject = new Cortside.AspNetCore.Auditable.Entities.Subject(TestSubjectId, "Test User", "Test", "User", "test@example.com");
+
+            var mockUow = MockRepository.Create<IUnitOfWork>();
+            var mockService = MockRepository.Create<IRecipeService>();
+            var mockLogger = CreateMockLogger<RecipeFacade>();
+            var stubLockProvider = new StubDistributedLockProvider();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            var mapper = CreateMapper();
+
+            mockService
+                .Setup(x => x.RevokeShareTokenAsync(recipe.RecipeResourceId))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            mockService
+                .Setup(x => x.GetRecipeAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe)
+                .Verifiable();
+
+            mockUow
+                .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1)
+                .Verifiable();
+
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+
+            // Act
+            var result = await facade.RevokeShareTokenAsync(recipe.RecipeResourceId);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.RecipeResourceId.ShouldBe(recipe.RecipeResourceId);
+
+            mockService.Verify(x => x.RevokeShareTokenAsync(recipe.RecipeResourceId), Times.Once);
+            mockUow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetRecipeByShareTokenAsync_WithValidToken_ReturnsRecipeDto() {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+
+            var mockUow = MockRepository.Create<IUnitOfWork>();
+            var mockService = MockRepository.Create<IRecipeService>();
+            var mockLogger = CreateMockLogger<RecipeFacade>();
+            var stubLockProvider = new StubDistributedLockProvider();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
+
+            var mapper = CreateMapper();
+
+            var mockTransaction = MockRepository.Create<IDbContextTransaction>();
+            mockTransaction
+                .Setup(x => x.DisposeAsync())
+                .Returns(new ValueTask())
+                .Verifiable();
+
+            mockUow
+                .Setup(x => x.BeginNoTracking())
+                .Returns(mockTransaction.Object)
+                .Verifiable();
+
+            mockService
+                .Setup(x => x.GetRecipeByShareTokenAsync("abc123"))
+                .ReturnsAsync(recipe)
+                .Verifiable();
+
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+
+            // Act
+            var result = await facade.GetRecipeByShareTokenAsync("abc123");
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.RecipeResourceId.ShouldBe(recipe.RecipeResourceId);
+            result.Title.ShouldBe(recipe.Title);
+
+            mockService.Verify(x => x.GetRecipeByShareTokenAsync("abc123"), Times.Once);
+        }
     }
 
     /// <summary>

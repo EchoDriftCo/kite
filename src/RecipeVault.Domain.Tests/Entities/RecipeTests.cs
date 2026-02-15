@@ -149,5 +149,149 @@ namespace RecipeVault.Domain.Tests.Entities {
                 recipe.Update("Title", yield, 10, 20, "desc", "source", "url")
             );
         }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(3)]
+        [InlineData(5)]
+        public void Recipe_SetRating_WithValidValue_SetsRating(int rating) {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+
+            // Act
+            recipe.SetRating(rating);
+
+            // Assert
+            recipe.Rating.ShouldBe(rating);
+        }
+
+        [Fact]
+        public void Recipe_SetRating_WithNull_ClearsRating() {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+            recipe.SetRating(3);
+
+            // Act
+            recipe.SetRating(null);
+
+            // Assert
+            recipe.Rating.ShouldBeNull();
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(6)]
+        [InlineData(-1)]
+        public void Recipe_SetRating_WithInvalidValue_ThrowsException(int rating) {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+
+            // Act & Assert
+            Should.Throw<Exception>(() => recipe.SetRating(rating));
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Recipe_SetFavorite_SetsFavoriteStatus(bool isFavorite) {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+
+            // Act
+            recipe.SetFavorite(isFavorite);
+
+            // Assert
+            recipe.IsFavorite.ShouldBe(isFavorite);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Recipe_SetVisibility_SetsIsPublic(bool isPublic) {
+            // Arrange
+            var recipe = new RecipeBuilder().WithIsPublic(!isPublic).Build();
+
+            // Act
+            recipe.SetVisibility(isPublic);
+
+            // Assert
+            recipe.IsPublic.ShouldBe(isPublic);
+        }
+
+        [Fact]
+        public void Recipe_GenerateShareToken_CreatesNonNullToken() {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+
+            // Act
+            recipe.GenerateShareToken();
+
+            // Assert
+            recipe.ShareToken.ShouldNotBeNullOrWhiteSpace();
+            recipe.ShareToken.Length.ShouldBe(10);
+        }
+
+        [Fact]
+        public void Recipe_GenerateShareToken_CreatesAlphanumericToken() {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+
+            // Act
+            recipe.GenerateShareToken();
+
+            // Assert
+            recipe.ShareToken.ShouldAllBe(c => char.IsLetterOrDigit(c));
+        }
+
+        [Fact]
+        public void Recipe_GenerateShareToken_CalledTwice_GeneratesDifferentTokens() {
+            // Arrange
+            var recipe1 = new RecipeBuilder().Build();
+            var recipe2 = new RecipeBuilder().Build();
+
+            // Act
+            recipe1.GenerateShareToken();
+            recipe2.GenerateShareToken();
+
+            // Assert
+            recipe1.ShareToken.ShouldNotBe(recipe2.ShareToken);
+        }
+
+        [Fact]
+        public void Recipe_RevokeShareToken_ClearsToken() {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+            recipe.GenerateShareToken();
+            recipe.ShareToken.ShouldNotBeNull();
+
+            // Act
+            recipe.RevokeShareToken();
+
+            // Assert
+            recipe.ShareToken.ShouldBeNull();
+        }
+
+        [Fact]
+        public void Recipe_SetSourceImageUrl_SetsUrl() {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+
+            // Act
+            recipe.SetSourceImageUrl("https://example.com/source.jpg");
+
+            // Assert
+            recipe.SourceImageUrl.ShouldBe("https://example.com/source.jpg");
+        }
+
+        [Fact]
+        public void Recipe_DefaultState_HasNoRatingOrFavorite() {
+            // Arrange & Act
+            var recipe = new RecipeBuilder().Build();
+
+            // Assert
+            recipe.Rating.ShouldBeNull();
+            recipe.IsFavorite.ShouldBeFalse();
+            recipe.ShareToken.ShouldBeNull();
+        }
     }
 }

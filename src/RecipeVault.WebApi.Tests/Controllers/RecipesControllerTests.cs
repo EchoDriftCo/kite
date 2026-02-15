@@ -202,5 +202,223 @@ namespace RecipeVault.WebApi.Tests.Controllers {
 
             mockFacade.Verify(x => x.DeleteRecipeAsync(recipeId), Times.Once);
         }
+
+        [Fact]
+        public async Task SetRecipeRatingAsync_WithValidRating_ReturnsOkWithRecipe() {
+            // Arrange
+            var recipeId = Guid.NewGuid();
+            var input = new SetRatingModel { Rating = 4 };
+
+            var recipeDto = new RecipeDtoBuilder()
+                .WithRecipeResourceId(recipeId)
+                .Build();
+
+            var mockFacade = MockRepository.Create<IRecipeFacade>();
+            var mockSubjectMapper = MockRepository.Create<SubjectModelMapper>();
+            var mapper = new RecipeModelMapper(mockSubjectMapper.Object);
+
+            mockFacade
+                .Setup(x => x.SetRecipeRatingAsync(recipeId, 4))
+                .ReturnsAsync(recipeDto)
+                .Verifiable();
+
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+
+            // Act
+            var result = await controller.SetRecipeRatingAsync(recipeId, input);
+
+            // Assert
+            var okResult = result.ShouldBeOfType<OkObjectResult>();
+            okResult.StatusCode.ShouldBe(200);
+
+            var returnedModel = okResult.Value.ShouldBeOfType<RecipeModel>();
+            returnedModel.RecipeResourceId.ShouldBe(recipeId);
+
+            mockFacade.Verify(x => x.SetRecipeRatingAsync(recipeId, 4), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetRecipeRatingAsync_WithNullRating_ReturnsOkWithRecipe() {
+            // Arrange
+            var recipeId = Guid.NewGuid();
+            var input = new SetRatingModel { Rating = null };
+
+            var recipeDto = new RecipeDtoBuilder()
+                .WithRecipeResourceId(recipeId)
+                .Build();
+
+            var mockFacade = MockRepository.Create<IRecipeFacade>();
+            var mockSubjectMapper = MockRepository.Create<SubjectModelMapper>();
+            var mapper = new RecipeModelMapper(mockSubjectMapper.Object);
+
+            mockFacade
+                .Setup(x => x.SetRecipeRatingAsync(recipeId, (int?)null))
+                .ReturnsAsync(recipeDto)
+                .Verifiable();
+
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+
+            // Act
+            var result = await controller.SetRecipeRatingAsync(recipeId, input);
+
+            // Assert
+            var okResult = result.ShouldBeOfType<OkObjectResult>();
+            okResult.StatusCode.ShouldBe(200);
+
+            mockFacade.Verify(x => x.SetRecipeRatingAsync(recipeId, (int?)null), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetRecipeFavoriteAsync_WithTrue_ReturnsOkWithRecipe() {
+            // Arrange
+            var recipeId = Guid.NewGuid();
+            var input = new SetFavoriteModel { IsFavorite = true };
+
+            var recipeDto = new RecipeDtoBuilder()
+                .WithRecipeResourceId(recipeId)
+                .Build();
+
+            var mockFacade = MockRepository.Create<IRecipeFacade>();
+            var mockSubjectMapper = MockRepository.Create<SubjectModelMapper>();
+            var mapper = new RecipeModelMapper(mockSubjectMapper.Object);
+
+            mockFacade
+                .Setup(x => x.SetRecipeFavoriteAsync(recipeId, true))
+                .ReturnsAsync(recipeDto)
+                .Verifiable();
+
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+
+            // Act
+            var result = await controller.SetRecipeFavoriteAsync(recipeId, input);
+
+            // Assert
+            var okResult = result.ShouldBeOfType<OkObjectResult>();
+            okResult.StatusCode.ShouldBe(200);
+
+            mockFacade.Verify(x => x.SetRecipeFavoriteAsync(recipeId, true), Times.Once);
+        }
+
+        [Fact]
+        public async Task GenerateShareTokenAsync_WithValidId_ReturnsOkWithRecipe() {
+            // Arrange
+            var recipeId = Guid.NewGuid();
+
+            var recipeDto = new RecipeDtoBuilder()
+                .WithRecipeResourceId(recipeId)
+                .Build();
+
+            var mockFacade = MockRepository.Create<IRecipeFacade>();
+            var mockSubjectMapper = MockRepository.Create<SubjectModelMapper>();
+            var mapper = new RecipeModelMapper(mockSubjectMapper.Object);
+
+            mockFacade
+                .Setup(x => x.GenerateShareTokenAsync(recipeId))
+                .ReturnsAsync(recipeDto)
+                .Verifiable();
+
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+
+            // Act
+            var result = await controller.GenerateShareTokenAsync(recipeId);
+
+            // Assert
+            var okResult = result.ShouldBeOfType<OkObjectResult>();
+            okResult.StatusCode.ShouldBe(200);
+
+            mockFacade.Verify(x => x.GenerateShareTokenAsync(recipeId), Times.Once);
+        }
+
+        [Fact]
+        public async Task RevokeShareTokenAsync_WithValidId_ReturnsOkWithRecipe() {
+            // Arrange
+            var recipeId = Guid.NewGuid();
+
+            var recipeDto = new RecipeDtoBuilder()
+                .WithRecipeResourceId(recipeId)
+                .Build();
+
+            var mockFacade = MockRepository.Create<IRecipeFacade>();
+            var mockSubjectMapper = MockRepository.Create<SubjectModelMapper>();
+            var mapper = new RecipeModelMapper(mockSubjectMapper.Object);
+
+            mockFacade
+                .Setup(x => x.RevokeShareTokenAsync(recipeId))
+                .ReturnsAsync(recipeDto)
+                .Verifiable();
+
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+
+            // Act
+            var result = await controller.RevokeShareTokenAsync(recipeId);
+
+            // Assert
+            var okResult = result.ShouldBeOfType<OkObjectResult>();
+            okResult.StatusCode.ShouldBe(200);
+
+            mockFacade.Verify(x => x.RevokeShareTokenAsync(recipeId), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetSharedRecipeAsync_WithValidToken_ReturnsOkWithRecipe() {
+            // Arrange
+            var recipeDto = new RecipeDtoBuilder()
+                .WithTitle("Shared Recipe")
+                .Build();
+
+            var mockFacade = MockRepository.Create<IRecipeFacade>();
+            var mockSubjectMapper = MockRepository.Create<SubjectModelMapper>();
+            var mapper = new RecipeModelMapper(mockSubjectMapper.Object);
+
+            mockFacade
+                .Setup(x => x.GetRecipeByShareTokenAsync("abc123"))
+                .ReturnsAsync(recipeDto)
+                .Verifiable();
+
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+
+            // Act
+            var result = await controller.GetSharedRecipeAsync("abc123");
+
+            // Assert
+            var okResult = result.ShouldBeOfType<OkObjectResult>();
+            okResult.StatusCode.ShouldBe(200);
+
+            var returnedModel = okResult.Value.ShouldBeOfType<RecipeModel>();
+            returnedModel.Title.ShouldBe("Shared Recipe");
+
+            mockFacade.Verify(x => x.GetRecipeByShareTokenAsync("abc123"), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetRecipeVisibilityAsync_WithValidId_ReturnsOkWithRecipe() {
+            // Arrange
+            var recipeId = Guid.NewGuid();
+            var input = new SetVisibilityModel { IsPublic = true };
+
+            var recipeDto = new RecipeDtoBuilder()
+                .WithRecipeResourceId(recipeId)
+                .Build();
+
+            var mockFacade = MockRepository.Create<IRecipeFacade>();
+            var mockSubjectMapper = MockRepository.Create<SubjectModelMapper>();
+            var mapper = new RecipeModelMapper(mockSubjectMapper.Object);
+
+            mockFacade
+                .Setup(x => x.SetRecipeVisibilityAsync(recipeId, true))
+                .ReturnsAsync(recipeDto)
+                .Verifiable();
+
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+
+            // Act
+            var result = await controller.SetRecipeVisibilityAsync(recipeId, input);
+
+            // Assert
+            var okResult = result.ShouldBeOfType<OkObjectResult>();
+            okResult.StatusCode.ShouldBe(200);
+
+            mockFacade.Verify(x => x.SetRecipeVisibilityAsync(recipeId, true), Times.Once);
+        }
     }
 }
