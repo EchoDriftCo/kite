@@ -13,7 +13,9 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
 import { RecipeService } from '../../../services/recipe.service';
+import { TagService } from '../../../services/tag.service';
 import { Recipe, RecipeSearchRequest } from '../../../models/recipe.model';
+import { Tag, getCategoryName } from '../../../models/tag.model';
 
 @Component({
   selector: 'app-recipe-list',
@@ -42,6 +44,9 @@ export class RecipeListComponent implements OnInit {
   searchTitle = '';
   viewMode: 'mine' | 'public' = 'mine';
   favoritesOnly = false;
+  showTagFilters = false;
+  availableTags: Tag[] = [];
+  selectedTagIds: string[] = [];
 
   // Pagination
   pageNumber = 1;
@@ -50,11 +55,13 @@ export class RecipeListComponent implements OnInit {
 
   constructor(
     private recipeService: RecipeService,
+    private tagService: TagService,
     private router: Router
   ) {}
 
   ngOnInit() {
     this.loadRecipes();
+    this.loadTags();
   }
 
   loadRecipes() {
@@ -74,6 +81,10 @@ export class RecipeListComponent implements OnInit {
 
     if (this.favoritesOnly) {
       request.isFavorite = true;
+    }
+
+    if (this.selectedTagIds.length > 0) {
+      request.tagResourceIds = this.selectedTagIds;
     }
 
     this.recipeService.searchRecipes(request).subscribe({
@@ -150,6 +161,40 @@ export class RecipeListComponent implements OnInit {
     this.pageNumber = 1;
     this.loadRecipes();
   }
+
+  loadTags() {
+    this.tagService.searchTags({ pageSize: 100, sortBy: 'Name' }).subscribe({
+      next: (response) => {
+        this.availableTags = response.items || [];
+      },
+      error: (err) => {
+        console.error('Error loading tags:', err);
+      }
+    });
+  }
+
+  toggleTagFilter(tag: Tag) {
+    const index = this.selectedTagIds.indexOf(tag.tagResourceId);
+    if (index >= 0) {
+      this.selectedTagIds.splice(index, 1);
+    } else {
+      this.selectedTagIds.push(tag.tagResourceId);
+    }
+    this.pageNumber = 1;
+    this.loadRecipes();
+  }
+
+  isTagSelected(tag: Tag): boolean {
+    return this.selectedTagIds.includes(tag.tagResourceId);
+  }
+
+  clearTagFilters() {
+    this.selectedTagIds = [];
+    this.pageNumber = 1;
+    this.loadRecipes();
+  }
+
+  getCategoryName = getCategoryName;
 
   toggleFavorite(recipe: Recipe, event: Event) {
     event.stopPropagation();

@@ -30,6 +30,55 @@
   }
 }
 
+.tag-filters {
+  margin-bottom: 24px;
+
+  .tag-filter-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    button {
+      mat-icon {
+        margin-right: 4px;
+      }
+    }
+
+    .filter-count {
+      color: #90caf9;
+      font-weight: 500;
+    }
+
+    .clear-btn {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.8rem;
+    }
+  }
+
+  .tag-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 0;
+
+    .tag-chip {
+      font-size: 0.8rem;
+      border-color: rgba(255, 255, 255, 0.2);
+      transition: all 0.15s;
+
+      &.selected {
+        background-color: rgba(144, 202, 249, 0.2);
+        border-color: #90caf9;
+        color: #90caf9;
+      }
+
+      &:hover:not(.selected) {
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+    }
+  }
+}
+
 .loading-container {
   display: flex;
   flex-direction: column;

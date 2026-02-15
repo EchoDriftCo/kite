@@ -17,7 +17,7 @@
 
       <mat-form-field appearance="outline" class="search-field">
         <mat-label>Search recipes</mat-label>
-        <input matInput [(ngModel)]="searchTitle" (keyup.enter)="onSearch()" placeholder="Search by title...">
+        <input matInput [(ngModel)]="searchTitle" (keyup.enter)="onSearch()" placeholder="Search recipes...">
         <button mat-icon-button matSuffix (click)="onSearch()">
           <mat-icon>search</mat-icon>
         </button>
@@ -29,6 +29,35 @@
       </button>
     </div>
   </div>
+
+  @if (availableTags.length > 0) {
+    <div class="tag-filters">
+      <div class="tag-filter-header">
+        <button mat-button (click)="showTagFilters = !showTagFilters">
+          <mat-icon>{{ showTagFilters ? 'expand_less' : 'filter_list' }}</mat-icon>
+          Filter by tags
+          @if (selectedTagIds.length > 0) {
+            <span class="filter-count">({{ selectedTagIds.length }})</span>
+          }
+        </button>
+        @if (selectedTagIds.length > 0) {
+          <button mat-button class="clear-btn" (click)="clearTagFilters()">Clear filters</button>
+        }
+      </div>
+      @if (showTagFilters) {
+        <div class="tag-chips">
+          @for (tag of availableTags; track tag.tagResourceId) {
+            <button mat-stroked-button
+                    class="tag-chip"
+                    [class.selected]="isTagSelected(tag)"
+                    (click)="toggleTagFilter(tag)">
+              {{ tag.name }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
 
   @if (loading) {
     <div class="loading-container">

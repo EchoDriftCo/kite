@@ -34,7 +34,13 @@ namespace RecipeVault.Data.Searches {
 
             if (!string.IsNullOrEmpty(Title)) {
                 var pattern = $"%{Title}%";
-                entities = entities.Where(x => EF.Functions.ILike(x.Title, pattern));
+                entities = entities.Where(x =>
+                    EF.Functions.ILike(x.Title, pattern) ||
+                    (x.Description != null && EF.Functions.ILike(x.Description, pattern)) ||
+                    (x.Source != null && EF.Functions.ILike(x.Source, pattern)) ||
+                    x.Ingredients.Any(i =>
+                        (i.Item != null && EF.Functions.ILike(i.Item, pattern)) ||
+                        (i.RawText != null && EF.Functions.ILike(i.RawText, pattern))));
             }
 
             if (TagResourceIds != null && TagResourceIds.Count > 0) {
