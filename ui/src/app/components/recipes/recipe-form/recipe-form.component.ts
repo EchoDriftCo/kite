@@ -316,6 +316,11 @@ export class RecipeFormComponent implements OnInit {
           this.pendingImageMimeType = result.imageMimeType || 'image/png';
         }
 
+        // Set source URL when imported from a website
+        if (result.sourceUrl) {
+          this.recipeForm.patchValue({ source: result.sourceUrl });
+        }
+
         if (result.warnings && result.warnings.length > 0) {
           console.warn('Import warnings:', result.warnings);
         }
@@ -329,7 +334,8 @@ export class RecipeFormComponent implements OnInit {
       title: parsed.title || '',
       yield: parsed.yield || 4,
       prepTimeMinutes: parsed.prepTimeMinutes,
-      cookTimeMinutes: parsed.cookTimeMinutes
+      cookTimeMinutes: parsed.cookTimeMinutes,
+      originalImageUrl: parsed.imageUrl || this.recipeForm.get('originalImageUrl')?.value || ''
     });
 
     // Clear and populate ingredients

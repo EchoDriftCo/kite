@@ -44,6 +44,50 @@ Rules:
 - Sort alphabetically by item name
 - Do NOT merge items that are genuinely different ingredients";
 
+        private const string RecipeTextParserPrompt = @"You are a recipe parser. Extract structured data from this recipe webpage content.
+
+Return ONLY valid JSON matching this schema:
+{
+  ""title"": ""string"",
+  ""yield"": ""number or null (servings/portions)"",
+  ""prepTimeMinutes"": ""number or null"",
+  ""cookTimeMinutes"": ""number or null"",
+  ""ingredients"": [
+    {
+      ""quantity"": ""number or null"",
+      ""unit"": ""string or null (normalize to: cup, tbsp, tsp, oz, lb, g, kg, ml, l, piece, pinch, dash)"",
+      ""item"": ""string (the ingredient name)"",
+      ""preparation"": ""string or null (e.g., chopped, melted, room temperature)"",
+      ""rawText"": ""string (original text from source)""
+    }
+  ],
+  ""instructions"": [
+    {
+      ""stepNumber"": ""number"",
+      ""instruction"": ""string (cleaned up instruction)"",
+      ""rawText"": ""string (original text from source)""
+    }
+  ]
+}
+
+Rules:
+- Normalize units (tablespoon → tbsp, teaspoon → tsp, etc.)
+- Convert fractions to decimals (1/2 → 0.5, 1/4 → 0.25, etc.)
+- Separate preparation notes from ingredient names
+- Number instructions sequentially even if source doesn't
+- If information is unclear or missing, use null rather than guessing
+- Always preserve original text from the source
+- Ignore ads, navigation, comments, and other non-recipe content on the page
+
+Time extraction:
+- If the recipe explicitly states prep/cook times, use those values
+- If times are NOT explicitly stated, calculate them from the instructions:
+  - prepTimeMinutes = sum of active hands-on work (chopping, mixing, browning, assembling, etc.)
+  - cookTimeMinutes = sum of ALL passive cooking times found in instructions (baking, simmering, boiling, roasting, resting, marinating, etc.)
+  - Include every timed step — e.g. ""simmer 20 minutes"" + ""bake 1.5 hours"" = 110 cookTimeMinutes
+- Convert all time units to minutes (1 hour = 60, 1.5 hours = 90, etc.)
+- Do NOT double-count — if prep and cook overlap (e.g. ""while that bakes, prepare...""), keep them separate";
+
         private const string RecipeParserPrompt = @"You are a recipe parser. Extract structured data from this recipe image.
 
 Return ONLY valid JSON matching this schema:
@@ -251,6 +295,54 @@ Time extraction:
                 logger.LogError(ex, "Unexpected error while parsing recipe with Gemini");
                 throw new GeminiApiException("Unexpected error while parsing recipe", ex);
             }
+        }
+
+        /// <summary>
+        /// Parse recipe text (e.g., from a webpage) using Gemini API
+        /// </summary>
+        public async Task<GeminiParseResponse> ParseRecipeTextAsync(string recipeText, CancellationToken cancellationToken = default) {
+            if (string.IsNullOrWhiteSpace(recipeText)) {
+                throw new ArgumentException("Recipe text is required", nameof(recipeText));
+            }
+
+            logger.LogInformation("Sending recipe text parsing request to Gemini API, textLength={TextLength}", recipeText.Length);
+
+            var prompt = RecipeTextParserPrompt + "\n\nRecipe content:\n" + recipeText;
+            var responseText = await SendTextPromptAsync(prompt, cancellationToken).ConfigureAwait(false);
+
+            // Strip markdown code fences if present
+            var jsonText = responseText.Trim();
+            if (jsonText.StartsWith("```", StringComparison.Ordinal)) {
+                var firstNewline = jsonText.IndexOf('\n');
+                if (firstNewline > 0)
+                    jsonText = jsonText.Substring(firstNewline + 1);
+                if (jsonText.EndsWith("```", StringComparison.Ordinal))
+                    jsonText = jsonText.Substring(0, jsonText.Length - 3).Trim();
+            }
+
+            var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            GeminiRecipeParseResult parseResult;
+
+            if (jsonText.TrimStart().StartsWith('[')) {
+                var results = JsonSerializer.Deserialize<List<GeminiRecipeParseResult>>(jsonText, jsonOptions);
+                if (results == null || results.Count == 0) {
+                    logger.LogWarning("Gemini returned an empty array of recipes from text");
+                    throw new GeminiApiException("Could not parse Gemini response as recipe data");
+                }
+                logger.LogInformation("Gemini returned {Count} recipes from text, using first one: {Title}", results.Count, results[0].Title);
+                parseResult = results[0];
+            } else {
+                parseResult = JsonSerializer.Deserialize<GeminiRecipeParseResult>(jsonText, jsonOptions);
+            }
+
+            if (parseResult == null) {
+                logger.LogWarning("Failed to deserialize recipe parse result from text");
+                throw new GeminiApiException("Could not parse Gemini response as recipe data");
+            }
+
+            var response = MapToGeminiParseResponse(parseResult);
+            logger.LogInformation("Successfully parsed recipe from text, confidence={Confidence}", response.Confidence);
+            return response;
         }
 
         /// <summary>

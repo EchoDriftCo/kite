@@ -104,6 +104,7 @@ export interface ParsedRecipe {
   cookTimeMinutes?: number;
   ingredients?: ParsedIngredient[];
   instructions?: ParsedInstruction[];
+  imageUrl?: string;
 }
 
 export interface ParsedIngredient {

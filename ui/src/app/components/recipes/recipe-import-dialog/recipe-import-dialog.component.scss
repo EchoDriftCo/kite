@@ -19,9 +19,18 @@ mat-dialog-content {
   max-height: 80vh;
   overflow-y: auto;
 
+  .tab-content {
+    padding-top: 16px;
+  }
+
   .instructions {
     color: rgba(0, 0, 0, 0.7);
     margin-bottom: 24px;
+  }
+
+  .url-input {
+    width: 100%;
+    margin-bottom: 8px;
   }
 
   .error-message {

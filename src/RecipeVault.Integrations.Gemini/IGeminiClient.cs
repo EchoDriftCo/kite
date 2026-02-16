@@ -19,6 +19,15 @@ namespace RecipeVault.Integrations.Gemini {
         Task<GeminiParseResponse> ParseRecipeAsync(string imageBase64, string mimeType, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Parse recipe text (e.g., from a webpage) using Gemini API
+        /// </summary>
+        /// <param name="recipeText">Text content containing the recipe</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Parsed recipe response from Gemini</returns>
+        /// <exception cref="GeminiApiException">Thrown when API returns error or no recipe detected</exception>
+        Task<GeminiParseResponse> ParseRecipeTextAsync(string recipeText, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Consolidate a grocery list by intelligently merging similar ingredients
         /// </summary>
         /// <param name="items">Raw grocery items to consolidate</param>

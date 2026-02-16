@@ -55,6 +55,11 @@ namespace RecipeVault.WebApi.Models.Responses {
         /// List of preparation instructions
         /// </summary>
         public List<ParsedInstructionModel> Instructions { get; set; }
+
+        /// <summary>
+        /// Image URL extracted from source webpage
+        /// </summary>
+        public string ImageUrl { get; set; }
     }
 
     /// <summary>

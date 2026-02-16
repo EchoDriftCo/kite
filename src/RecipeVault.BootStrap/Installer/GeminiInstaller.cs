@@ -16,6 +16,11 @@ namespace RecipeVault.BootStrap.Installer {
                 client.BaseAddress = new System.Uri("https://generativelanguage.googleapis.com");
                 client.Timeout = System.TimeSpan.FromSeconds(60);
             });
+
+            services.AddHttpClient("RecipeUrlFetcher", client => {
+                client.Timeout = System.TimeSpan.FromSeconds(30);
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("RecipeVault/1.0");
+            });
         }
     }
 }

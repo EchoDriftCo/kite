@@ -12,5 +12,10 @@ namespace RecipeVault.WebApi.Models.Requests {
         /// MIME type of the image (e.g., "image/jpeg", "image/png")
         /// </summary>
         public string MimeType { get; set; }
+
+        /// <summary>
+        /// URL of a recipe webpage to parse
+        /// </summary>
+        public string Url { get; set; }
     }
 }

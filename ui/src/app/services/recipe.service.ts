@@ -90,15 +90,21 @@ export class RecipeService {
   }
 
   /**
-   * Parse a recipe from image using AI (Gemini)
+   * Parse a recipe from image or URL using AI (Gemini)
    */
   parseRecipe(request: ParseRecipeRequest): Observable<ParseRecipeResponse> {
-    // Backend expects { image: base64, mimeType: string }
-    const payload = {
+    if (request.imageUrl) {
+      // URL-based parsing
+      return this.api.post<ParseRecipeResponse>(`${this.endpoint}/parse`, {
+        url: request.imageUrl
+      });
+    }
+
+    // Image-based parsing
+    return this.api.post<ParseRecipeResponse>(`${this.endpoint}/parse`, {
       image: request.imageData,
-      mimeType: request.mimeType || 'image/jpeg'  // Use provided MIME type or default to jpeg
-    };
-    return this.api.post<ParseRecipeResponse>(`${this.endpoint}/parse`, payload);
+      mimeType: request.mimeType || 'image/jpeg'
+    });
   }
 
   /**

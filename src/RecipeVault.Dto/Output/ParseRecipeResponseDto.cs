@@ -55,6 +55,11 @@ namespace RecipeVault.Dto.Output {
         /// List of preparation instructions
         /// </summary>
         public List<ParsedInstructionDto> Instructions { get; set; } = new();
+
+        /// <summary>
+        /// Image URL extracted from source webpage (og:image)
+        /// </summary>
+        public string ImageUrl { get; set; }
     }
 
     /// <summary>

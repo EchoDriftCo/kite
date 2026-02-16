@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
 using Cortside.Common.Logging;
@@ -14,6 +16,7 @@ using RecipeVault.Dto.Input;
 using RecipeVault.Dto.Output;
 using RecipeVault.Exceptions;
 using RecipeVault.Integrations.Gemini;
+using RecipeVault.Integrations.Gemini.Exceptions;
 
 namespace RecipeVault.DomainService {
     public class RecipeService : IRecipeService {
@@ -22,15 +25,17 @@ namespace RecipeVault.DomainService {
         private readonly ITagRepository tagRepository;
         private readonly IGeminiClient geminiClient;
         private readonly ISubjectPrincipal subjectPrincipal;
+        private readonly IHttpClientFactory httpClientFactory;
 
         private static readonly Guid SystemSubjectId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
-        public RecipeService(IRecipeRepository recipeRepository, ITagRepository tagRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger, ISubjectPrincipal subjectPrincipal) {
+        public RecipeService(IRecipeRepository recipeRepository, ITagRepository tagRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger, ISubjectPrincipal subjectPrincipal, IHttpClientFactory httpClientFactory) {
             this.logger = logger;
             this.recipeRepository = recipeRepository;
             this.tagRepository = tagRepository;
             this.geminiClient = geminiClient;
             this.subjectPrincipal = subjectPrincipal;
+            this.httpClientFactory = httpClientFactory;
         }
 
         public async Task<Recipe> CreateRecipeAsync(UpdateRecipeDto dto) {
@@ -271,45 +276,129 @@ namespace RecipeVault.DomainService {
         }
 
         public async Task<ParseRecipeResponseDto> ParseRecipeImageAsync(ParseRecipeRequestDto request) {
-            logger.LogInformation("Parsing recipe image, mimeType={MimeType}, imageSize={ImageSize}",
-                request.MimeType, request.Image?.Length ?? 0);
+            GeminiParseResponse geminiResponse;
+            string extractedImageUrl = null;
 
-            try {
-                var geminiResponse = await geminiClient.ParseRecipeAsync(request.Image, request.MimeType)
-                    .ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(request.Url)) {
+                logger.LogInformation("Parsing recipe from URL={Url}", request.Url);
 
-                var result = new ParseRecipeResponseDto {
-                    Confidence = geminiResponse.Confidence,
-                    Parsed = new ParsedRecipeDto {
-                        Title = geminiResponse.Title,
-                        Yield = geminiResponse.Yield,
-                        PrepTimeMinutes = geminiResponse.PrepTimeMinutes,
-                        CookTimeMinutes = geminiResponse.CookTimeMinutes,
-                        Ingredients = geminiResponse.Ingredients?.Select(i => new ParsedIngredientDto {
-                            Quantity = i.Quantity,
-                            Unit = i.Unit,
-                            Item = i.Item,
-                            Preparation = i.Preparation,
-                            RawText = i.RawText
-                        }).ToList(),
-                        Instructions = geminiResponse.Instructions?.Select(i => new ParsedInstructionDto {
-                            StepNumber = i.StepNumber,
-                            Instruction = i.Instruction,
-                            RawText = i.RawText
-                        }).ToList()
-                    },
-                    Warnings = geminiResponse.Warnings
-                };
+                try {
+                    var htmlContent = await FetchUrlContentAsync(request.Url).ConfigureAwait(false);
+                    extractedImageUrl = ExtractOpenGraphImage(htmlContent);
+                    var cleanedContent = StripHtmlNonContent(htmlContent);
 
-                logger.LogInformation("Successfully parsed recipe, confidence={Confidence}, warnings={WarningCount}",
-                    result.Confidence, result.Warnings?.Count ?? 0);
+                    geminiResponse = await geminiClient.ParseRecipeTextAsync(cleanedContent)
+                        .ConfigureAwait(false);
+                } catch (Exception ex) when (ex is not GeminiApiException) {
+                    logger.LogError(ex, "Failed to parse recipe from URL {Url}", request.Url);
+                    throw;
+                }
+            } else if (!string.IsNullOrWhiteSpace(request.Image)) {
+                logger.LogInformation("Parsing recipe image, mimeType={MimeType}, imageSize={ImageSize}",
+                    request.MimeType, request.Image?.Length ?? 0);
 
-                return result;
+                try {
+                    geminiResponse = await geminiClient.ParseRecipeAsync(request.Image, request.MimeType)
+                        .ConfigureAwait(false);
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Failed to parse recipe image");
+                    throw;
+                }
+            } else {
+                throw new ArgumentException("Either image data or URL is required");
             }
-            catch (Exception ex) {
-                logger.LogError(ex, "Failed to parse recipe image");
-                throw;
+
+            var result = new ParseRecipeResponseDto {
+                Confidence = geminiResponse.Confidence,
+                Parsed = new ParsedRecipeDto {
+                    Title = geminiResponse.Title,
+                    Yield = geminiResponse.Yield,
+                    PrepTimeMinutes = geminiResponse.PrepTimeMinutes,
+                    CookTimeMinutes = geminiResponse.CookTimeMinutes,
+                    Ingredients = geminiResponse.Ingredients?.Select(i => new ParsedIngredientDto {
+                        Quantity = i.Quantity,
+                        Unit = i.Unit,
+                        Item = i.Item,
+                        Preparation = i.Preparation,
+                        RawText = i.RawText
+                    }).ToList(),
+                    Instructions = geminiResponse.Instructions?.Select(i => new ParsedInstructionDto {
+                        StepNumber = i.StepNumber,
+                        Instruction = i.Instruction,
+                        RawText = i.RawText
+                    }).ToList(),
+                    ImageUrl = extractedImageUrl
+                },
+                Warnings = geminiResponse.Warnings
+            };
+
+            logger.LogInformation("Successfully parsed recipe, confidence={Confidence}, warnings={WarningCount}",
+                result.Confidence, result.Warnings?.Count ?? 0);
+
+            return result;
+        }
+
+        private async Task<string> FetchUrlContentAsync(string url) {
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+                (uri.Scheme != "http" && uri.Scheme != "https")) {
+                throw new ArgumentException("Invalid URL. Please provide a valid HTTP or HTTPS URL.");
             }
+
+            var client = httpClientFactory.CreateClient("RecipeUrlFetcher");
+
+            var response = await client.GetAsync(uri).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        }
+
+        private static string ExtractOpenGraphImage(string html) {
+            // Try og:image meta tag first (most universal)
+            var ogMatch = Regex.Match(html, @"<meta\s+[^>]*property\s*=\s*[""']og:image[""'][^>]*content\s*=\s*[""']([^""']+)[""']", RegexOptions.IgnoreCase);
+            if (ogMatch.Success) {
+                return ogMatch.Groups[1].Value;
+            }
+
+            // Try reverse attribute order (content before property)
+            ogMatch = Regex.Match(html, @"<meta\s+[^>]*content\s*=\s*[""']([^""']+)[""'][^>]*property\s*=\s*[""']og:image[""']", RegexOptions.IgnoreCase);
+            if (ogMatch.Success) {
+                return ogMatch.Groups[1].Value;
+            }
+
+            return null;
+        }
+
+        private static string StripHtmlNonContent(string html) {
+            // Remove script, style, nav, footer, header tags and their content
+            var cleaned = Regex.Replace(html, @"<script[^>]*>[\s\S]*?</script>", "", RegexOptions.IgnoreCase);
+            cleaned = Regex.Replace(cleaned, @"<style[^>]*>[\s\S]*?</style>", "", RegexOptions.IgnoreCase);
+            cleaned = Regex.Replace(cleaned, @"<nav[^>]*>[\s\S]*?</nav>", "", RegexOptions.IgnoreCase);
+            cleaned = Regex.Replace(cleaned, @"<footer[^>]*>[\s\S]*?</footer>", "", RegexOptions.IgnoreCase);
+            cleaned = Regex.Replace(cleaned, @"<header[^>]*>[\s\S]*?</header>", "", RegexOptions.IgnoreCase);
+
+            // Remove HTML comments
+            cleaned = Regex.Replace(cleaned, @"<!--[\s\S]*?-->", "");
+
+            // Remove remaining HTML tags but keep text content
+            cleaned = Regex.Replace(cleaned, @"<[^>]+>", " ");
+
+            // Decode common HTML entities
+            cleaned = cleaned.Replace("&amp;", "&")
+                             .Replace("&lt;", "<")
+                             .Replace("&gt;", ">")
+                             .Replace("&quot;", "\"")
+                             .Replace("&#39;", "'")
+                             .Replace("&nbsp;", " ");
+
+            // Collapse whitespace
+            cleaned = Regex.Replace(cleaned, @"\s+", " ").Trim();
+
+            // Truncate to avoid exceeding Gemini token limits
+            if (cleaned.Length > 30000) {
+                cleaned = cleaned.Substring(0, 30000);
+            }
+
+            return cleaned;
         }
     }
 }

@@ -8,6 +8,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { ImageCropperComponent, ImageCroppedEvent, LoadedImage } from 'ngx-image-cropper';
 import { RecipeService } from '../../../services/recipe.service';
 
@@ -19,6 +21,7 @@ export interface ImportResult {
   error?: string;
   imageData?: string;
   imageMimeType?: string;
+  sourceUrl?: string;
 }
 
 @Component({
@@ -34,6 +37,8 @@ export interface ImportResult {
     MatTabsModule,
     MatTooltipModule,
     MatSlideToggleModule,
+    MatFormFieldModule,
+    MatInputModule,
     ImageCropperComponent
   ],
   templateUrl: './recipe-import-dialog.component.html',
@@ -42,6 +47,9 @@ export interface ImportResult {
 export class RecipeImportDialogComponent {
   loading = false;
   error = '';
+  activeTab: 'image' | 'url' = 'image';
+
+  // Image tab state
   selectedFile: File | null = null;
   previewUrl: string | null = null;
   dragOver = false;
@@ -50,10 +58,18 @@ export class RecipeImportDialogComponent {
   cropperReady = false;
   saveImage = true;
 
+  // URL tab state
+  recipeUrl = '';
+
   constructor(
     private dialogRef: MatDialogRef<RecipeImportDialogComponent>,
     private recipeService: RecipeService
   ) {}
+
+  onTabChange(index: number) {
+    this.activeTab = index === 0 ? 'image' : 'url';
+    this.error = '';
+  }
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -139,7 +155,21 @@ export class RecipeImportDialogComponent {
     this.error = 'Failed to load image. Please try a different file.';
   }
 
+  get isImportDisabled(): boolean {
+    if (this.loading) return true;
+    if (this.activeTab === 'image') return !this.selectedFile;
+    return !this.recipeUrl.trim();
+  }
+
   async importRecipe() {
+    if (this.activeTab === 'url') {
+      await this.importFromUrl();
+    } else {
+      await this.importFromImage();
+    }
+  }
+
+  private async importFromImage() {
     if (!this.selectedFile) {
       this.error = 'Please select an image';
       return;
@@ -197,6 +227,42 @@ export class RecipeImportDialogComponent {
       this.error = err.message || 'Failed to parse recipe. Please try again.';
       this.loading = false;
       console.error('Recipe import error:', err);
+    }
+  }
+
+  private async importFromUrl() {
+    const url = this.recipeUrl.trim();
+    if (!url) {
+      this.error = 'Please enter a URL';
+      return;
+    }
+
+    this.loading = true;
+    this.error = '';
+
+    try {
+      const response = await this.recipeService.parseRecipe({
+        imageUrl: url
+      }).toPromise();
+
+      if (!response || !response.recipe) {
+        throw new Error('Failed to extract recipe from URL');
+      }
+
+      const result: ImportResult = {
+        success: true,
+        parsedData: response.recipe,
+        confidence: response.confidence,
+        warnings: response.warnings,
+        sourceUrl: url
+      };
+
+      this.dialogRef.close(result);
+
+    } catch (err: any) {
+      this.error = err.message || 'Failed to extract recipe from URL. Please try again.';
+      this.loading = false;
+      console.error('Recipe URL import error:', err);
     }
   }
 

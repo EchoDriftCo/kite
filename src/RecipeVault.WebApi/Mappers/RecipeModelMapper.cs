@@ -125,7 +125,8 @@ namespace RecipeVault.WebApi.Mappers {
 
             return new ParseRecipeRequestDto {
                 Image = model.Image,
-                MimeType = model.MimeType
+                MimeType = model.MimeType,
+                Url = model.Url
             };
         }
 
@@ -152,7 +153,8 @@ namespace RecipeVault.WebApi.Mappers {
                         StepNumber = i.StepNumber,
                         Instruction = i.Instruction,
                         RawText = i.RawText
-                    }).ToList()
+                    }).ToList(),
+                    ImageUrl = dto.Parsed.ImageUrl
                 },
                 Warnings = dto.Warnings
             };
