@@ -1,0 +1,37 @@
+<div class="copy-dialog">
+  <h2 mat-dialog-title>
+    <mat-icon>content_copy</mat-icon>
+    Copy Meal Plan
+  </h2>
+
+  <mat-dialog-content>
+    <p class="info-text">
+      Create a copy of this {{ planDurationDays + 1 }}-day plan with new dates. All meals will be shifted to the new date range.
+    </p>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Plan Name</mat-label>
+      <input matInput [(ngModel)]="name" required>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Start Date</mat-label>
+      <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" required>
+      <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+    </mat-form-field>
+
+    <div class="end-date-display">
+      <mat-icon>event</mat-icon>
+      <span>End date: {{ formatDate(endDate) }}</span>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button mat-raised-button color="primary" (click)="confirm()" [disabled]="!isValid">
+      <mat-icon>content_copy</mat-icon>
+      Copy Plan
+    </button>
+  </mat-dialog-actions>
+</div>

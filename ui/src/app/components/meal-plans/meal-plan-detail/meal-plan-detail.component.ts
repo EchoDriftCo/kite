@@ -13,6 +13,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MealPlanService } from '../../../services/meal-plan.service';
 import { MealPlan, MealPlanEntry, MealSlot, MEAL_SLOT_LABELS, MealPlanEntryRequest, CreateMealPlanRequest } from '../../../models/meal-plan.model';
 import { RecipePickerDialogComponent } from '../recipe-picker-dialog/recipe-picker-dialog.component';
+import { CopyMealPlanDialogComponent, CopyMealPlanResult } from '../copy-meal-plan-dialog/copy-meal-plan-dialog.component';
 
 interface CalendarDay {
   date: Date;
@@ -190,6 +191,52 @@ export class MealPlanDetailComponent implements OnInit {
       },
       error: (err) => {
         this.error = err.message || 'Failed to update meal plan';
+      }
+    });
+  }
+
+  copyPlan() {
+    if (!this.plan) return;
+
+    const dialogRef = this.dialog.open(CopyMealPlanDialogComponent, {
+      width: '450px',
+      maxWidth: '90vw',
+      data: this.plan
+    });
+
+    dialogRef.afterClosed().subscribe((result: CopyMealPlanResult | null) => {
+      if (result && this.plan) {
+        const origStart = new Date(this.plan.startDate);
+        const newStart = new Date(result.startDate);
+        const offsetMs = newStart.getTime() - origStart.getTime();
+
+        const shiftedEntries: MealPlanEntryRequest[] = (this.plan.entries || []).map(e => {
+          const entryDate = new Date(e.date);
+          const shiftedDate = new Date(entryDate.getTime() + offsetMs);
+          return {
+            date: this.formatDateStr(shiftedDate),
+            mealSlot: e.mealSlot,
+            recipeResourceId: e.recipeResourceId,
+            servings: e.servings || undefined,
+            isLeftover: e.isLeftover
+          };
+        });
+
+        const request: CreateMealPlanRequest = {
+          name: result.name,
+          startDate: result.startDate,
+          endDate: result.endDate,
+          entries: shiftedEntries
+        };
+
+        this.mealPlanService.createMealPlan(request).subscribe({
+          next: (newPlan) => {
+            this.router.navigate(['/meal-plans', newPlan.mealPlanResourceId]);
+          },
+          error: (err) => {
+            this.error = err.message || 'Failed to copy meal plan';
+          }
+        });
       }
     });
   }

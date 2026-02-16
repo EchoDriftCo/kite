@@ -6,8 +6,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatDialog } from '@angular/material/dialog';
 import { MealPlanService } from '../../../services/meal-plan.service';
-import { MealPlan, MealPlanSearchRequest } from '../../../models/meal-plan.model';
+import { MealPlan, MealPlanSearchRequest, MealPlanEntryRequest, CreateMealPlanRequest } from '../../../models/meal-plan.model';
+import { CopyMealPlanDialogComponent, CopyMealPlanResult } from '../copy-meal-plan-dialog/copy-meal-plan-dialog.component';
 
 @Component({
   selector: 'app-meal-plan-list',
@@ -33,7 +35,8 @@ export class MealPlanListComponent implements OnInit {
 
   constructor(
     private mealPlanService: MealPlanService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit() {
@@ -77,6 +80,60 @@ export class MealPlanListComponent implements OnInit {
     this.router.navigate(['/meal-plans', plan.mealPlanResourceId, 'edit']);
   }
 
+  copyMealPlan(plan: MealPlan, event: Event) {
+    event.stopPropagation();
+
+    // Fetch full plan data (list may not include entries)
+    this.mealPlanService.getMealPlan(plan.mealPlanResourceId).subscribe({
+      next: (fullPlan) => {
+        const dialogRef = this.dialog.open(CopyMealPlanDialogComponent, {
+          width: '450px',
+          maxWidth: '90vw',
+          data: fullPlan
+        });
+
+        dialogRef.afterClosed().subscribe((result: CopyMealPlanResult | null) => {
+          if (result) {
+            const origStart = new Date(fullPlan.startDate);
+            const newStart = new Date(result.startDate);
+            const offsetMs = newStart.getTime() - origStart.getTime();
+
+            const shiftedEntries: MealPlanEntryRequest[] = (fullPlan.entries || []).map(e => {
+              const entryDate = new Date(e.date);
+              const shiftedDate = new Date(entryDate.getTime() + offsetMs);
+              return {
+                date: this.formatDateStr(shiftedDate),
+                mealSlot: e.mealSlot,
+                recipeResourceId: e.recipeResourceId,
+                servings: e.servings || undefined,
+                isLeftover: e.isLeftover
+              };
+            });
+
+            const request: CreateMealPlanRequest = {
+              name: result.name,
+              startDate: result.startDate,
+              endDate: result.endDate,
+              entries: shiftedEntries
+            };
+
+            this.mealPlanService.createMealPlan(request).subscribe({
+              next: (newPlan) => {
+                this.router.navigate(['/meal-plans', newPlan.mealPlanResourceId]);
+              },
+              error: (err) => {
+                this.error = err.message || 'Failed to copy meal plan';
+              }
+            });
+          }
+        });
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to load meal plan for copying';
+      }
+    });
+  }
+
   createNew() {
     this.router.navigate(['/meal-plans/new']);
   }
@@ -85,5 +142,12 @@ export class MealPlanListComponent implements OnInit {
     const start = new Date(plan.startDate);
     const end = new Date(plan.endDate);
     return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+  }
+
+  private formatDateStr(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }
