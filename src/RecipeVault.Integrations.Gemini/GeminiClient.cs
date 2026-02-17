@@ -21,7 +21,9 @@ namespace RecipeVault.Integrations.Gemini {
         private readonly IConfiguration configuration;
         private readonly ILogger<GeminiClient> logger;
 
-        private const string GroceryConsolidationPrompt = @"You are a grocery list optimizer. Given a list of grocery items (some with quantities and units, some without), consolidate them into a clean, deduplicated shopping list.
+        private const string GroceryConsolidationPrompt = @"You are a grocery list optimizer. Given a list of grocery items (some with quantities and units, some without), consolidate them into a clean, deduplicated shopping list organized by store section.
+
+Each item includes [from: ...] tags showing which recipes it comes from. Preserve and merge these source lists.
 
 Return ONLY valid JSON matching this schema:
 {
@@ -29,7 +31,9 @@ Return ONLY valid JSON matching this schema:
     {
       ""item"": ""string (normalized ingredient name)"",
       ""quantity"": ""number or null"",
-      ""unit"": ""string or null (normalize to: cup, tbsp, tsp, oz, lb, g, kg, ml, l, piece, pinch, dash)""
+      ""unit"": ""string or null (normalize to: cup, tbsp, tsp, oz, lb, g, kg, ml, l, piece, pinch, dash)"",
+      ""category"": ""string (one of: Produce, Dairy, Meat & Seafood, Bakery, Pantry, Frozen, Beverages, Condiments & Spices, Other)"",
+      ""sources"": [""array of recipe name strings from the [from: ...] tags, deduplicated""]
     }
   ]
 }
@@ -37,11 +41,13 @@ Return ONLY valid JSON matching this schema:
 Rules:
 - Merge items that are clearly the same ingredient (e.g., ""cooking oil"" and ""oil"" → ""oil"", ""cheddar cheese"" and ""cheese"" → ""cheddar cheese"")
 - When merging, keep the more specific name (""cheddar cheese"" over ""cheese"", ""olive oil"" over ""oil"")
+- When merging items, combine their sources arrays (deduplicated)
 - Combine quantities when units match or are compatible (e.g., 2 tsp + 1 tbsp = 1 tbsp + 2 tsp, or just sum as 5 tsp)
 - If one entry has a quantity and another doesn't, include the quantity and add a note like ""+ more""
 - If units are incompatible and can't be converted, list them separately (e.g., ""2 cups milk"" and ""1 lb milk"" stay separate)
 - Normalize unit names (tablespoon → tbsp, teaspoon → tsp, etc.)
-- Sort alphabetically by item name
+- Assign each item to the most appropriate store category
+- Sort items alphabetically within each category, and sort categories in this order: Produce, Dairy, Meat & Seafood, Bakery, Frozen, Beverages, Condiments & Spices, Pantry, Other
 - Do NOT merge items that are genuinely different ingredients";
 
         private const string RecipeTextParserPrompt = @"You are a recipe parser. Extract structured data from this recipe webpage content.
@@ -353,7 +359,7 @@ Time extraction:
                 return new GeminiGroceryConsolidationResponse();
             }
 
-            // Build a text representation of the items
+            // Build a text representation of the items including sources
             var itemLines = items.Select(i => {
                 var parts = new List<string>();
                 if (i.Quantity.HasValue) {
@@ -363,6 +369,9 @@ Time extraction:
                     parts.Add(i.Unit);
                 }
                 parts.Add(i.Item);
+                if (i.Sources != null && i.Sources.Count > 0) {
+                    parts.Add($"[from: {string.Join(", ", i.Sources)}]");
+                }
                 return string.Join(" ", parts);
             });
 
@@ -382,7 +391,9 @@ Time extraction:
                     Items = items.Select(i => new GeminiConsolidatedItem {
                         Item = i.Item,
                         Quantity = i.Quantity,
-                        Unit = i.Unit
+                        Unit = i.Unit,
+                        Category = "Other",
+                        Sources = i.Sources ?? new List<string>()
                     }).ToList()
                 };
             }
@@ -394,7 +405,9 @@ Time extraction:
                 Items = result.Items.Select(i => new GeminiConsolidatedItem {
                     Item = i.Item,
                     Quantity = i.Quantity,
-                    Unit = i.Unit
+                    Unit = i.Unit,
+                    Category = i.Category ?? "Other",
+                    Sources = i.Sources ?? new List<string>()
                 }).ToList()
             };
         }

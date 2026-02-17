@@ -273,6 +273,43 @@ namespace RecipeVault.Integrations.Gemini.Tests.Mocks {
         }
 
         /// <summary>
+        /// Stub a successful grocery consolidation response
+        /// </summary>
+        public GeminiMockServer StubConsolidateGrocerySuccess(List<MockConsolidatedItem> items = null) {
+            items ??= new List<MockConsolidatedItem> {
+                new() { Item = "flour", Quantity = 5m, Unit = "cup", Category = "Pantry", Sources = new List<string> { "Banana Bread", "Pizza Dough" } },
+                new() { Item = "sugar", Quantity = 0.5m, Unit = "cup", Category = "Pantry", Sources = new List<string> { "Banana Bread" } }
+            };
+
+            var consolidationResult = new { items };
+            var resultJson = JsonSerializer.Serialize(consolidationResult, JsonOptions);
+
+            var response = new {
+                candidates = new[] {
+                    new {
+                        content = new {
+                            parts = new[] {
+                                new { text = resultJson }
+                            }
+                        },
+                        finishReason = "STOP"
+                    }
+                }
+            };
+
+            server
+                .Given(Request.Create()
+                    .WithPath("/v1beta/models/*")
+                    .UsingPost())
+                .RespondWith(Response.Create()
+                    .WithStatusCode(200)
+                    .WithHeader("Content-Type", "application/json")
+                    .WithBody(JsonSerializer.Serialize(response, JsonOptions)));
+
+            return this;
+        }
+
+        /// <summary>
         /// Reset all stubs
         /// </summary>
         public GeminiMockServer Reset() {
@@ -321,5 +358,25 @@ namespace RecipeVault.Integrations.Gemini.Tests.Mocks {
 
         [JsonPropertyName("rawText")]
         public string RawText { get; set; }
+    }
+
+    /// <summary>
+    /// Mock consolidated grocery item for test data
+    /// </summary>
+    public class MockConsolidatedItem {
+        [JsonPropertyName("item")]
+        public string Item { get; set; }
+
+        [JsonPropertyName("quantity")]
+        public decimal? Quantity { get; set; }
+
+        [JsonPropertyName("unit")]
+        public string Unit { get; set; }
+
+        [JsonPropertyName("category")]
+        public string Category { get; set; }
+
+        [JsonPropertyName("sources")]
+        public List<string> Sources { get; set; }
     }
 }

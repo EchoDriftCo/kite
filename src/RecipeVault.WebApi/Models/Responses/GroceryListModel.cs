@@ -11,5 +11,7 @@ namespace RecipeVault.WebApi.Models.Responses {
         public string Item { get; set; }
         public decimal? Quantity { get; set; }
         public string Unit { get; set; }
+        public string Category { get; set; }
+        public List<string> Sources { get; set; }
     }
 }

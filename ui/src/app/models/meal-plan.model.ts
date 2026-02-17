@@ -63,4 +63,6 @@ export interface GroceryItem {
   item: string;
   quantity?: number;
   unit?: string;
+  category?: string;
+  sources?: string[];
 }

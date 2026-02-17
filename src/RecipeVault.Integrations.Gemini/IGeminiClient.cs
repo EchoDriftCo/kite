@@ -66,6 +66,7 @@ namespace RecipeVault.Integrations.Gemini {
         public string Item { get; set; }
         public decimal? Quantity { get; set; }
         public string Unit { get; set; }
+        public List<string> Sources { get; set; } = new();
     }
 
     /// <summary>
@@ -82,6 +83,8 @@ namespace RecipeVault.Integrations.Gemini {
         public string Item { get; set; }
         public decimal? Quantity { get; set; }
         public string Unit { get; set; }
+        public string Category { get; set; }
+        public List<string> Sources { get; set; } = new();
     }
 
     /// <summary>

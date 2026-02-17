@@ -197,6 +197,12 @@ namespace RecipeVault.Integrations.Gemini.Models {
 
         [JsonPropertyName("unit")]
         public string Unit { get; set; }
+
+        [JsonPropertyName("category")]
+        public string Category { get; set; }
+
+        [JsonPropertyName("sources")]
+        public List<string> Sources { get; set; }
     }
 
     /// <summary>

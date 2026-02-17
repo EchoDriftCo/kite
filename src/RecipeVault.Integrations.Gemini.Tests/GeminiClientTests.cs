@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -242,6 +243,131 @@ namespace RecipeVault.Integrations.Gemini.Tests {
                 geminiClient.ParseRecipeAsync(imageBase64, mimeType));
 
             ex.Message.ShouldContain("API key");
+        }
+
+        [Fact]
+        public async Task ConsolidateGroceryListAsync_WithNullList_ReturnsEmptyResponse() {
+            // Arrange
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns("test-api-key");
+            configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            // Act
+            var result = await geminiClient.ConsolidateGroceryListAsync(null);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.Items.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public async Task ConsolidateGroceryListAsync_WithEmptyList_ReturnsEmptyResponse() {
+            // Arrange
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns("test-api-key");
+            configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            // Act
+            var result = await geminiClient.ConsolidateGroceryListAsync(new List<GeminiGroceryItem>());
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.Items.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public async Task ConsolidateGroceryListAsync_WithValidItems_ReturnsConsolidatedList() {
+            // Arrange
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns("test-api-key");
+            configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
+
+            mockServer.Reset().StubConsolidateGrocerySuccess(new List<MockConsolidatedItem> {
+                new() { Item = "all-purpose flour", Quantity = 5m, Unit = "cup", Category = "Pantry", Sources = new List<string> { "Banana Bread", "Pizza Dough" } },
+                new() { Item = "sugar", Quantity = 0.5m, Unit = "cup", Category = "Pantry", Sources = new List<string> { "Banana Bread" } },
+                new() { Item = "yeast", Quantity = 1m, Unit = "tsp", Category = "Pantry", Sources = new List<string> { "Pizza Dough" } }
+            });
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            var items = new List<GeminiGroceryItem> {
+                new() { Item = "flour", Quantity = 2m, Unit = "cup", Sources = new List<string> { "Banana Bread" } },
+                new() { Item = "flour", Quantity = 3m, Unit = "cup", Sources = new List<string> { "Pizza Dough" } },
+                new() { Item = "sugar", Quantity = 0.5m, Unit = "cup", Sources = new List<string> { "Banana Bread" } },
+                new() { Item = "yeast", Quantity = 1m, Unit = "tsp", Sources = new List<string> { "Pizza Dough" } }
+            };
+
+            // Act
+            var result = await geminiClient.ConsolidateGroceryListAsync(items);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.Items.Count.ShouldBe(3);
+
+            var flour = result.Items.First(i => i.Item == "all-purpose flour");
+            flour.Quantity.ShouldBe(5m);
+            flour.Unit.ShouldBe("cup");
+            flour.Category.ShouldBe("Pantry");
+            flour.Sources.ShouldContain("Banana Bread");
+            flour.Sources.ShouldContain("Pizza Dough");
+
+            var sugar = result.Items.First(i => i.Item == "sugar");
+            sugar.Category.ShouldBe("Pantry");
+            sugar.Sources.ShouldContain("Banana Bread");
+        }
+
+        [Fact]
+        public async Task ConsolidateGroceryListAsync_WithItemsHavingSources_IncludesSourcesInPrompt() {
+            // Arrange
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns("test-api-key");
+            configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
+
+            mockServer.Reset().StubConsolidateGrocerySuccess(new List<MockConsolidatedItem> {
+                new() { Item = "milk", Quantity = 2m, Unit = "cup", Category = "Dairy", Sources = new List<string> { "Smoothie", "Pancakes" } }
+            });
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            var items = new List<GeminiGroceryItem> {
+                new() { Item = "milk", Quantity = 2m, Unit = "cup", Sources = new List<string> { "Smoothie", "Pancakes" } }
+            };
+
+            // Act
+            var result = await geminiClient.ConsolidateGroceryListAsync(items);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.Items.Count.ShouldBe(1);
+            result.Items[0].Sources.Count.ShouldBe(2);
+            result.Items[0].Sources.ShouldContain("Smoothie");
+            result.Items[0].Sources.ShouldContain("Pancakes");
+            result.Items[0].Category.ShouldBe("Dairy");
+        }
+
+        [Fact]
+        public async Task ConsolidateGroceryListAsync_WithNullCategoryInResponse_DefaultsToOther() {
+            // Arrange
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns("test-api-key");
+            configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
+
+            mockServer.Reset().StubConsolidateGrocerySuccess(new List<MockConsolidatedItem> {
+                new() { Item = "obscure spice", Quantity = 1m, Unit = "tsp", Category = null, Sources = null }
+            });
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            var items = new List<GeminiGroceryItem> {
+                new() { Item = "obscure spice", Quantity = 1m, Unit = "tsp" }
+            };
+
+            // Act
+            var result = await geminiClient.ConsolidateGroceryListAsync(items);
+
+            // Assert
+            result.Items[0].Category.ShouldBe("Other");
+            result.Items[0].Sources.ShouldNotBeNull();
+            result.Items[0].Sources.ShouldBeEmpty();
         }
 
         /// <summary>

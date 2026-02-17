@@ -22,6 +22,10 @@
         </button>
 
         <div class="action-buttons">
+          <button mat-raised-button (click)="copyToClipboard()" matTooltip="Copy unchecked items to clipboard">
+            <mat-icon>content_copy</mat-icon>
+            Copy
+          </button>
           <button mat-raised-button (click)="printList()">
             <mat-icon>print</mat-icon>
             Print
@@ -36,37 +40,74 @@
       <p class="progress">{{ checkedCount }} of {{ totalCount }} items checked</p>
     </div>
 
-    @if (groceryList.items.length === 0) {
+    @if (groupedItems.length === 0) {
       <div class="empty-state">
         <mat-icon>shopping_basket</mat-icon>
         <h2>No items needed</h2>
         <p>Add some recipes to your meal plan to generate a grocery list.</p>
       </div>
     } @else {
-      <mat-card class="grocery-card">
-        <mat-card-content>
-          @for (item of groceryList.items; track $index) {
-            <div class="grocery-item" [class.checked]="isChecked($index)">
-              <mat-checkbox
-                [checked]="isChecked($index)"
-                (change)="toggleItem($index)">
-              </mat-checkbox>
-              <span class="item-text">
-                @if (item.quantity) {
-                  <strong>{{ formatQuantity(item) }}</strong>
-                }
-                @if (item.unit) {
-                  <strong>{{ item.unit }}</strong>
-                }
-                {{ item.item }}
-              </span>
-            </div>
-            @if (!$last) {
-              <mat-divider></mat-divider>
+      <mat-accordion multi>
+        @for (group of groupedItems; track group.category) {
+          <mat-expansion-panel [expanded]="true">
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{ group.category }}</mat-panel-title>
+              <mat-panel-description>
+                {{ getCategoryCheckedCount(group) }} / {{ group.items.length }}
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+
+            @for (item of group.items; track item.key) {
+              <div class="grocery-item" [class.checked]="isChecked(item.key)">
+                <mat-checkbox
+                  [checked]="isChecked(item.key)"
+                  (change)="toggleItem(item.key)">
+                </mat-checkbox>
+                <div class="item-content">
+                  <span class="item-text">
+                    @if (item.quantity) {
+                      <strong>{{ formatQuantity(item) }}</strong>
+                    }
+                    @if (item.unit) {
+                      <strong>{{ item.unit }}</strong>
+                    }
+                    {{ item.item }}
+                    @if (item.isManual) {
+                      <span class="manual-badge">added</span>
+                    }
+                  </span>
+                  @if (item.sources && item.sources.length > 0) {
+                    <span class="item-sources">{{ item.sources.join(', ') }}</span>
+                  }
+                </div>
+                <button mat-icon-button
+                        class="remove-btn"
+                        (click)="removeItem(item)"
+                        matTooltip="Remove item">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
             }
-          }
-        </mat-card-content>
-      </mat-card>
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
     }
+
+    <div class="add-item-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Add item</mat-label>
+        <input matInput
+               [(ngModel)]="newItemText"
+               (keyup.enter)="addManualItem()"
+               placeholder="e.g., Paper towels">
+        <mat-icon matPrefix>add_shopping_cart</mat-icon>
+      </mat-form-field>
+      <button mat-icon-button
+              (click)="addManualItem()"
+              [disabled]="!newItemText.trim()"
+              matTooltip="Add item">
+        <mat-icon>add_circle</mat-icon>
+      </button>
+    </div>
   }
 </div>

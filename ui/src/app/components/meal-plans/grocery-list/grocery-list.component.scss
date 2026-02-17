@@ -99,54 +99,133 @@
   }
 }
 
-.grocery-card {
-  mat-card-content {
-    padding: 8px 16px !important;
+// Category expansion panels
+mat-accordion {
+  display: block;
+
+  mat-expansion-panel {
+    margin-bottom: 8px;
+
+    .grocery-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      transition: opacity 0.2s;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &.checked {
+        opacity: 0.4;
+
+        .item-text {
+          text-decoration: line-through;
+        }
+      }
+
+      .item-content {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .item-text {
+        font-size: 0.95rem;
+        line-height: 1.4;
+
+        strong {
+          color: rgba(255, 255, 255, 0.87);
+          margin-right: 4px;
+        }
+      }
+
+      .item-sources {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.4);
+        font-style: italic;
+      }
+
+      .manual-badge {
+        display: inline-block;
+        font-size: 0.65rem;
+        padding: 1px 6px;
+        border-radius: 8px;
+        background-color: rgba(63, 81, 181, 0.3);
+        color: rgba(255, 255, 255, 0.6);
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+
+      .remove-btn {
+        opacity: 0;
+        transition: opacity 0.2s;
+        width: 28px;
+        height: 28px;
+        line-height: 28px;
+        flex-shrink: 0;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+
+      &:hover .remove-btn {
+        opacity: 0.5;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
   }
 }
 
-.grocery-item {
+.add-item-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  transition: opacity 0.2s;
+  gap: 8px;
+  margin-top: 24px;
 
-  &.checked {
-    opacity: 0.5;
-
-    .item-text {
-      text-decoration: line-through;
-    }
+  mat-form-field {
+    flex: 1;
   }
 
-  .item-text {
-    font-size: 1rem;
-    line-height: 1.4;
-
-    strong {
-      color: rgba(255, 255, 255, 0.87);
-      margin-right: 4px;
+  button {
+    mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
     }
   }
 }
 
 // Print styles
 @media print {
-  .header-actions {
+  .header-actions,
+  .add-item-row {
+    display: none !important;
+  }
+
+  .remove-btn {
     display: none !important;
   }
 
   .grocery-item {
+    &.checked {
+      opacity: 0.4 !important;
+    }
+
     mat-checkbox {
-      // Print as empty/filled circles
       width: 16px;
       height: 16px;
     }
-  }
-
-  .checked {
-    opacity: 0.4 !important;
   }
 }
 
@@ -157,5 +236,11 @@
 
   .list-header h1 {
     font-size: 1.5rem;
+  }
+
+  mat-accordion mat-expansion-panel .grocery-item {
+    .remove-btn {
+      opacity: 0.5;
+    }
   }
 }

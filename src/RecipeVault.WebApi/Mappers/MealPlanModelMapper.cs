@@ -84,7 +84,9 @@ namespace RecipeVault.WebApi.Mappers {
                 Items = dto.Items?.Select(i => new GroceryItemModel {
                     Item = i.Item,
                     Quantity = i.Quantity,
-                    Unit = i.Unit
+                    Unit = i.Unit,
+                    Category = i.Category,
+                    Sources = i.Sources
                 }).ToList()
             };
         }

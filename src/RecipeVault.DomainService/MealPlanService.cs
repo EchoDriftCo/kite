@@ -93,6 +93,7 @@ namespace RecipeVault.DomainService {
 
             // Aggregate ingredients from non-leftover entries, scaling by servings
             var ingredientMap = new Dictionary<string, GroceryItemDto>();
+            var sourceMap = new Dictionary<string, HashSet<string>>();
 
             foreach (var entry in entity.Entries.Where(e => !e.IsLeftover)) {
                 var recipe = entry.Recipe;
@@ -118,17 +119,34 @@ namespace RecipeVault.DomainService {
                             Unit = ingredient.Unit
                         };
                     }
+
+                    // Track recipe sources
+                    if (!sourceMap.TryGetValue(key, out var sources)) {
+                        sources = new HashSet<string>();
+                        sourceMap[key] = sources;
+                    }
+                    if (!string.IsNullOrWhiteSpace(recipe.Title)) {
+                        sources.Add(recipe.Title);
+                    }
+                }
+            }
+
+            // Attach sources to items
+            foreach (var kvp in ingredientMap) {
+                if (sourceMap.TryGetValue(kvp.Key, out var sources)) {
+                    kvp.Value.Sources = sources.ToList();
                 }
             }
 
             var rawItems = ingredientMap.Values.OrderBy(i => i.Item).ToList();
 
-            // Use AI to consolidate similar ingredients
+            // Use AI to consolidate similar ingredients and categorize
             try {
                 var geminiItems = rawItems.Select(i => new GeminiGroceryItem {
                     Item = i.Item,
                     Quantity = i.Quantity,
-                    Unit = i.Unit
+                    Unit = i.Unit,
+                    Sources = i.Sources
                 }).ToList();
 
                 var consolidated = await geminiClient.ConsolidateGroceryListAsync(geminiItems).ConfigureAwait(false);
@@ -137,14 +155,19 @@ namespace RecipeVault.DomainService {
                     Items = consolidated.Items.Select(i => new GroceryItemDto {
                         Item = i.Item,
                         Quantity = i.Quantity,
-                        Unit = i.Unit
+                        Unit = i.Unit,
+                        Category = i.Category ?? "Other",
+                        Sources = i.Sources ?? new List<string>()
                     }).ToList()
                 };
             }
             catch (Exception ex) {
                 logger.LogWarning(ex, "Failed to consolidate grocery list with AI, returning raw list");
                 return new GroceryListDto {
-                    Items = rawItems
+                    Items = rawItems.Select(i => {
+                        i.Category = "Other";
+                        return i;
+                    }).ToList()
                 };
             }
         }
