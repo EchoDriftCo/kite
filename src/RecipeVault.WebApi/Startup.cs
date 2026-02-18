@@ -1,18 +1,21 @@
 using System;
-using System.Text;
+using System.Threading.RateLimiting;
+using System.Threading.Tasks;
 using Asp.Versioning.ApiExplorer;
 using Cortside.AspNetCore;
 using Cortside.AspNetCore.Auditable;
 using Cortside.AspNetCore.Auditable.Entities;
 using Cortside.AspNetCore.Builder;
 using Cortside.AspNetCore.Common;
+using Cortside.AspNetCore.EntityFramework;
 using Cortside.AspNetCore.Filters;
 using Cortside.AspNetCore.Swagger;
-using Microsoft.EntityFrameworkCore;
 using Cortside.Health;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,8 +26,6 @@ using RecipeVault.Configuration;
 using RecipeVault.Data;
 using RecipeVault.Health;
 using RecipeVault.WebApi.Installers;
-using System.Threading.Tasks;
-using Cortside.AspNetCore.EntityFramework;
 
 namespace RecipeVault.WebApi {
     /// <summary>
@@ -155,6 +156,19 @@ namespace RecipeVault.WebApi {
                 options.AddDefaultPolicy(policy => policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod());
             });
 
+            // add rate limiting
+            services.AddRateLimiter(options => {
+                options.RejectionStatusCode = 429;
+                options.AddFixedWindowLimiter("api", opt => {
+                    opt.PermitLimit = 60;
+                    opt.Window = TimeSpan.FromMinutes(1);
+                });
+                options.AddFixedWindowLimiter("upload", opt => {
+                    opt.PermitLimit = 10;
+                    opt.Window = TimeSpan.FromMinutes(1);
+                });
+            });
+
             // Add swagger with versioning
             services.AddSwagger(Configuration, "RecipeVault API", "RecipeVault API", ["v1"]);
 
@@ -178,16 +192,33 @@ namespace RecipeVault.WebApi {
                 app.UseDeveloperExceptionPage();
             }
 
-            // Serve uploaded images from wwwroot
+            // Security headers
+            app.Use(async (context, next) => {
+                context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+                context.Response.Headers["X-Frame-Options"] = "DENY";
+                context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+                context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+                await next().ConfigureAwait(false);
+            });
+            if (!env.IsDevelopment()) {
+                app.UseHsts();
+            }
+
+            // Serve static files (Angular SPA + any uploaded assets)
+            app.UseDefaultFiles();
             app.UseStaticFiles();
 
             // order of the following matters
             app.UseCors();
+            app.UseRateLimiter();
             app.UseAuthentication();
             app.UseSubjectPrincipal(); // intentionally set after UseAuthentication
             app.UseRouting();
             app.UseAuthorization(); // intentionally set after UseRouting
-            app.UseEndpoints(endpoints => endpoints.MapControllers());
+            app.UseEndpoints(endpoints => {
+                endpoints.MapControllers();
+                endpoints.MapFallbackToFile("index.html");
+            });
         }
     }
 }

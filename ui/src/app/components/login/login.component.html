@@ -1,9 +1,9 @@
 <div class="login-container">
   <mat-card>
     <mat-card-header>
-      <mat-card-title>RecipeVault Login</mat-card-title>
+      <mat-card-title>Sign In</mat-card-title>
     </mat-card-header>
-    
+
     <mat-card-content>
       <form (ngSubmit)="signIn()">
         <mat-form-field appearance="outline" class="full-width">
@@ -20,20 +20,22 @@
           <div class="error-message">{{ error }}</div>
         }
 
-        <div class="button-row">
-          <button mat-raised-button color="primary" type="submit" [disabled]="loading">
-            @if (loading) {
-              <mat-spinner diameter="20"></mat-spinner>
-            } @else {
-              Sign In
-            }
-          </button>
+        @if (successMessage) {
+          <div class="success-message">{{ successMessage }}</div>
+        }
 
-          <button mat-raised-button color="accent" type="button" (click)="signUp()" [disabled]="loading">
-            Sign Up
-          </button>
-        </div>
+        <button mat-raised-button color="primary" type="submit" class="full-width submit-button" [disabled]="loading">
+          @if (loading) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            Sign In
+          }
+        </button>
       </form>
+
+      <div class="toggle-mode">
+        Don't have an account? <a (click)="openSignUp()">Create one</a>
+      </div>
     </mat-card-content>
   </mat-card>
 </div>

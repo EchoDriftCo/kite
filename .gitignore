@@ -65,3 +65,4 @@ src/RecipeVault.WebApi/appsettings.local.json
 
 # Visual Studio cache files
 .vs/*
+migrate.sql

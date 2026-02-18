@@ -7,7 +7,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
+import { SignUpDialogComponent } from './sign-up-dialog.component';
 
 @Component({
   selector: 'app-login',
@@ -19,7 +21,8 @@ import { AuthService } from '../../services/auth.service';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatDialogModule
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
@@ -29,18 +32,21 @@ export class LoginComponent {
   password = '';
   loading = false;
   error = '';
+  successMessage = '';
   returnUrl = '/';
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private dialog: MatDialog
   ) {
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
   }
 
   async signIn() {
     this.error = '';
+    this.successMessage = '';
     this.loading = true;
 
     try {
@@ -53,17 +59,15 @@ export class LoginComponent {
     }
   }
 
-  async signUp() {
-    this.error = '';
-    this.loading = true;
+  openSignUp() {
+    const dialogRef = this.dialog.open(SignUpDialogComponent, {
+      width: '400px'
+    });
 
-    try {
-      await this.authService.signUp(this.email, this.password);
-      this.error = 'Check your email to confirm your account!';
-    } catch (err: any) {
-      this.error = err.message || 'Failed to sign up';
-    } finally {
-      this.loading = false;
-    }
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.success) {
+        this.successMessage = 'Account created! Check your email to confirm your account.';
+      }
+    });
   }
 }

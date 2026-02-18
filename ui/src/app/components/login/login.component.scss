@@ -16,6 +16,12 @@ mat-card {
   margin-bottom: 16px;
 }
 
+.submit-button {
+  margin-top: 8px;
+  height: 48px;
+  font-size: 16px;
+}
+
 .error-message {
   color: #f44336;
   margin-bottom: 16px;
@@ -24,12 +30,27 @@ mat-card {
   border-radius: 4px;
 }
 
-.button-row {
-  display: flex;
-  gap: 8px;
-  justify-content: space-between;
+.success-message {
+  color: #4caf50;
+  margin-bottom: 16px;
+  padding: 8px;
+  background-color: rgba(76, 175, 80, 0.1);
+  border-radius: 4px;
 }
 
-button {
-  flex: 1;
+.toggle-mode {
+  text-align: center;
+  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.7);
+
+  a {
+    color: #69f0ae;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }

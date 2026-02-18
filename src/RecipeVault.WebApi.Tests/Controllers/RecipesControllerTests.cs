@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
 using Cortside.Common.Security;
-using Microsoft.AspNetCore.Hosting;
+using RecipeVault.DomainService;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Shouldly;
@@ -48,7 +48,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(pagedList)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IImageStorage>());
 
             // Act
             var result = await controller.GetRecipesAsync(search);
@@ -78,7 +78,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(recipeDto)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IImageStorage>());
 
             // Act
             var result = await controller.GetRecipeAsync(recipeId);
@@ -119,7 +119,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(createdDto)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IImageStorage>());
 
             // Act
             var result = await controller.CreateRecipeAsync(input);
@@ -161,7 +161,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(updatedDto)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IImageStorage>());
 
             // Act
             var result = await controller.UpdateRecipeAsync(recipeId, input);
@@ -191,7 +191,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IImageStorage>());
 
             // Act
             var result = await controller.DeleteRecipeAsync(recipeId);
@@ -222,7 +222,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(recipeDto)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IImageStorage>());
 
             // Act
             var result = await controller.SetRecipeRatingAsync(recipeId, input);
@@ -256,7 +256,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(recipeDto)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IImageStorage>());
 
             // Act
             var result = await controller.SetRecipeRatingAsync(recipeId, input);
@@ -287,7 +287,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(recipeDto)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IImageStorage>());
 
             // Act
             var result = await controller.SetRecipeFavoriteAsync(recipeId, input);
@@ -317,7 +317,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(recipeDto)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IImageStorage>());
 
             // Act
             var result = await controller.GenerateShareTokenAsync(recipeId);
@@ -347,7 +347,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(recipeDto)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IImageStorage>());
 
             // Act
             var result = await controller.RevokeShareTokenAsync(recipeId);
@@ -375,7 +375,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(recipeDto)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IImageStorage>());
 
             // Act
             var result = await controller.GetSharedRecipeAsync("abc123");
@@ -409,7 +409,7 @@ namespace RecipeVault.WebApi.Tests.Controllers {
                 .ReturnsAsync(recipeDto)
                 .Verifiable();
 
-            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IWebHostEnvironment>());
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IImageStorage>());
 
             // Act
             var result = await controller.SetRecipeVisibilityAsync(recipeId, input);

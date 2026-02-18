@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Asp.Versioning;
 using Cortside.AspNetCore.Common.Paging;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using RecipeVault.DomainService;
 using RecipeVault.Dto.Input;
 using RecipeVault.Facade;
 using RecipeVault.WebApi.Mappers;
@@ -29,15 +29,15 @@ namespace RecipeVault.WebApi.Controllers {
     public class RecipesController : ControllerBase {
         private readonly IRecipeFacade facade;
         private readonly RecipeModelMapper recipeMapper;
-        private readonly IWebHostEnvironment environment;
+        private readonly IImageStorage imageStorage;
 
         /// <summary>
         /// Initializes a new instance of the RecipesController
         /// </summary>
-        public RecipesController(IRecipeFacade facade, RecipeModelMapper recipeMapper, IWebHostEnvironment environment) {
+        public RecipesController(IRecipeFacade facade, RecipeModelMapper recipeMapper, IImageStorage imageStorage) {
             this.facade = facade;
             this.recipeMapper = recipeMapper;
-            this.environment = environment;
+            this.imageStorage = imageStorage;
         }
 
         /// <summary>
@@ -254,6 +254,7 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(typeof(UploadImageResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestSizeLimit(15_000_000)] // 15MB to cover base64 overhead
+        [EnableRateLimiting("upload")]
         public async Task<IActionResult> UploadImageAsync([FromBody] UploadImageRequestModel input) {
             if (string.IsNullOrWhiteSpace(input?.ImageData)) {
                 return BadRequest("Image data is required");
@@ -268,14 +269,9 @@ namespace RecipeVault.WebApi.Controllers {
             };
 
             var fileName = $"{Guid.NewGuid()}{extension}";
-            var uploadsDir = Path.Combine(environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot"), "uploads", "recipes");
-            Directory.CreateDirectory(uploadsDir);
-
-            var filePath = Path.Combine(uploadsDir, fileName);
             var imageBytes = Convert.FromBase64String(input.ImageData);
-            await System.IO.File.WriteAllBytesAsync(filePath, imageBytes).ConfigureAwait(false);
+            var url = await imageStorage.UploadAsync(imageBytes, fileName, input.MimeType ?? "image/jpeg").ConfigureAwait(false);
 
-            var url = $"/uploads/recipes/{fileName}";
             return Ok(new UploadImageResponseModel { Url = url });
         }
     }
