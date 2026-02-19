@@ -1,7 +1,10 @@
+using System;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Builder;
 using dotenv.net;
+using Sentry;
 
 namespace RecipeVault.WebApi {
     /// <summary>
@@ -20,6 +23,19 @@ namespace RecipeVault.WebApi {
             var envPath = FindEnvFile(currentDir);
             if (!string.IsNullOrEmpty(envPath)) {
                 DotEnv.Load(new DotEnvOptions(envFilePaths: new[] { envPath }));
+            }
+
+            // Initialize Sentry for error tracking
+            var sentryDsn = Environment.GetEnvironmentVariable("SENTRY_DSN");
+            if (!string.IsNullOrEmpty(sentryDsn)) {
+                SentrySdk.Init(options => {
+                    options.Dsn = sentryDsn;
+                    options.Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+                    options.Release = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0";
+                    options.TracesSampleRate = 0.1; // 10% of transactions for performance monitoring
+                    options.SendDefaultPii = false; // Don't send personally identifiable information
+                    options.AttachStacktrace = true;
+                });
             }
 
             var builder = WebApiHost.CreateBuilder(args)

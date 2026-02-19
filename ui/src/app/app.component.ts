@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from './services/auth.service';
+import { FeedbackButtonComponent } from './shared/components/feedback-button/feedback-button.component';
 
 @Component({
   selector: 'app-root',
@@ -19,7 +20,8 @@ import { AuthService } from './services/auth.service';
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
-    MatDividerModule
+    MatDividerModule,
+    FeedbackButtonComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
