@@ -17,7 +17,12 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Set build metadata
         run: |
-          echo "VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo '1.0.0-dev')" >> $GITHUB_ENV
+          # Get version from git describe, strip 'v' prefix, convert to valid semver
+          RAW_VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo '1.0.0-dev')
+          # v1.0.0 -> 1.0.0
+          # v1.0.0-4-g63246c0 -> 1.0.0-dev.4 (NuGet-compatible prerelease)
+          VERSION=$(echo "$RAW_VERSION" | sed 's/^v//' | sed 's/-\([0-9]*\)-g[a-f0-9]*$/-dev.\1/')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "GIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           echo "BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
       - name: Deploy to Fly.io
