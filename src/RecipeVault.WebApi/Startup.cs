@@ -185,8 +185,6 @@ namespace RecipeVault.WebApi {
         /// <param name="env"></param>
         /// <param name="provider"></param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider) {
-            // Sentry should be early in the pipeline to capture all errors
-            app.UseSentryTracing();
             
             app.UseApiDefaults(Configuration);
             app.UseSwagger("RecipeVault Api", provider);

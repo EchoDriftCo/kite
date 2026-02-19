@@ -25,16 +25,17 @@ namespace RecipeVault.WebApi {
                 DotEnv.Load(new DotEnvOptions(envFilePaths: new[] { envPath }));
             }
 
-            // Initialize Sentry for error tracking
+            // Initialize Sentry for error tracking (before app starts)
             var sentryDsn = Environment.GetEnvironmentVariable("SENTRY_DSN");
             if (!string.IsNullOrEmpty(sentryDsn)) {
                 SentrySdk.Init(options => {
                     options.Dsn = sentryDsn;
                     options.Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
                     options.Release = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0";
-                    options.TracesSampleRate = 0.1; // 10% of transactions for performance monitoring
-                    options.SendDefaultPii = false; // Don't send personally identifiable information
+                    options.SendDefaultPii = false;
                     options.AttachStacktrace = true;
+                    // Disable tracing since we're using basic SDK init
+                    options.TracesSampleRate = 0;
                 });
             }
 
