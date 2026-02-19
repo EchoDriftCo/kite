@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,8 +8,9 @@ namespace RecipeVault.WebApi.Controllers {
     /// <summary>
     /// Version information endpoint
     /// </summary>
+    [ApiVersion("1")]
     [ApiController]
-    [Route("api/v1/version")]
+    [Route("api/v{version:apiVersion}/version")]
     public class VersionController : ControllerBase {
         /// <summary>
         /// Gets the current application version

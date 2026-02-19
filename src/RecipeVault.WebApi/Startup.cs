@@ -26,6 +26,7 @@ using RecipeVault.Configuration;
 using RecipeVault.Data;
 using RecipeVault.Health;
 using RecipeVault.WebApi.Installers;
+using RecipeVault.WebApi.Services;
 
 namespace RecipeVault.WebApi {
     /// <summary>
@@ -132,6 +133,11 @@ namespace RecipeVault.WebApi {
             services.AddScoped<DbContext>(sp => sp.GetRequiredService<RecipeVaultDbContext>());
             services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<RecipeVaultDbContext>());
 
+            // Seed health check caches before the background service starts so cold-start
+            // requests don't see 503. Must be registered before AddHealth so its StartAsync
+            // runs first (hosted services start in registration order).
+            services.AddHostedService<HealthWarmupService>();
+
             // add health services
             services.AddHealth(o => {
                 o.UseConfiguration(Configuration);
@@ -169,6 +175,12 @@ namespace RecipeVault.WebApi {
                 });
             });
 
+            // HSTS - 1 year per OWASP recommendation
+            services.AddHsts(options => {
+                options.MaxAge = TimeSpan.FromSeconds(31536000);
+                options.IncludeSubDomains = true;
+            });
+
             // Add swagger with versioning
             services.AddSwagger(Configuration, "RecipeVault API", "RecipeVault API", ["v1"]);
 
@@ -199,6 +211,18 @@ namespace RecipeVault.WebApi {
                 context.Response.Headers["X-Frame-Options"] = "DENY";
                 context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
                 context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+                // Content-Security-Policy
+                // Angular SPA needs: unsafe-inline for styles (Angular uses inline styles),
+                // Google Fonts for Roboto + Material Icons, Supabase for API + storage,
+                // and Sentry for frontend error reporting.
+                context.Response.Headers["Content-Security-Policy"] =
+                    "default-src 'self'; " +
+                    "script-src 'self' 'unsafe-inline'; " +
+                    "style-src 'self' 'unsafe-inline' fonts.googleapis.com; " +
+                    "font-src 'self' fonts.gstatic.com; " +
+                    "img-src 'self' data: blob: *.supabase.co; " +
+                    "connect-src 'self' *.supabase.co *.sentry.io *.ingest.sentry.io; " +
+                    "frame-ancestors 'none';";
                 await next().ConfigureAwait(false);
             });
             if (!env.IsDevelopment()) {
