@@ -7,7 +7,11 @@ EF Core migrations can't run directly against Supabase from local dev:
 - Direct connections from outside Supabase's network are unreliable
 - Manual SQL execution in Supabase SQL Editor is error-prone (we've had prod outages from missed columns)
 
-## Solution: Idempotent Migration Scripts
+## Solution: Idempotent Migration Scripts + Nora
+
+**When Nora is available (browser relay attached):** She can run migrations directly in Supabase SQL Editor. Just ask her to deploy and she'll handle everything.
+
+**When Nora is unavailable:** Use `deploy.ps1` which guides you through the manual process.
 
 ### Workflow
 
