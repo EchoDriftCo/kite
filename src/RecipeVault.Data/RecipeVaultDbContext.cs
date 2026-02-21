@@ -19,6 +19,7 @@ namespace RecipeVault.Data {
         public DbSet<MealPlanEntry> MealPlanEntries { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<RecipeTag> RecipeTags { get; set; }
+        public DbSet<UserTagAlias> UserTagAliases { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.HasDefaultSchema("public");
@@ -54,6 +55,12 @@ namespace RecipeVault.Data {
                 .HasOne(me => me.MealPlan)
                 .WithMany(mp => mp.Entries)
                 .HasForeignKey(me => me.MealPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserTagAlias>()
+                .HasOne(uta => uta.Tag)
+                .WithMany()
+                .HasForeignKey(uta => uta.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

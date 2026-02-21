@@ -19,6 +19,15 @@ namespace RecipeVault.Domain.Entities {
         public Tag(string name, TagCategory category, bool isGlobal) {
             TagResourceId = Uuid.NewDatabaseFriendly(Database.SqlServer);
             IsGlobal = isGlobal;
+            IsSystemTag = isGlobal; // System tags are initially global
+            Update(name, category);
+        }
+
+        public Tag(string name, TagCategory category, bool isGlobal, SourceType? sourceType) {
+            TagResourceId = Uuid.NewDatabaseFriendly(Database.SqlServer);
+            IsGlobal = isGlobal;
+            IsSystemTag = isGlobal;
+            SourceType = sourceType;
             Update(name, category);
         }
 
@@ -36,6 +45,10 @@ namespace RecipeVault.Domain.Entities {
 
         public bool IsGlobal { get; private set; }
 
+        public SourceType? SourceType { get; private set; }
+
+        public bool IsSystemTag { get; private set; }
+
         public void Update(string name, TagCategory category) {
             var messages = new MessageList();
             messages.Aggregate(() => string.IsNullOrWhiteSpace(name), () => new InvalidValueError(nameof(name), name));
@@ -43,6 +56,14 @@ namespace RecipeVault.Domain.Entities {
 
             Name = name;
             Category = category;
+        }
+
+        public void SetSourceType(SourceType? sourceType) {
+            SourceType = sourceType;
+        }
+
+        public void MarkAsSystemTag() {
+            IsSystemTag = true;
         }
     }
 }
