@@ -78,13 +78,27 @@ If a migration breaks prod:
 3. Run in Supabase SQL Editor
 4. Redeploy previous code version
 
-## Why Not Alternatives?
+## GitHub Actions (Recommended)
 
-| Approach | Problem |
-|----------|---------|
-| Run migrations on app startup | Risky for prod, multiple instances race |
-| GitHub Actions | Needs secure DB credentials in CI, complex setup |
-| Supabase CLI | Doesn't integrate with EF Core |
-| Direct connection | Timeouts, unreliable |
+The deploy workflow (`.github/workflows/deploy.yml`) handles everything:
 
-The manual SQL approach with idempotent scripts is the most reliable for our setup.
+1. Build and test
+2. Generate migration SQL
+3. Apply migrations to Supabase via psql
+4. Deploy to Fly.io
+5. Health check verification
+
+**If migrations fail, the deploy fails.** No more schema drift.
+
+### Required Secrets
+
+Add these to GitHub repo settings → Secrets:
+
+| Secret | Value | Where to get it |
+|--------|-------|-----------------|
+| `SUPABASE_DB_URL` | Direct PostgreSQL connection string | Supabase → Settings → Database → Connection string (URI format, NOT pooler) |
+| `FLY_API_TOKEN` | Fly.io deploy token | `fly tokens create deploy -a recipevault-morning-dawn-6796` |
+
+### Manual Fallback
+
+If GitHub Actions isn't available, use `.\deploy.ps1` locally.
