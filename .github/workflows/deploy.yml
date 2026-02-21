@@ -32,7 +32,13 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal --filter "FullyQualifiedName!~TestUtilities"
+        run: |
+          dotnet test src/RecipeVault.Domain.Tests --configuration Release --no-build --verbosity normal
+          dotnet test src/RecipeVault.DomainService.Tests --configuration Release --no-build --verbosity normal
+          dotnet test src/RecipeVault.Facade.Tests --configuration Release --no-build --verbosity normal
+          dotnet test src/RecipeVault.WebApi.Tests --configuration Release --no-build --verbosity normal
+          dotnet test src/RecipeVault.WebApi.IntegrationTests --configuration Release --no-build --verbosity normal
+          dotnet test src/RecipeVault.Integrations.Gemini.Tests --configuration Release --no-build --verbosity normal
 
       - name: Generate migration SQL
         id: migrations
