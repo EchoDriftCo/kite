@@ -59,7 +59,7 @@ namespace RecipeVault.Data {
 
             modelBuilder.Entity<UserTagAlias>()
                 .HasOne(uta => uta.Tag)
-                .WithMany()
+                .WithMany(t => t.UserTagAliases)
                 .HasForeignKey(uta => uta.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
