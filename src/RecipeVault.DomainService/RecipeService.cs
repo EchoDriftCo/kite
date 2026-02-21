@@ -26,20 +26,31 @@ namespace RecipeVault.DomainService {
         private readonly IGeminiClient geminiClient;
         private readonly ISubjectPrincipal subjectPrincipal;
         private readonly IHttpClientFactory httpClientFactory;
+        private readonly IImageStorage imageStorage;
 
         private static readonly Guid SystemSubjectId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
-        public RecipeService(IRecipeRepository recipeRepository, ITagRepository tagRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger, ISubjectPrincipal subjectPrincipal, IHttpClientFactory httpClientFactory) {
+        public RecipeService(IRecipeRepository recipeRepository, ITagRepository tagRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger, ISubjectPrincipal subjectPrincipal, IHttpClientFactory httpClientFactory, IImageStorage imageStorage) {
             this.logger = logger;
             this.recipeRepository = recipeRepository;
             this.tagRepository = tagRepository;
             this.geminiClient = geminiClient;
             this.subjectPrincipal = subjectPrincipal;
             this.httpClientFactory = httpClientFactory;
+            this.imageStorage = imageStorage;
         }
 
         public async Task<Recipe> CreateRecipeAsync(UpdateRecipeDto dto) {
-            var entity = new Recipe(dto.Title, dto.Yield, dto.PrepTimeMinutes, dto.CookTimeMinutes, dto.Description, dto.Source, dto.OriginalImageUrl, dto.IsPublic);
+            var originalImageUrl = dto.OriginalImageUrl;
+            
+            // If we have a source image URL but no original (local) image, import it
+            if (string.IsNullOrWhiteSpace(originalImageUrl) && !string.IsNullOrWhiteSpace(dto.SourceImageUrl)) {
+                var fileName = $"recipes/{Guid.NewGuid()}.jpg";
+                originalImageUrl = await imageStorage.ImportFromUrlAsync(dto.SourceImageUrl, fileName).ConfigureAwait(false);
+                logger.LogInformation("Imported image from {SourceUrl} to {LocalUrl}", dto.SourceImageUrl, originalImageUrl);
+            }
+            
+            var entity = new Recipe(dto.Title, dto.Yield, dto.PrepTimeMinutes, dto.CookTimeMinutes, dto.Description, dto.Source, originalImageUrl, dto.IsPublic);
 
             if (!string.IsNullOrWhiteSpace(dto.SourceImageUrl)) {
                 entity.SetSourceImageUrl(dto.SourceImageUrl);

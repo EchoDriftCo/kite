@@ -56,5 +56,45 @@ namespace RecipeVault.Integrations.Supabase {
                 logger.LogWarning("Supabase Storage delete failed: {StatusCode} {Body}", response.StatusCode, body);
             }
         }
+
+        public async Task<string> ImportFromUrlAsync(string sourceUrl, string fileName) {
+            if (string.IsNullOrWhiteSpace(sourceUrl)) {
+                return null;
+            }
+
+            try {
+                logger.LogInformation("Downloading image from {Url}", sourceUrl);
+
+                // Download the image
+                using var downloadRequest = new HttpRequestMessage(HttpMethod.Get, sourceUrl);
+                // Set a user agent to avoid being blocked
+                downloadRequest.Headers.UserAgent.ParseAdd("RecipeVault/1.0");
+                
+                var downloadResponse = await httpClient.SendAsync(downloadRequest).ConfigureAwait(false);
+                
+                if (!downloadResponse.IsSuccessStatusCode) {
+                    logger.LogWarning("Failed to download image from {Url}: {StatusCode}", sourceUrl, downloadResponse.StatusCode);
+                    return null;
+                }
+
+                var imageData = await downloadResponse.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                var contentType = downloadResponse.Content.Headers.ContentType?.MediaType ?? "image/jpeg";
+
+                // Validate it's actually an image
+                if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)) {
+                    logger.LogWarning("Downloaded content is not an image: {ContentType}", contentType);
+                    return null;
+                }
+
+                // Upload to our storage
+                var uploadedUrl = await UploadAsync(imageData, fileName, contentType).ConfigureAwait(false);
+                logger.LogInformation("Successfully imported image from {SourceUrl} to {UploadedUrl}", sourceUrl, uploadedUrl);
+                
+                return uploadedUrl;
+            } catch (Exception ex) {
+                logger.LogWarning(ex, "Failed to import image from {Url}", sourceUrl);
+                return null;
+            }
+        }
     }
 }
