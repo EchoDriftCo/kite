@@ -310,6 +310,49 @@ namespace RecipeVault.Integrations.Gemini.Tests.Mocks {
         }
 
         /// <summary>
+        /// Stub a successful entity normalization response
+        /// </summary>
+        public GeminiMockServer StubNormalizeEntitySuccess(
+            bool isRecognized,
+            string canonicalName,
+            string normalizedEntityId,
+            decimal confidence) {
+
+            var normalizationResult = new {
+                isRecognized,
+                canonicalName,
+                normalizedEntityId,
+                confidence
+            };
+
+            var resultJson = JsonSerializer.Serialize(normalizationResult, JsonOptions);
+
+            var response = new {
+                candidates = new[] {
+                    new {
+                        content = new {
+                            parts = new[] {
+                                new { text = resultJson }
+                            }
+                        },
+                        finishReason = "STOP"
+                    }
+                }
+            };
+
+            server
+                .Given(Request.Create()
+                    .WithPath("/v1beta/models/*")
+                    .UsingPost())
+                .RespondWith(Response.Create()
+                    .WithStatusCode(200)
+                    .WithHeader("Content-Type", "application/json")
+                    .WithBody(JsonSerializer.Serialize(response, JsonOptions)));
+
+            return this;
+        }
+
+        /// <summary>
         /// Reset all stubs
         /// </summary>
         public GeminiMockServer Reset() {

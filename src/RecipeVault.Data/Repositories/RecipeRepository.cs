@@ -18,7 +18,7 @@ namespace RecipeVault.Data.Repositories {
             var recipes = model.Build(context.Recipes
                 .Include(x => x.Ingredients)
                 .Include(x => x.Instructions)
-                .Include(x => x.RecipeTags).ThenInclude(rt => rt.Tag)
+                .Include(x => x.RecipeTags).ThenInclude(rt => rt.Tag).ThenInclude(t => t.UserTagAliases)
                 .Include(x => x.CreatedSubject)
                 .Include(x => x.LastModifiedSubject));
 

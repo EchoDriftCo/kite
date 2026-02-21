@@ -35,6 +35,7 @@ namespace RecipeVault.Data.Repositories {
 
         public async Task<PagedList<Tag>> SearchAsync(TagSearch model) {
             var tags = model.Build(context.Tags
+                .Include(x => x.UserTagAliases)
                 .Include(x => x.CreatedSubject)
                 .Include(x => x.LastModifiedSubject));
 

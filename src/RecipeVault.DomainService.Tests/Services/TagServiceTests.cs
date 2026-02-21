@@ -12,6 +12,7 @@ using RecipeVault.Domain.Enums;
 using RecipeVault.Exceptions;
 using RecipeVault.TestUtilities.Builders;
 using RecipeVault.DomainService.Tests.Base;
+using RecipeVault.Integrations.Gemini;
 
 namespace RecipeVault.DomainService.Tests.Services {
     public class TagServiceTests : DomainServiceTestBase {
@@ -28,7 +29,8 @@ namespace RecipeVault.DomainService.Tests.Services {
         private TagService CreateService(Mock<ITagRepository> mockRepository, Mock<ISubjectPrincipal> mockSubjectPrincipal) {
             var mockLogger = CreateMockLogger<TagService>();
             var mockUserTagAliasRepository = MockRepository.Create<IUserTagAliasRepository>();
-            return new TagService(mockRepository.Object, mockUserTagAliasRepository.Object, mockLogger.Object, mockSubjectPrincipal.Object);
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            return new TagService(mockRepository.Object, mockUserTagAliasRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
         }
 
         [Fact]

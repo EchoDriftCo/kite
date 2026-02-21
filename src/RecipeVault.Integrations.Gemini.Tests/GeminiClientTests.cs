@@ -370,6 +370,108 @@ namespace RecipeVault.Integrations.Gemini.Tests {
             result.Items[0].Sources.ShouldBeEmpty();
         }
 
+        [Fact]
+        public async Task NormalizeEntityAsync_WithRecognizedChef_ReturnsNormalizedEntity() {
+            // Arrange
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns("test-api-key");
+            configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
+
+            mockServer.Reset().StubNormalizeEntitySuccess(
+                isRecognized: true,
+                canonicalName: "Bobby Flay",
+                normalizedEntityId: "bobby-flay",
+                confidence: 0.95m);
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            // Act - sourceType 2 = Chef
+            var result = await geminiClient.NormalizeEntityAsync("bobby flay", 2);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.IsRecognized.ShouldBeTrue();
+            result.CanonicalName.ShouldBe("Bobby Flay");
+            result.NormalizedEntityId.ShouldBe("bobby-flay");
+            result.Confidence.ShouldBe(0.95m);
+        }
+
+        [Fact]
+        public async Task NormalizeEntityAsync_WithUnrecognizedEntity_ReturnsNotRecognized() {
+            // Arrange
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns("test-api-key");
+            configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
+
+            mockServer.Reset().StubNormalizeEntitySuccess(
+                isRecognized: false,
+                canonicalName: null,
+                normalizedEntityId: null,
+                confidence: 0.1m);
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            // Act
+            var result = await geminiClient.NormalizeEntityAsync("some random name", 2);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.IsRecognized.ShouldBeFalse();
+            result.NormalizedEntityId.ShouldBeNull();
+        }
+
+        [Fact]
+        public async Task NormalizeEntityAsync_WithInvalidSourceType_ReturnsNotRecognized() {
+            // Arrange
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns("test-api-key");
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            // Act - sourceType 1 = Family (not normalized)
+            var result = await geminiClient.NormalizeEntityAsync("some name", 1);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.IsRecognized.ShouldBeFalse();
+        }
+
+        [Fact]
+        public async Task NormalizeEntityAsync_WithNullOrEmptyEntityName_ReturnsNotRecognized() {
+            // Arrange
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns("test-api-key");
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            // Act
+            var result = await geminiClient.NormalizeEntityAsync("", 2);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.IsRecognized.ShouldBeFalse();
+        }
+
+        [Fact]
+        public async Task NormalizeEntityAsync_WithRecognizedRestaurant_ReturnsNormalizedEntity() {
+            // Arrange
+            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns("test-api-key");
+            configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
+
+            mockServer.Reset().StubNormalizeEntitySuccess(
+                isRecognized: true,
+                canonicalName: "The French Laundry",
+                normalizedEntityId: "the-french-laundry",
+                confidence: 0.98m);
+
+            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+
+            // Act - sourceType 3 = Restaurant
+            var result = await geminiClient.NormalizeEntityAsync("french laundry", 3);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.IsRecognized.ShouldBeTrue();
+            result.CanonicalName.ShouldBe("The French Laundry");
+            result.NormalizedEntityId.ShouldBe("the-french-laundry");
+        }
+
         /// <summary>
         /// Null disposable for BeginScope mock
         /// </summary>

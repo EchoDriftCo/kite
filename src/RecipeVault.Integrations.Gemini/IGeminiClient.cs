@@ -42,6 +42,40 @@ namespace RecipeVault.Integrations.Gemini {
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Dietary tags inferred from the ingredient list</returns>
         Task<GeminiDietaryAnalysisResponse> AnalyzeDietaryTagsAsync(List<string> ingredients, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Normalize an entity name (Chef, Restaurant, or Cookbook) to check if it's a known entity
+        /// </summary>
+        /// <param name="entityName">The entity name to normalize</param>
+        /// <param name="sourceType">The type of source (Chef, Restaurant, or Cookbook)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Entity normalization result, or null if not a known entity</returns>
+        Task<GeminiEntityNormalizationResponse> NormalizeEntityAsync(string entityName, int sourceType, CancellationToken cancellationToken = default);
+    }
+
+    /// <summary>
+    /// Response from Gemini entity normalization
+    /// </summary>
+    public class GeminiEntityNormalizationResponse {
+        /// <summary>
+        /// Whether the entity was recognized as a known entity
+        /// </summary>
+        public bool IsRecognized { get; set; }
+
+        /// <summary>
+        /// Normalized entity ID (slug form, e.g., "bobby-flay")
+        /// </summary>
+        public string NormalizedEntityId { get; set; }
+
+        /// <summary>
+        /// Canonical name of the entity (e.g., "Bobby Flay")
+        /// </summary>
+        public string CanonicalName { get; set; }
+
+        /// <summary>
+        /// Confidence score (0-1) for the recognition
+        /// </summary>
+        public decimal Confidence { get; set; }
     }
 
     /// <summary>

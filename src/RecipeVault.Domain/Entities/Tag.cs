@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Cortside.AspNetCore.Auditable.Entities;
@@ -48,6 +49,8 @@ namespace RecipeVault.Domain.Entities {
         public SourceType? SourceType { get; private set; }
 
         public bool IsSystemTag { get; private set; }
+
+        public virtual ICollection<UserTagAlias> UserTagAliases { get; private set; } = new List<UserTagAlias>();
 
         public void Update(string name, TagCategory category) {
             var messages = new MessageList();

@@ -400,8 +400,8 @@ Update tag DTOs with alias fields, add alias endpoints (PUT/DELETE), update reci
 ### Phase 3: UI
 Build tag picker with grouped system tags, implement inline alias prompt on tag add, update tag pill display with alias and hover for global name, create tag management page for viewing/editing aliases.
 
-### Phase 4: Search & Polish
-Update search to query aliases, integrate Gemini normalization for Chef/Restaurant/Cookbook source types, add "Show publicly" toggle in UI, handle edge cases and comprehensive testing.
+### Phase 4: Search & Polish (✅ Complete)
+Recipe search and tag search now include alias matching. Owner can search by their own aliases; public searches match aliases with ShowAliasPublicly=true or NormalizedEntityId. Gemini normalization integrated for Chef/Restaurant/Cookbook source types—when user sets alias on these tags, system calls Gemini to check if it's a known entity and sets NormalizedEntityId/NormalizedEntityType if recognized. Tests added for entity normalization.
 
 ---
 

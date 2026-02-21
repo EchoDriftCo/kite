@@ -474,6 +474,86 @@ Rules:
             };
         }
 
+        private const string EntityNormalizationPrompt = @"You are an entity recognition expert. Determine if the given name is a known chef/restaurant/cookbook.
+
+Return ONLY valid JSON matching this schema:
+{{
+  ""isRecognized"": boolean,
+  ""canonicalName"": ""string or null (official name if recognized)"",
+  ""normalizedEntityId"": ""string or null (lowercase slug form, e.g., 'bobby-flay')"",
+  ""confidence"": number (0.0-1.0)
+}}
+
+Rules:
+- isRecognized should only be true if you are confident this is a well-known entity
+- For Chefs: must be a professional, famous, or well-known chef (e.g., ""Bobby Flay"", ""Gordon Ramsay"")
+- For Restaurants: must be a recognizable restaurant chain or famous establishment (e.g., ""Olive Garden"", ""The French Laundry"")
+- For Cookbooks: must be a published cookbook with recognizable title and author
+- canonicalName should be the official/most common name (proper capitalization)
+- normalizedEntityId should be lowercase with hyphens (e.g., ""bobby-flay"", ""the-french-laundry"")
+- confidence should reflect your certainty (1.0 = very confident, 0.5 = somewhat sure, 0.0 = not recognized)
+- If not recognized or confidence < 0.6, set isRecognized to false";
+
+        /// <summary>
+        /// Normalize an entity name to check if it's a known entity
+        /// </summary>
+        public async Task<GeminiEntityNormalizationResponse> NormalizeEntityAsync(string entityName, int sourceType, CancellationToken cancellationToken = default) {
+            if (string.IsNullOrWhiteSpace(entityName)) {
+                return new GeminiEntityNormalizationResponse { IsRecognized = false };
+            }
+
+            // Only normalize Chef, Restaurant, or Cookbook (values 2, 3, 4)
+            if (sourceType < 2 || sourceType > 4) {
+                return new GeminiEntityNormalizationResponse { IsRecognized = false };
+            }
+
+            var entityTypeName = sourceType switch {
+                2 => "chef",
+                3 => "restaurant",
+                4 => "cookbook",
+                _ => null
+            };
+
+            if (entityTypeName == null) {
+                return new GeminiEntityNormalizationResponse { IsRecognized = false };
+            }
+
+            var prompt = EntityNormalizationPrompt + $"\n\nEntity type: {entityTypeName}\nEntity name to check: {entityName}";
+
+            logger.LogInformation("Sending entity normalization request to Gemini API, entityName={EntityName}, type={Type}", entityName, entityTypeName);
+
+            try {
+                var textPart = await SendTextPromptAsync(prompt, cancellationToken).ConfigureAwait(false);
+
+                // Strip markdown code fences if present
+                var jsonText = textPart.Trim();
+                if (jsonText.StartsWith("```", StringComparison.Ordinal)) {
+                    var firstNewline = jsonText.IndexOf('\n');
+                    if (firstNewline > 0)
+                        jsonText = jsonText.Substring(firstNewline + 1);
+                    if (jsonText.EndsWith("```", StringComparison.Ordinal))
+                        jsonText = jsonText.Substring(0, jsonText.Length - 3).Trim();
+                }
+
+                var result = JsonSerializer.Deserialize<GeminiEntityNormalizationResponse>(jsonText,
+                    new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+                if (result == null) {
+                    logger.LogWarning("Failed to deserialize entity normalization result for {EntityName}", entityName);
+                    return new GeminiEntityNormalizationResponse { IsRecognized = false };
+                }
+
+                logger.LogInformation("Entity normalization for {EntityName}: isRecognized={IsRecognized}, canonicalName={CanonicalName}, confidence={Confidence}",
+                    entityName, result.IsRecognized, result.CanonicalName, result.Confidence);
+
+                return result;
+            }
+            catch (Exception ex) {
+                logger.LogWarning(ex, "Error normalizing entity {EntityName}, returning not recognized", entityName);
+                return new GeminiEntityNormalizationResponse { IsRecognized = false };
+            }
+        }
+
         /// <summary>
         /// Send a text-only prompt to Gemini and return the text response
         /// </summary>

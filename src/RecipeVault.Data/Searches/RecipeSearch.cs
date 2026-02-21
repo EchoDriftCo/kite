@@ -16,6 +16,7 @@ namespace RecipeVault.Data.Searches {
         public int? TagCategory { get; set; }
         public bool? IsFavorite { get; set; }
         public int? MinRating { get; set; }
+        public Guid? SearchingUserId { get; set; }  // Used to match user's own aliases
 
         public IQueryable<Recipe> Build(IQueryable<Recipe> entities) {
             if (IncludePublic && CreatedSubjectId.HasValue) {
@@ -34,13 +35,49 @@ namespace RecipeVault.Data.Searches {
 
             if (!string.IsNullOrEmpty(Title)) {
                 var pattern = $"%{Title}%";
-                entities = entities.Where(x =>
-                    EF.Functions.ILike(x.Title, pattern) ||
-                    (x.Description != null && EF.Functions.ILike(x.Description, pattern)) ||
-                    (x.Source != null && EF.Functions.ILike(x.Source, pattern)) ||
-                    x.Ingredients.Any(i =>
-                        (i.Item != null && EF.Functions.ILike(i.Item, pattern)) ||
-                        (i.RawText != null && EF.Functions.ILike(i.RawText, pattern))));
+                
+                // Include matching on tag names and aliases
+                // For owner searching own recipes: match on Tag.Name OR their UserTagAlias.Alias
+                // For public search: match on Tag.Name OR (Alias where ShowAliasPublicly=true) OR NormalizedEntityId
+                if (SearchingUserId.HasValue) {
+                    // Owner searching their own recipes or public recipes
+                    entities = entities.Where(x =>
+                        EF.Functions.ILike(x.Title, pattern) ||
+                        (x.Description != null && EF.Functions.ILike(x.Description, pattern)) ||
+                        (x.Source != null && EF.Functions.ILike(x.Source, pattern)) ||
+                        x.Ingredients.Any(i =>
+                            (i.Item != null && EF.Functions.ILike(i.Item, pattern)) ||
+                            (i.RawText != null && EF.Functions.ILike(i.RawText, pattern))) ||
+                        x.RecipeTags.Any(rt => 
+                            !rt.IsOverridden && (
+                                EF.Functions.ILike(rt.Tag.Name, pattern) ||
+                                // Owner's own aliases
+                                (x.CreatedSubject.SubjectId == SearchingUserId && 
+                                 rt.Tag.UserTagAliases.Any(uta => 
+                                    uta.UserId == SearchingUserId && 
+                                    EF.Functions.ILike(uta.Alias, pattern))) ||
+                                // Public aliases or normalized entities
+                                (x.IsPublic && rt.Tag.UserTagAliases.Any(uta =>
+                                    (uta.ShowAliasPublicly && EF.Functions.ILike(uta.Alias, pattern)) ||
+                                    (uta.NormalizedEntityId != null && EF.Functions.ILike(uta.NormalizedEntityId, pattern))))
+                            )));
+                } else {
+                    // No user context, search public recipes only by tag names and public aliases
+                    entities = entities.Where(x =>
+                        EF.Functions.ILike(x.Title, pattern) ||
+                        (x.Description != null && EF.Functions.ILike(x.Description, pattern)) ||
+                        (x.Source != null && EF.Functions.ILike(x.Source, pattern)) ||
+                        x.Ingredients.Any(i =>
+                            (i.Item != null && EF.Functions.ILike(i.Item, pattern)) ||
+                            (i.RawText != null && EF.Functions.ILike(i.RawText, pattern))) ||
+                        x.RecipeTags.Any(rt => 
+                            !rt.IsOverridden && (
+                                EF.Functions.ILike(rt.Tag.Name, pattern) ||
+                                rt.Tag.UserTagAliases.Any(uta =>
+                                    (uta.ShowAliasPublicly && EF.Functions.ILike(uta.Alias, pattern)) ||
+                                    (uta.NormalizedEntityId != null && EF.Functions.ILike(uta.NormalizedEntityId, pattern)))
+                            )));
+                }
             }
 
             if (TagResourceIds != null && TagResourceIds.Count > 0) {

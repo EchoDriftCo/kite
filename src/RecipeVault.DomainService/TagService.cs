@@ -10,6 +10,7 @@ using RecipeVault.Data.Searches;
 using RecipeVault.Domain.Entities;
 using RecipeVault.Domain.Enums;
 using RecipeVault.Exceptions;
+using RecipeVault.Integrations.Gemini;
 
 namespace RecipeVault.DomainService {
     public class TagService : ITagService {
@@ -17,12 +18,14 @@ namespace RecipeVault.DomainService {
         private readonly ITagRepository tagRepository;
         private readonly IUserTagAliasRepository userTagAliasRepository;
         private readonly ISubjectPrincipal subjectPrincipal;
+        private readonly IGeminiClient geminiClient;
 
-        public TagService(ITagRepository tagRepository, IUserTagAliasRepository userTagAliasRepository, ILogger<TagService> logger, ISubjectPrincipal subjectPrincipal) {
+        public TagService(ITagRepository tagRepository, IUserTagAliasRepository userTagAliasRepository, IGeminiClient geminiClient, ILogger<TagService> logger, ISubjectPrincipal subjectPrincipal) {
             this.logger = logger;
             this.tagRepository = tagRepository;
             this.userTagAliasRepository = userTagAliasRepository;
             this.subjectPrincipal = subjectPrincipal;
+            this.geminiClient = geminiClient;
         }
         
         private Guid CurrentSubjectId => Guid.Parse(subjectPrincipal.SubjectId);
@@ -107,16 +110,45 @@ namespace RecipeVault.DomainService {
             using (logger.PushProperty("TagResourceId", tagResourceId)) {
                 var existingAlias = await userTagAliasRepository.GetByUserAndTagAsync(CurrentSubjectId, tag.TagId).ConfigureAwait(false);
 
+                UserTagAlias aliasToReturn;
+                bool isNewAlias = existingAlias == null;
+                bool aliasChanged = existingAlias == null || existingAlias.Alias != aliasName;
+
                 if (existingAlias != null) {
                     existingAlias.UpdateAlias(aliasName, showAliasPublicly);
                     logger.LogInformation("Updated alias for tag");
-                    return existingAlias;
+                    aliasToReturn = existingAlias;
+                } else {
+                    var newAlias = new UserTagAlias(CurrentSubjectId, tag.TagId, aliasName, showAliasPublicly);
+                    await userTagAliasRepository.AddAsync(newAlias).ConfigureAwait(false);
+                    logger.LogInformation("Created alias for tag");
+                    aliasToReturn = newAlias;
                 }
 
-                var newAlias = new UserTagAlias(CurrentSubjectId, tag.TagId, aliasName, showAliasPublicly);
-                await userTagAliasRepository.AddAsync(newAlias).ConfigureAwait(false);
-                logger.LogInformation("Created alias for tag");
-                return newAlias;
+                // Attempt Gemini normalization for Chef/Restaurant/Cookbook if alias changed
+                if (aliasChanged && tag.Category == TagCategory.Source && tag.SourceType.HasValue) {
+                    var sourceTypeValue = (int)tag.SourceType.Value;
+                    // Only normalize for Chef (2), Restaurant (3), Cookbook (4)
+                    if (sourceTypeValue >= 2 && sourceTypeValue <= 4) {
+                        try {
+                            logger.LogInformation("Attempting entity normalization for alias '{Alias}' with SourceType {SourceType}", aliasName, tag.SourceType.Value);
+                            var normalizationResult = await geminiClient.NormalizeEntityAsync(aliasName, sourceTypeValue).ConfigureAwait(false);
+
+                            if (normalizationResult?.IsRecognized == true && !string.IsNullOrWhiteSpace(normalizationResult.NormalizedEntityId)) {
+                                aliasToReturn.SetNormalizedEntity(normalizationResult.NormalizedEntityId, tag.SourceType.Value);
+                                logger.LogInformation("Set normalized entity: {NormalizedEntityId} for alias '{Alias}'", normalizationResult.NormalizedEntityId, aliasName);
+                            } else {
+                                aliasToReturn.ClearNormalizedEntity();
+                                logger.LogInformation("Entity not recognized or confidence too low for alias '{Alias}'", aliasName);
+                            }
+                        } catch (Exception ex) {
+                            logger.LogWarning(ex, "Failed to normalize entity for alias '{Alias}', continuing without normalization", aliasName);
+                            // Don't fail the entire operation if normalization fails
+                        }
+                    }
+                }
+
+                return aliasToReturn;
             }
         }
 
