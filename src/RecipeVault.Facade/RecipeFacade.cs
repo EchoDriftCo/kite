@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
 using Cortside.AspNetCore.EntityFramework;
 using Cortside.Common.Security;
 using Medallion.Threading;
 using Microsoft.Extensions.Logging;
+using RecipeVault.Data.Repositories;
+using RecipeVault.Domain.Entities;
 using RecipeVault.DomainService;
 using RecipeVault.Dto.Input;
 using RecipeVault.Dto.Output;
@@ -16,14 +19,16 @@ namespace RecipeVault.Facade {
     public class RecipeFacade : IRecipeFacade {
         private readonly IUnitOfWork uow;
         private readonly IRecipeService recipeService;
+        private readonly IUserTagAliasRepository userTagAliasRepository;
         private readonly RecipeMapper mapper;
         private readonly ILogger<RecipeFacade> logger;
         private readonly IDistributedLockProvider lockProvider;
         private readonly ISubjectPrincipal subjectPrincipal;
 
-        public RecipeFacade(ILogger<RecipeFacade> logger, IUnitOfWork uow, IRecipeService recipeService, RecipeMapper mapper, IDistributedLockProvider lockProvider, ISubjectPrincipal subjectPrincipal) {
+        public RecipeFacade(ILogger<RecipeFacade> logger, IUnitOfWork uow, IRecipeService recipeService, IUserTagAliasRepository userTagAliasRepository, RecipeMapper mapper, IDistributedLockProvider lockProvider, ISubjectPrincipal subjectPrincipal) {
             this.uow = uow;
             this.recipeService = recipeService;
+            this.userTagAliasRepository = userTagAliasRepository;
             this.mapper = mapper;
             this.logger = logger;
             this.lockProvider = lockProvider;
@@ -47,14 +52,26 @@ namespace RecipeVault.Facade {
                 logger.LogWarning(ex, "Dietary tag analysis failed for recipe {RecipeResourceId}", recipe.RecipeResourceId);
             }
 
-            return mapper.MapToDto(recipe, CurrentSubjectId);
+            var ownerAliases = await GetOwnerAliasesAsync(recipe).ConfigureAwait(false);
+            return mapper.MapToDto(recipe, CurrentSubjectId, ownerAliases);
         }
 
         public async Task<RecipeDto> GetRecipeAsync(Guid resourceId) {
             await using (var tx = uow.BeginNoTracking()) {
                 var recipe = await recipeService.GetRecipeAsync(resourceId);
-                return mapper.MapToDto(recipe, CurrentSubjectId);
+                var ownerAliases = await GetOwnerAliasesAsync(recipe).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId, ownerAliases);
             }
+        }
+
+        private async Task<Dictionary<int, UserTagAlias>> GetOwnerAliasesAsync(Recipe recipe) {
+            var ownerId = recipe.CreatedSubject?.SubjectId;
+            if (!ownerId.HasValue) {
+                return null;
+            }
+
+            var aliases = await userTagAliasRepository.GetByUserIdAsync(ownerId.Value).ConfigureAwait(false);
+            return aliases?.ToDictionary(a => a.TagId);
         }
 
         public async Task<PagedList<RecipeDto>> SearchRecipesAsync(RecipeSearchDto search) {
@@ -63,7 +80,30 @@ namespace RecipeVault.Facade {
             await using (var tx = await uow.BeginReadUncommitedAsync().ConfigureAwait(false)) {
                 var recipes = await recipeService.SearchRecipesAsync(recipeSearch).ConfigureAwait(false);
                 var currentSubjectId = CurrentSubjectId;
-                return recipes.Convert(x => mapper.MapToDto(x, currentSubjectId));
+                
+                // Collect all unique owner IDs
+                var ownerIds = recipes.Items
+                    .Select(r => r.CreatedSubject?.SubjectId)
+                    .Where(id => id.HasValue)
+                    .Distinct()
+                    .Select(id => id.Value)
+                    .ToList();
+
+                // Fetch all aliases for these owners
+                var allAliases = new Dictionary<Guid, Dictionary<int, UserTagAlias>>();
+                foreach (var ownerId in ownerIds) {
+                    var aliases = await userTagAliasRepository.GetByUserIdAsync(ownerId).ConfigureAwait(false);
+                    allAliases[ownerId] = aliases?.ToDictionary(a => a.TagId) ?? new Dictionary<int, UserTagAlias>();
+                }
+
+                return recipes.Convert(x => {
+                    var ownerId = x.CreatedSubject?.SubjectId;
+                    Dictionary<int, UserTagAlias> ownerAliases = null;
+                    if (ownerId.HasValue && allAliases.TryGetValue(ownerId.Value, out var aliases)) {
+                        ownerAliases = aliases;
+                    }
+                    return mapper.MapToDto(x, currentSubjectId, ownerAliases);
+                });
             }
         }
 
@@ -84,7 +124,8 @@ namespace RecipeVault.Facade {
                     logger.LogWarning(ex, "Dietary tag analysis failed for recipe {RecipeResourceId}", recipe.RecipeResourceId);
                 }
 
-                return mapper.MapToDto(recipe, CurrentSubjectId);
+                var ownerAliases = await GetOwnerAliasesAsync(recipe).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId, ownerAliases);
             }
         }
 
@@ -99,7 +140,8 @@ namespace RecipeVault.Facade {
                 await uow.SaveChangesAsync().ConfigureAwait(false);
 
                 var recipe = await recipeService.GetRecipeAsync(resourceId).ConfigureAwait(false);
-                return mapper.MapToDto(recipe, CurrentSubjectId);
+                var ownerAliases = await GetOwnerAliasesAsync(recipe).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId, ownerAliases);
             }
         }
 
@@ -130,7 +172,8 @@ namespace RecipeVault.Facade {
 
                 var recipe = await recipeService.AssignTagsToRecipeAsync(recipeResourceId, tags).ConfigureAwait(false);
                 await uow.SaveChangesAsync().ConfigureAwait(false);
-                return mapper.MapToDto(recipe, CurrentSubjectId);
+                var ownerAliases = await GetOwnerAliasesAsync(recipe).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId, ownerAliases);
             }
         }
 
@@ -143,7 +186,8 @@ namespace RecipeVault.Facade {
 
                 var recipe = await recipeService.RemoveTagFromRecipeAsync(recipeResourceId, tagResourceId).ConfigureAwait(false);
                 await uow.SaveChangesAsync().ConfigureAwait(false);
-                return mapper.MapToDto(recipe, CurrentSubjectId);
+                var ownerAliases = await GetOwnerAliasesAsync(recipe).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId, ownerAliases);
             }
         }
 
@@ -158,7 +202,8 @@ namespace RecipeVault.Facade {
                 await uow.SaveChangesAsync().ConfigureAwait(false);
 
                 var recipe = await recipeService.GetRecipeAsync(resourceId).ConfigureAwait(false);
-                return mapper.MapToDto(recipe, CurrentSubjectId);
+                var ownerAliases = await GetOwnerAliasesAsync(recipe).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId, ownerAliases);
             }
         }
 
@@ -173,7 +218,8 @@ namespace RecipeVault.Facade {
                 await uow.SaveChangesAsync().ConfigureAwait(false);
 
                 var recipe = await recipeService.GetRecipeAsync(resourceId).ConfigureAwait(false);
-                return mapper.MapToDto(recipe, CurrentSubjectId);
+                var ownerAliases = await GetOwnerAliasesAsync(recipe).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId, ownerAliases);
             }
         }
 
@@ -188,7 +234,8 @@ namespace RecipeVault.Facade {
                 await uow.SaveChangesAsync().ConfigureAwait(false);
 
                 var recipe = await recipeService.GetRecipeAsync(resourceId).ConfigureAwait(false);
-                return mapper.MapToDto(recipe, CurrentSubjectId);
+                var ownerAliases = await GetOwnerAliasesAsync(recipe).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId, ownerAliases);
             }
         }
 
@@ -203,14 +250,16 @@ namespace RecipeVault.Facade {
                 await uow.SaveChangesAsync().ConfigureAwait(false);
 
                 var recipe = await recipeService.GetRecipeAsync(resourceId).ConfigureAwait(false);
-                return mapper.MapToDto(recipe, CurrentSubjectId);
+                var ownerAliases = await GetOwnerAliasesAsync(recipe).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId, ownerAliases);
             }
         }
 
         public async Task<RecipeDto> GetRecipeByShareTokenAsync(string shareToken) {
             await using (var tx = uow.BeginNoTracking()) {
                 var recipe = await recipeService.GetRecipeByShareTokenAsync(shareToken).ConfigureAwait(false);
-                return mapper.MapToDto(recipe);
+                var ownerAliases = await GetOwnerAliasesAsync(recipe).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId, ownerAliases);
             }
         }
 
@@ -224,7 +273,8 @@ namespace RecipeVault.Facade {
                 var recipe = await recipeService.GetRecipeAsync(recipeResourceId).ConfigureAwait(false);
                 await recipeService.AnalyzeAndApplyDietaryTagsAsync(recipe).ConfigureAwait(false);
                 await uow.SaveChangesAsync().ConfigureAwait(false);
-                return mapper.MapToDto(recipe, CurrentSubjectId);
+                var ownerAliases = await GetOwnerAliasesAsync(recipe).ConfigureAwait(false);
+                return mapper.MapToDto(recipe, CurrentSubjectId, ownerAliases);
             }
         }
     }

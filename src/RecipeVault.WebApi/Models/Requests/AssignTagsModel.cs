@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace RecipeVault.WebApi.Models.Requests {
     public class AssignTagsModel {
@@ -12,5 +13,8 @@ namespace RecipeVault.WebApi.Models.Requests {
         public Guid? TagResourceId { get; set; }
         public string Name { get; set; }
         public int? Category { get; set; }
+        
+        [StringLength(100)]
+        public string Alias { get; set; }
     }
 }

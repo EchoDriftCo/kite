@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
 using RecipeVault.Dto.Input;
@@ -12,5 +13,10 @@ namespace RecipeVault.Facade {
         Task<PagedList<TagDto>> SearchTagsAsync(TagSearchDto search);
         Task<TagDto> UpdateTagAsync(Guid tagResourceId, UpdateTagDto dto);
         Task DeleteTagAsync(Guid tagResourceId);
+        
+        // Alias methods
+        Task<TagDto> SetAliasAsync(Guid tagResourceId, SetAliasDto dto);
+        Task RemoveAliasAsync(Guid tagResourceId);
+        Task<List<TagDto>> GetUserAliasesAsync();
     }
 }

@@ -23,16 +23,18 @@ namespace RecipeVault.DomainService {
         private readonly ILogger<RecipeService> logger;
         private readonly IRecipeRepository recipeRepository;
         private readonly ITagRepository tagRepository;
+        private readonly IUserTagAliasRepository userTagAliasRepository;
         private readonly IGeminiClient geminiClient;
         private readonly ISubjectPrincipal subjectPrincipal;
         private readonly IHttpClientFactory httpClientFactory;
 
         private static readonly Guid SystemSubjectId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
-        public RecipeService(IRecipeRepository recipeRepository, ITagRepository tagRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger, ISubjectPrincipal subjectPrincipal, IHttpClientFactory httpClientFactory) {
+        public RecipeService(IRecipeRepository recipeRepository, ITagRepository tagRepository, IUserTagAliasRepository userTagAliasRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger, ISubjectPrincipal subjectPrincipal, IHttpClientFactory httpClientFactory) {
             this.logger = logger;
             this.recipeRepository = recipeRepository;
             this.tagRepository = tagRepository;
+            this.userTagAliasRepository = userTagAliasRepository;
             this.geminiClient = geminiClient;
             this.subjectPrincipal = subjectPrincipal;
             this.httpClientFactory = httpClientFactory;
@@ -150,6 +152,17 @@ namespace RecipeVault.DomainService {
                             tag = new Tag(tagDto.Name, category, isGlobal: false);
                             await tagRepository.AddAsync(tag);
                             isNewTag = true;
+                        }
+                    }
+
+                    // Handle inline alias creation
+                    if (!string.IsNullOrWhiteSpace(tagDto.Alias)) {
+                        var existingAlias = await userTagAliasRepository.GetByUserAndTagAsync(currentSubjectId, tag.TagId).ConfigureAwait(false);
+                        if (existingAlias != null) {
+                            existingAlias.UpdateAlias(tagDto.Alias, existingAlias.ShowAliasPublicly);
+                        } else {
+                            var newAlias = new UserTagAlias(currentSubjectId, tag.TagId, tagDto.Alias, showAliasPublicly: false);
+                            await userTagAliasRepository.AddAsync(newAlias).ConfigureAwait(false);
                         }
                     }
 

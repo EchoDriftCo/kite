@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
 using Cortside.Common.Logging;
@@ -14,13 +15,17 @@ namespace RecipeVault.DomainService {
     public class TagService : ITagService {
         private readonly ILogger<TagService> logger;
         private readonly ITagRepository tagRepository;
+        private readonly IUserTagAliasRepository userTagAliasRepository;
         private readonly ISubjectPrincipal subjectPrincipal;
 
-        public TagService(ITagRepository tagRepository, ILogger<TagService> logger, ISubjectPrincipal subjectPrincipal) {
+        public TagService(ITagRepository tagRepository, IUserTagAliasRepository userTagAliasRepository, ILogger<TagService> logger, ISubjectPrincipal subjectPrincipal) {
             this.logger = logger;
             this.tagRepository = tagRepository;
+            this.userTagAliasRepository = userTagAliasRepository;
             this.subjectPrincipal = subjectPrincipal;
         }
+        
+        private Guid CurrentSubjectId => Guid.Parse(subjectPrincipal.SubjectId);
 
         public async Task<Tag> CreateTagAsync(string name, TagCategory category) {
             // If a global tag with the same name+category already exists, return it
@@ -94,6 +99,46 @@ namespace RecipeVault.DomainService {
             }
 
             return entity;
+        }
+
+        public async Task<UserTagAlias> SetAliasAsync(Guid tagResourceId, string aliasName, bool showAliasPublicly) {
+            var tag = await GetTagAsync(tagResourceId).ConfigureAwait(false);
+
+            using (logger.PushProperty("TagResourceId", tagResourceId)) {
+                var existingAlias = await userTagAliasRepository.GetByUserAndTagAsync(CurrentSubjectId, tag.TagId).ConfigureAwait(false);
+
+                if (existingAlias != null) {
+                    existingAlias.UpdateAlias(aliasName, showAliasPublicly);
+                    logger.LogInformation("Updated alias for tag");
+                    return existingAlias;
+                }
+
+                var newAlias = new UserTagAlias(CurrentSubjectId, tag.TagId, aliasName, showAliasPublicly);
+                await userTagAliasRepository.AddAsync(newAlias).ConfigureAwait(false);
+                logger.LogInformation("Created alias for tag");
+                return newAlias;
+            }
+        }
+
+        public async Task RemoveAliasAsync(Guid tagResourceId) {
+            var tag = await GetTagAsync(tagResourceId).ConfigureAwait(false);
+
+            using (logger.PushProperty("TagResourceId", tagResourceId)) {
+                var existingAlias = await userTagAliasRepository.GetByUserAndTagAsync(CurrentSubjectId, tag.TagId).ConfigureAwait(false);
+
+                if (existingAlias != null) {
+                    await userTagAliasRepository.RemoveAsync(existingAlias).ConfigureAwait(false);
+                    logger.LogInformation("Removed alias for tag");
+                }
+            }
+        }
+
+        public Task<List<UserTagAlias>> GetUserAliasesAsync() {
+            return userTagAliasRepository.GetByUserIdAsync(CurrentSubjectId);
+        }
+
+        public Task<UserTagAlias> GetUserAliasForTagAsync(int tagId) {
+            return userTagAliasRepository.GetByUserAndTagAsync(CurrentSubjectId, tagId);
         }
     }
 }

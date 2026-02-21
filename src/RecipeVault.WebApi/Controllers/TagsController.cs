@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Asp.Versioning;
@@ -97,6 +98,45 @@ namespace RecipeVault.WebApi.Controllers {
                 await facade.DeleteTagAsync(id).ConfigureAwait(false);
                 return StatusCode((int)HttpStatusCode.NoContent);
             }
+        }
+
+        /// <summary>
+        /// Set or update an alias for a tag
+        /// </summary>
+        /// <param name="id">the resource id of the tag</param>
+        /// <param name="input">the alias details</param>
+        [HttpPut("{id}/alias")]
+        [ProducesResponseType(typeof(TagModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SetAliasAsync(Guid id, [FromBody] SetAliasModel input) {
+            using (LogContext.PushProperty("TagResourceId", id)) {
+                var inputDto = tagMapper.MapToDto(input);
+                var dto = await facade.SetAliasAsync(id, inputDto).ConfigureAwait(false);
+                return Ok(tagMapper.Map(dto));
+            }
+        }
+
+        /// <summary>
+        /// Remove an alias for a tag
+        /// </summary>
+        /// <param name="id">the resource id of the tag</param>
+        [HttpDelete("{id}/alias")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> RemoveAliasAsync(Guid id) {
+            using (LogContext.PushProperty("TagResourceId", id)) {
+                await facade.RemoveAliasAsync(id).ConfigureAwait(false);
+                return StatusCode((int)HttpStatusCode.NoContent);
+            }
+        }
+
+        /// <summary>
+        /// Get all tag aliases for the current user
+        /// </summary>
+        [HttpGet("aliases")]
+        [ProducesResponseType(typeof(TagModel[]), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetUserAliasesAsync() {
+            var aliases = await facade.GetUserAliasesAsync().ConfigureAwait(false);
+            var models = aliases.Select(x => tagMapper.Map(x)).ToList();
+            return Ok(models);
         }
     }
 }

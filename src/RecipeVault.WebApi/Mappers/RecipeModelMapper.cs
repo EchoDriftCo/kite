@@ -53,12 +53,16 @@ namespace RecipeVault.WebApi.Mappers {
                 }).ToList(),
                 Tags = dto.Tags?.Select(t => new RecipeTagModel {
                     TagResourceId = t.TagResourceId,
-                    Name = t.Name,
+                    GlobalName = t.GlobalName,
+                    DisplayName = t.DisplayName,
                     Category = t.Category,
                     CategoryName = t.CategoryName,
+                    SourceType = t.SourceType,
+                    SourceTypeName = t.SourceTypeName,
                     IsAiAssigned = t.IsAiAssigned,
                     Confidence = t.Confidence,
-                    IsOverridden = t.IsOverridden
+                    IsOverridden = t.IsOverridden,
+                    IsOwnerAlias = t.IsOwnerAlias
                 }).ToList(),
                 CreatedDate = dto.CreatedDate,
                 CreatedSubject = subjectModelMapper.Map(dto.CreatedSubject),

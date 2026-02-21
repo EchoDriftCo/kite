@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using RecipeVault.Data.Searches;
 using RecipeVault.Domain.Entities;
@@ -16,13 +17,19 @@ namespace RecipeVault.Facade.Mappers {
         }
 
         public RecipeDto MapToDto(Recipe entity) {
-            return MapToDto(entity, null);
+            return MapToDto(entity, null, null);
         }
 
         public RecipeDto MapToDto(Recipe entity, Guid? currentSubjectId) {
+            return MapToDto(entity, currentSubjectId, null);
+        }
+
+        public RecipeDto MapToDto(Recipe entity, Guid? currentSubjectId, Dictionary<int, UserTagAlias> ownerAliases) {
             if (entity == null) {
                 return null;
             }
+
+            var ownerSubjectId = entity.CreatedSubject?.SubjectId;
 
             return new RecipeDto {
                 RecipeId = entity.RecipeId,
@@ -39,8 +46,8 @@ namespace RecipeVault.Facade.Mappers {
                 IsPublic = entity.IsPublic,
                 Rating = entity.Rating,
                 IsFavorite = entity.IsFavorite,
-                IsOwner = currentSubjectId.HasValue && entity.CreatedSubject?.SubjectId == currentSubjectId,
-                ShareToken = currentSubjectId.HasValue && entity.CreatedSubject?.SubjectId == currentSubjectId
+                IsOwner = currentSubjectId.HasValue && ownerSubjectId.HasValue && ownerSubjectId == currentSubjectId,
+                ShareToken = currentSubjectId.HasValue && ownerSubjectId.HasValue && ownerSubjectId == currentSubjectId
                     ? entity.ShareToken
                     : null,
                 Ingredients = entity.Ingredients?.Select(i => new RecipeIngredientDto {
@@ -60,7 +67,13 @@ namespace RecipeVault.Facade.Mappers {
                 }).ToList(),
                 Tags = entity.RecipeTags?
                     .Where(rt => !rt.IsOverridden)
-                    .Select(rt => tagMapper.MapToRecipeTagDto(rt))
+                    .Select(rt => {
+                        UserTagAlias alias = null;
+                        if (ownerAliases != null && rt.Tag != null) {
+                            ownerAliases.TryGetValue(rt.Tag.TagId, out alias);
+                        }
+                        return tagMapper.MapToRecipeTagDto(rt, currentSubjectId, ownerSubjectId, alias);
+                    })
                     .ToList(),
                 CreatedDate = entity.CreatedDate,
                 LastModifiedDate = entity.LastModifiedDate,
