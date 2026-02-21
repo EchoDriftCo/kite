@@ -5,23 +5,65 @@
       <mat-chip
         *ngFor="let tag of selectedTags"
         [class]="getTagColorClass(tag.category)"
+        [class.has-alias]="tag.isOwnerAlias"
         [removable]="!readonly && !tag.isOverridden"
-        (removed)="removeTag(tag)">
-        <span class="tag-content">
+        (removed)="removeTag(tag)"
+        [matTooltip]="getTagTooltip(tag)">
+        
+        <!-- Normal tag display -->
+        <span class="tag-content" *ngIf="tagBeingAliased?.tagResourceId !== tag.tagResourceId">
           <!-- AI indicator icon -->
           <mat-icon *ngIf="tag.isAiAssigned" class="ai-icon" [matTooltip]="'AI suggested (' + getConfidencePercent(tag.confidence) + '% confidence)'">
             smart_toy
           </mat-icon>
-          <!-- Tag name -->
-          <span class="tag-name">{{ tag.name }}</span>
+          
+          <!-- Alias indicator -->
+          <mat-icon *ngIf="tag.isOwnerAlias" class="alias-icon" matTooltip="You've personalized this tag">
+            edit
+          </mat-icon>
+          
+          <!-- Tag name (shows alias if set) -->
+          <span class="tag-name">{{ getDisplayName(tag) }}</span>
+          
           <!-- Category badge -->
           <span class="tag-category-badge">{{ getTagCategoryName(tag.category) }}</span>
+          
+          <!-- Add alias button (for system tags without alias) -->
+          <button 
+            *ngIf="!readonly && !tag.isOwnerAlias && (tag.globalName || tag.name)"
+            mat-icon-button
+            class="add-alias-btn"
+            (click)="$event.stopPropagation(); showAliasPrompt(tag)"
+            matTooltip="Add your own name">
+            <mat-icon>add_circle_outline</mat-icon>
+          </button>
         </span>
+        
+        <!-- Inline alias editor -->
+        <span class="tag-content alias-editor" *ngIf="tagBeingAliased?.tagResourceId === tag.tagResourceId">
+          <span class="tag-name">{{ tag.globalName || tag.name }}</span>
+          <span class="alias-separator">›</span>
+          <input
+            class="alias-input"
+            [formControl]="aliasControl"
+            placeholder="Your name..."
+            (keyup.enter)="saveAlias()"
+            (keyup.escape)="cancelAlias()"
+            (blur)="saveAlias()">
+          <button mat-icon-button (click)="saveAlias()" class="alias-save-btn" matTooltip="Save">
+            <mat-icon>check</mat-icon>
+          </button>
+          <button mat-icon-button (click)="cancelAlias()" class="alias-cancel-btn" matTooltip="Cancel">
+            <mat-icon>close</mat-icon>
+          </button>
+        </span>
+        
         <button matChipRemove *ngIf="!readonly && !tag.isOverridden" aria-label="Remove tag">
           <mat-icon>cancel</mat-icon>
         </button>
       </mat-chip>
     </mat-chip-set>
+    <div class="alias-error" *ngIf="aliasError">{{ aliasError }}</div>
   </div>
 
   <!-- Tag Search/Add (only if not readonly) -->
@@ -45,9 +87,9 @@
             *ngFor="let tag of getTagsForCategory((filteredTags$ | async) || [], category.value)"
             [value]="tag">
             <span class="autocomplete-option">
-              <mat-icon *ngIf="tag.isGlobal" class="global-icon">public</mat-icon>
-              <span>{{ tag.name }}</span>
-              <span class="category-label">{{ getTagCategoryName(tag.category) }}</span>
+              <mat-icon *ngIf="tag.isSystemTag || tag.isGlobal" class="global-icon">public</mat-icon>
+              <span>{{ tag.alias || tag.name }}</span>
+              <span class="category-label" *ngIf="tag.alias">({{ tag.name }})</span>
             </span>
           </mat-option>
         </mat-optgroup>

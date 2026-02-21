@@ -5,7 +5,10 @@ import {
   Tag,
   CreateTagRequest,
   UpdateTagRequest,
-  TagSearchRequest
+  TagSearchRequest,
+  SetAliasRequest,
+  SetAliasResponse,
+  UserTagAlias
 } from '../models/tag.model';
 import { PagedResult } from '../models/recipe.model';
 
@@ -67,5 +70,26 @@ export class TagService {
    */
   deleteTag(id: string): Observable<void> {
     return this.api.delete<void>(`${this.endpoint}/${id}`);
+  }
+
+  /**
+   * Set or update an alias for a tag
+   */
+  setAlias(tagResourceId: string, request: SetAliasRequest): Observable<SetAliasResponse> {
+    return this.api.put<SetAliasResponse>(`${this.endpoint}/${tagResourceId}/alias`, request);
+  }
+
+  /**
+   * Remove an alias from a tag
+   */
+  removeAlias(tagResourceId: string): Observable<void> {
+    return this.api.delete<void>(`${this.endpoint}/${tagResourceId}/alias`);
+  }
+
+  /**
+   * Get all user's tag aliases
+   */
+  getAliases(): Observable<UserTagAlias[]> {
+    return this.api.get<UserTagAlias[]>(`${this.endpoint}/aliases`);
   }
 }

@@ -50,8 +50,9 @@
             <button mat-stroked-button
                     class="tag-chip"
                     [class.selected]="isTagSelected(tag)"
+                    [matTooltip]="tag.alias ? tag.name : ''"
                     (click)="toggleTagFilter(tag)">
-              {{ tag.name }}
+              {{ tag.alias || tag.name }}
             </button>
           }
         </div>

@@ -8,6 +8,15 @@ export enum TagCategory {
   Custom = 5
 }
 
+export enum SourceType {
+  Family = 1,
+  Chef = 2,
+  Restaurant = 3,
+  Cookbook = 4,
+  Website = 5,
+  Original = 6
+}
+
 export interface Tag {
   tagResourceId: string;
   tagId: number;
@@ -15,6 +24,13 @@ export interface Tag {
   category: number;
   categoryName: string;
   isGlobal: boolean;
+  // New alias fields
+  alias?: string;
+  showAliasPublicly?: boolean;
+  normalizedEntityId?: string;
+  normalizedEntityType?: number;
+  sourceType?: number;
+  isSystemTag?: boolean;
   createdBy?: string;
   createdDate?: string;
   lastModifiedBy?: string;
@@ -29,6 +45,11 @@ export interface RecipeTag {
   isAiAssigned: boolean;
   confidence?: number;
   isOverridden: boolean;
+  // New display fields
+  globalName?: string;
+  displayName?: string;
+  isOwnerAlias?: boolean;
+  sourceType?: number;
 }
 
 export interface CreateTagRequest {
@@ -55,10 +76,39 @@ export interface AssignTagItem {
   tagResourceId?: string;  // For existing tags
   name?: string;           // For creating new tags
   category?: number;       // Required when creating new tags
+  alias?: string;          // Optional: set alias inline when adding tag
 }
 
 export interface AssignTagsRequest {
   tags: AssignTagItem[];
+}
+
+export interface SetAliasRequest {
+  alias: string;
+  showAliasPublicly?: boolean;
+}
+
+export interface SetAliasResponse {
+  tagResourceId: string;
+  name: string;
+  alias: string;
+  normalizedEntityId?: string;
+  normalizedEntityType?: number;
+  showAliasPublicly: boolean;
+}
+
+export interface UserTagAlias {
+  userTagAliasId: number;
+  userId: string;
+  tagId: number;
+  tagResourceId: string;
+  tagName: string;
+  alias: string;
+  normalizedEntityId?: string;
+  normalizedEntityType?: number;
+  showAliasPublicly: boolean;
+  createdDate: string;
+  lastModifiedDate: string;
 }
 
 export function getCategoryName(category: number): string {
