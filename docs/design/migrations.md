@@ -44,9 +44,23 @@ EF Core migrations can't run directly against Supabase from local dev:
 - **Transaction wrapped**: All-or-nothing application
 - **EF history tracking**: Records applied migrations in `__EFMigrationsHistory`
 
-### Pre-Deploy Checklist
+### Deploying (Recommended)
 
-Before every Fly.io deploy:
+Use the deploy script which handles everything:
+
+```powershell
+.\deploy.ps1
+```
+
+This will:
+1. Check for pending migrations
+2. Generate SQL and offer to copy to clipboard
+3. Require confirmation that you ran the SQL
+4. Build and deploy to Fly.io
+
+### Manual Pre-Deploy Checklist
+
+If deploying manually (`fly deploy`):
 - [ ] Run `.\generate-migration-sql.ps1`
 - [ ] Check if `migrations/pending.sql` has content
 - [ ] If yes, run SQL in Supabase BEFORE deploying
