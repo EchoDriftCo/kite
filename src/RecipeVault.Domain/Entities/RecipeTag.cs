@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using RecipeVault.Domain.Enums;
 
 namespace RecipeVault.Domain.Entities {
     [Index(nameof(RecipeId), nameof(TagId), IsUnique = true)]
@@ -10,12 +11,13 @@ namespace RecipeVault.Domain.Entities {
         protected RecipeTag() {
         }
 
-        public RecipeTag(int recipeId, int tagId, Guid assignedBySubjectId, bool isAiAssigned, decimal? confidence) {
+        public RecipeTag(int recipeId, int tagId, Guid assignedBySubjectId, bool isAiAssigned, decimal? confidence, string detail = null) {
             RecipeId = recipeId;
             TagId = tagId;
             AssignedBySubjectId = assignedBySubjectId;
             IsAiAssigned = isAiAssigned;
             Confidence = confidence;
+            Detail = detail;
             IsOverridden = false;
             AssignedDate = DateTime.UtcNow;
         }
@@ -25,12 +27,13 @@ namespace RecipeVault.Domain.Entities {
         /// Use this when the Tag may not yet be persisted (TagId not assigned).
         /// EF Core will resolve the relationship on SaveChanges.
         /// </summary>
-        public RecipeTag(int recipeId, Tag tag, Guid assignedBySubjectId, bool isAiAssigned, decimal? confidence) {
+        public RecipeTag(int recipeId, Tag tag, Guid assignedBySubjectId, bool isAiAssigned, decimal? confidence, string detail = null) {
             RecipeId = recipeId;
             Tag = tag;
             AssignedBySubjectId = assignedBySubjectId;
             IsAiAssigned = isAiAssigned;
             Confidence = confidence;
+            Detail = detail;
             IsOverridden = false;
             AssignedDate = DateTime.UtcNow;
         }
@@ -58,12 +61,34 @@ namespace RecipeVault.Domain.Entities {
 
         public DateTime AssignedDate { get; private set; }
 
+        [StringLength(100)]
+        public string Detail { get; private set; }
+
+        [StringLength(100)]
+        public string NormalizedEntityId { get; private set; }
+
+        public SourceType? NormalizedEntityType { get; private set; }
+
         public void MarkOverridden() {
             IsOverridden = true;
         }
 
         public void ClearOverride() {
             IsOverridden = false;
+        }
+
+        public void UpdateDetail(string detail) {
+            Detail = detail;
+        }
+
+        public void SetNormalizedEntity(string entityId, SourceType entityType) {
+            NormalizedEntityId = entityId;
+            NormalizedEntityType = entityType;
+        }
+
+        public void ClearNormalizedEntity() {
+            NormalizedEntityId = null;
+            NormalizedEntityType = null;
         }
     }
 }

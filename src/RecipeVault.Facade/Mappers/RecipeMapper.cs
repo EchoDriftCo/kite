@@ -17,14 +17,10 @@ namespace RecipeVault.Facade.Mappers {
         }
 
         public RecipeDto MapToDto(Recipe entity) {
-            return MapToDto(entity, null, null);
+            return MapToDto(entity, null);
         }
 
         public RecipeDto MapToDto(Recipe entity, Guid? currentSubjectId) {
-            return MapToDto(entity, currentSubjectId, null);
-        }
-
-        public RecipeDto MapToDto(Recipe entity, Guid? currentSubjectId, Dictionary<int, UserTagAlias> ownerAliases) {
             if (entity == null) {
                 return null;
             }
@@ -67,13 +63,7 @@ namespace RecipeVault.Facade.Mappers {
                 }).ToList(),
                 Tags = entity.RecipeTags?
                     .Where(rt => !rt.IsOverridden)
-                    .Select(rt => {
-                        UserTagAlias alias = null;
-                        if (ownerAliases != null && rt.Tag != null) {
-                            ownerAliases.TryGetValue(rt.Tag.TagId, out alias);
-                        }
-                        return tagMapper.MapToRecipeTagDto(rt, currentSubjectId, ownerSubjectId, alias);
-                    })
+                    .Select(rt => tagMapper.MapToRecipeTagDto(rt))
                     .ToList(),
                 CreatedDate = entity.CreatedDate,
                 LastModifiedDate = entity.LastModifiedDate,

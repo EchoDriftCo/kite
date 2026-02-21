@@ -23,18 +23,16 @@ namespace RecipeVault.DomainService {
         private readonly ILogger<RecipeService> logger;
         private readonly IRecipeRepository recipeRepository;
         private readonly ITagRepository tagRepository;
-        private readonly IUserTagAliasRepository userTagAliasRepository;
         private readonly IGeminiClient geminiClient;
         private readonly ISubjectPrincipal subjectPrincipal;
         private readonly IHttpClientFactory httpClientFactory;
 
         private static readonly Guid SystemSubjectId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
-        public RecipeService(IRecipeRepository recipeRepository, ITagRepository tagRepository, IUserTagAliasRepository userTagAliasRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger, ISubjectPrincipal subjectPrincipal, IHttpClientFactory httpClientFactory) {
+        public RecipeService(IRecipeRepository recipeRepository, ITagRepository tagRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger, ISubjectPrincipal subjectPrincipal, IHttpClientFactory httpClientFactory) {
             this.logger = logger;
             this.recipeRepository = recipeRepository;
             this.tagRepository = tagRepository;
-            this.userTagAliasRepository = userTagAliasRepository;
             this.geminiClient = geminiClient;
             this.subjectPrincipal = subjectPrincipal;
             this.httpClientFactory = httpClientFactory;
@@ -155,17 +153,6 @@ namespace RecipeVault.DomainService {
                         }
                     }
 
-                    // Handle inline alias creation
-                    if (!string.IsNullOrWhiteSpace(tagDto.Alias)) {
-                        var existingAlias = await userTagAliasRepository.GetByUserAndTagAsync(currentSubjectId, tag.TagId).ConfigureAwait(false);
-                        if (existingAlias != null) {
-                            existingAlias.UpdateAlias(tagDto.Alias, existingAlias.ShowAliasPublicly);
-                        } else {
-                            var newAlias = new UserTagAlias(currentSubjectId, tag.TagId, tagDto.Alias, showAliasPublicly: false);
-                            await userTagAliasRepository.AddAsync(newAlias).ConfigureAwait(false);
-                        }
-                    }
-
                     // Skip if already assigned and not overridden (only check for persisted tags)
                     if (!isNewTag) {
                         var existing = entity.RecipeTags.FirstOrDefault(rt => rt.TagId == tag.TagId);
@@ -173,17 +160,29 @@ namespace RecipeVault.DomainService {
                             if (existing.IsOverridden) {
                                 existing.ClearOverride();
                             }
+                            // Update detail if provided
+                            if (!string.IsNullOrWhiteSpace(tagDto.Detail)) {
+                                existing.UpdateDetail(tagDto.Detail);
+                                await TryNormalizeRecipeTagAsync(existing, tag, tagDto.Detail).ConfigureAwait(false);
+                            }
                             continue;
                         }
                     }
 
-                    // Use Tag entity overload for new tags (TagId not yet assigned),
-                    // or TagId for persisted tags
+                    // Create new RecipeTag with optional detail
+                    RecipeTag recipeTag;
                     if (isNewTag) {
-                        entity.AddTag(new RecipeTag(entity.RecipeId, tag, currentSubjectId, isAiAssigned: false, confidence: null));
+                        recipeTag = new RecipeTag(entity.RecipeId, tag, currentSubjectId, isAiAssigned: false, confidence: null, detail: tagDto.Detail);
                     } else {
-                        entity.AddTag(new RecipeTag(entity.RecipeId, tag.TagId, currentSubjectId, isAiAssigned: false, confidence: null));
+                        recipeTag = new RecipeTag(entity.RecipeId, tag.TagId, currentSubjectId, isAiAssigned: false, confidence: null, detail: tagDto.Detail);
                     }
+
+                    // Attempt Gemini normalization for Source tags with Detail
+                    if (!string.IsNullOrWhiteSpace(tagDto.Detail)) {
+                        await TryNormalizeRecipeTagAsync(recipeTag, tag, tagDto.Detail).ConfigureAwait(false);
+                    }
+
+                    entity.AddTag(recipeTag);
                 }
 
                 logger.LogInformation("Assigned {TagCount} tags to recipe", tags.Count);
@@ -423,6 +422,35 @@ namespace RecipeVault.DomainService {
             }
 
             return cleaned;
+        }
+
+        private async Task TryNormalizeRecipeTagAsync(RecipeTag recipeTag, Tag tag, string detail) {
+            // Only normalize Source tags with Chef/Restaurant/Cookbook types
+            if (tag.Category != TagCategory.Source || !tag.SourceType.HasValue) {
+                return;
+            }
+
+            var sourceTypeValue = (int)tag.SourceType.Value;
+            // Only normalize for Chef (2), Restaurant (3), Cookbook (4)
+            if (sourceTypeValue < 2 || sourceTypeValue > 4) {
+                return;
+            }
+
+            try {
+                logger.LogInformation("Attempting entity normalization for detail '{Detail}' with SourceType {SourceType}", detail, tag.SourceType.Value);
+                var normalizationResult = await geminiClient.NormalizeEntityAsync(detail, sourceTypeValue).ConfigureAwait(false);
+
+                if (normalizationResult?.IsRecognized == true && !string.IsNullOrWhiteSpace(normalizationResult.NormalizedEntityId)) {
+                    recipeTag.SetNormalizedEntity(normalizationResult.NormalizedEntityId, tag.SourceType.Value);
+                    logger.LogInformation("Set normalized entity: {NormalizedEntityId} for detail '{Detail}'", normalizationResult.NormalizedEntityId, detail);
+                } else {
+                    recipeTag.ClearNormalizedEntity();
+                    logger.LogInformation("Entity not recognized or confidence too low for detail '{Detail}'", detail);
+                }
+            } catch (Exception ex) {
+                logger.LogWarning(ex, "Failed to normalize entity for detail '{Detail}', continuing without normalization", detail);
+                // Don't fail the entire operation if normalization fails
+            }
         }
     }
 }

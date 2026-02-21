@@ -1,10 +1,10 @@
-# Tag Aliases Design Plan
+# Tag Detail System Design (Updated)
 
 ## Overview
 
-Implement a two-layer tag system:
-- **Global Tags**: Curated, normalized tags for discoverability
-- **User Aliases**: Personal names for global tags (per-user, not per-recipe)
+**Status:** Backend refactor complete. Frontend updates pending.
+
+**Approach Change:** Instead of per-user aliases (UserTagAlias), we now use per-recipe details (RecipeTag.Detail). This better supports the use case where Source tags need different values per recipe (e.g., Chef="Bobby Flay" on one recipe, Chef="Gordon Ramsay" on another).
 
 ## Goals
 
@@ -16,9 +16,28 @@ Implement a two-layer tag system:
 
 ---
 
-## Data Model
+## Completed Backend Changes
 
-### Current Schema
+### Migration Applied
+- ✅ Added `Detail` (string 100), `NormalizedEntityId` (string 100), `NormalizedEntityType` (int?) to `RecipeTag`
+- ✅ Dropped `UserTagAlias` table (never fully implemented)
+- ✅ Migration: `20260221192539_AddRecipeTagDetail.cs`
+
+### Updated Entities
+- ✅ `RecipeTag` entity already had Detail/NormalizedEntity fields
+- ✅ `Tag` entity has SourceType and IsSystemTag
+- ✅ RecipeService handles Detail and Gemini normalization
+
+### DTOs and Mappers
+- ✅ RecipeTagDto includes detail, normalizedEntityId, normalizedEntityType
+- ✅ TagMapper uses Detail as displayName (fallback to globalName)
+- ✅ RecipeModelMapper updated to include new fields
+
+### Tests
+- ✅ Removed UserTagAlias references from test files
+- ✅ All backend tests build successfully
+
+## Data Model (Current)
 
 ```
 Tag

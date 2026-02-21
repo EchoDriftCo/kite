@@ -15,6 +15,6 @@ namespace RecipeVault.WebApi.Models.Requests {
         public int? Category { get; set; }
         
         [StringLength(100)]
-        public string Alias { get; set; }
+        public string Detail { get; set; }
     }
 }

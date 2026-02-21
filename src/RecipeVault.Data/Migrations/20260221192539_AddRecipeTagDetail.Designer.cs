@@ -12,8 +12,8 @@ using RecipeVault.Data;
 namespace RecipeVault.Data.Migrations
 {
     [DbContext(typeof(RecipeVaultDbContext))]
-    [Migration("20260221163106_AddUserTagAliasesAndSourceType")]
-    partial class AddUserTagAliasesAndSourceType
+    [Migration("20260221192539_AddRecipeTagDetail")]
+    partial class AddRecipeTagDetail
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -373,11 +373,22 @@ namespace RecipeVault.Data.Migrations
                     b.Property<decimal?>("Confidence")
                         .HasColumnType("numeric(3,2)");
 
+                    b.Property<string>("Detail")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<bool>("IsAiAssigned")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsOverridden")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("NormalizedEntityId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("NormalizedEntityType")
+                        .HasColumnType("integer");
 
                     b.Property<int>("RecipeId")
                         .HasColumnType("integer");
@@ -579,68 +590,6 @@ namespace RecipeVault.Data.Migrations
                         });
                 });
 
-            modelBuilder.Entity("RecipeVault.Domain.Entities.UserTagAlias", b =>
-                {
-                    b.Property<int>("UserTagAliasId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserTagAliasId"));
-
-                    b.Property<string>("Alias")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasComment("Date and time entity was created");
-
-                    b.Property<Guid>("CreatedSubjectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("LastModifiedDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasComment("Date and time entity was last modified");
-
-                    b.Property<Guid>("LastModifiedSubjectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("NormalizedEntityId")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<int?>("NormalizedEntityType")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("ShowAliasPublicly")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("TagId")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("UserTagAliasId");
-
-                    b.HasIndex("CreatedSubjectId");
-
-                    b.HasIndex("LastModifiedSubjectId");
-
-                    b.HasIndex("TagId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "TagId")
-                        .IsUnique();
-
-                    b.ToTable("UserTagAlias", "public", t =>
-                        {
-                            t.HasTrigger("trUserTagAlias");
-                        });
-                });
-
             modelBuilder.Entity("RecipeVault.Domain.Entities.MealPlan", b =>
                 {
                     b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "CreatedSubject")
@@ -837,33 +786,6 @@ namespace RecipeVault.Data.Migrations
                     b.Navigation("LastModifiedSubject");
 
                     b.Navigation("Unit");
-                });
-
-            modelBuilder.Entity("RecipeVault.Domain.Entities.UserTagAlias", b =>
-                {
-                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "CreatedSubject")
-                        .WithMany()
-                        .HasForeignKey("CreatedSubjectId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "LastModifiedSubject")
-                        .WithMany()
-                        .HasForeignKey("LastModifiedSubjectId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("RecipeVault.Domain.Entities.Tag", "Tag")
-                        .WithMany()
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CreatedSubject");
-
-                    b.Navigation("LastModifiedSubject");
-
-                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("RecipeVault.Domain.Entities.MealPlan", b =>

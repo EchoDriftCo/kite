@@ -62,7 +62,9 @@ namespace RecipeVault.WebApi.Mappers {
                     IsAiAssigned = t.IsAiAssigned,
                     Confidence = t.Confidence,
                     IsOverridden = t.IsOverridden,
-                    IsOwnerAlias = t.IsOwnerAlias
+                    Detail = t.Detail,
+                    NormalizedEntityId = t.NormalizedEntityId,
+                    NormalizedEntityType = t.NormalizedEntityType
                 }).ToList(),
                 CreatedDate = dto.CreatedDate,
                 CreatedSubject = subjectModelMapper.Map(dto.CreatedSubject),

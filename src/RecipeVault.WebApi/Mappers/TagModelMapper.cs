@@ -30,11 +30,6 @@ namespace RecipeVault.WebApi.Mappers {
                 SourceType = dto.SourceType,
                 SourceTypeName = dto.SourceTypeName,
                 IsSystemTag = dto.IsSystemTag,
-                Alias = dto.Alias,
-                ShowAliasPublicly = dto.ShowAliasPublicly,
-                NormalizedEntityId = dto.NormalizedEntityId,
-                NormalizedEntityType = dto.NormalizedEntityType,
-                NormalizedEntityTypeName = dto.NormalizedEntityTypeName,
                 CreatedDate = dto.CreatedDate,
                 CreatedSubject = subjectModelMapper.Map(dto.CreatedSubject),
                 LastModifiedDate = dto.LastModifiedDate,
@@ -77,18 +72,7 @@ namespace RecipeVault.WebApi.Mappers {
                 TagResourceId = model.TagResourceId,
                 Name = model.Name,
                 Category = model.Category,
-                Alias = model.Alias
-            };
-        }
-
-        public SetAliasDto MapToDto(SetAliasModel model) {
-            if (model == null) {
-                return null;
-            }
-
-            return new SetAliasDto {
-                Alias = model.Alias,
-                ShowAliasPublicly = model.ShowAliasPublicly
+                Detail = model.Detail
             };
         }
     }

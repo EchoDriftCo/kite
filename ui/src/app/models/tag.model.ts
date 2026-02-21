@@ -24,12 +24,8 @@ export interface Tag {
   category: number;
   categoryName: string;
   isGlobal: boolean;
-  // New alias fields
-  alias?: string;
-  showAliasPublicly?: boolean;
-  normalizedEntityId?: string;
-  normalizedEntityType?: number;
   sourceType?: number;
+  sourcTypeName?: string;
   isSystemTag?: boolean;
   createdBy?: string;
   createdDate?: string;
@@ -39,17 +35,18 @@ export interface Tag {
 
 export interface RecipeTag {
   tagResourceId: string;
-  name: string;
+  globalName: string;
+  displayName: string;
   category: number;
   categoryName: string;
+  sourceType?: number;
+  sourceTypeName?: string;
   isAiAssigned: boolean;
   confidence?: number;
   isOverridden: boolean;
-  // New display fields
-  globalName?: string;
-  displayName?: string;
-  isOwnerAlias?: boolean;
-  sourceType?: number;
+  detail?: string;
+  normalizedEntityId?: string;
+  normalizedEntityType?: number;
 }
 
 export interface CreateTagRequest {
@@ -76,39 +73,11 @@ export interface AssignTagItem {
   tagResourceId?: string;  // For existing tags
   name?: string;           // For creating new tags
   category?: number;       // Required when creating new tags
-  alias?: string;          // Optional: set alias inline when adding tag
+  detail?: string;         // Optional: per-recipe detail (Chef="Bobby Flay", etc.)
 }
 
 export interface AssignTagsRequest {
   tags: AssignTagItem[];
-}
-
-export interface SetAliasRequest {
-  alias: string;
-  showAliasPublicly?: boolean;
-}
-
-export interface SetAliasResponse {
-  tagResourceId: string;
-  name: string;
-  alias: string;
-  normalizedEntityId?: string;
-  normalizedEntityType?: number;
-  showAliasPublicly: boolean;
-}
-
-export interface UserTagAlias {
-  userTagAliasId: number;
-  userId: string;
-  tagId: number;
-  tagResourceId: string;
-  tagName: string;
-  alias: string;
-  normalizedEntityId?: string;
-  normalizedEntityType?: number;
-  showAliasPublicly: boolean;
-  createdDate: string;
-  lastModifiedDate: string;
 }
 
 export function getCategoryName(category: number): string {

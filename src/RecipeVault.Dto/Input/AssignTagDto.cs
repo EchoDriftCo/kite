@@ -8,6 +8,6 @@ namespace RecipeVault.Dto.Input {
         public int? Category { get; set; }
         
         [StringLength(100)]
-        public string Alias { get; set; }
+        public string Detail { get; set; }
     }
 }

@@ -34,13 +34,6 @@ namespace RecipeVault.Facade.Tests.Facades {
             return mock;
         }
 
-        private static void SetupUserAliasesMock(Mock<ITagService> mockService) {
-            mockService.Setup(x => x.GetUserAliasesAsync())
-                .ReturnsAsync(new List<UserTagAlias>());
-            mockService.Setup(x => x.GetUserAliasForTagAsync(It.IsAny<int>()))
-                .ReturnsAsync((UserTagAlias)null);
-        }
-
         [Fact]
         public async Task CreateTagAsync_WithValidDto_CreatesAndReturnsMappedDto() {
             // Arrange
@@ -115,8 +108,6 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(tag)
                 .Verifiable();
 
-            SetupUserAliasesMock(mockService);
-
             var facade = new TagFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
             // Act
@@ -171,8 +162,6 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .Setup(x => x.SearchTagsAsync(It.IsAny<TagSearch>()))
                 .ReturnsAsync(tags)
                 .Verifiable();
-
-            SetupUserAliasesMock(mockService);
 
             var facade = new TagFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
@@ -266,3 +255,4 @@ namespace RecipeVault.Facade.Tests.Facades {
         }
     }
 }
+

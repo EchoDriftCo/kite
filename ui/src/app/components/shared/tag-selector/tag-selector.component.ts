@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Observable, of, debounceTime, switchMap, map, startWith } from 'rxjs';
+import { Observable, debounceTime, switchMap, map, startWith } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -36,14 +36,9 @@ export class TagSelectorComponent implements OnInit {
   @Output() tagRemoved = new EventEmitter<RecipeTag>();
 
   tagSearchControl = new FormControl('');
-  aliasControl = new FormControl('');
   filteredTags$!: Observable<Tag[]>;
   showCreateOption = false;
   searchTerm = '';
-  
-  // Track which tag is being aliased
-  tagBeingAliased: RecipeTag | null = null;
-  aliasError = '';
 
   tagCategories = [
     { value: TagCategory.Source, name: 'Source' },
@@ -93,17 +88,6 @@ export class TagSelectorComponent implements OnInit {
 
     this.tagsChanged.emit([assignTag]);
     this.tagSearchControl.setValue('');
-    
-    // Show alias prompt for newly added tag if it's a system tag
-    if (tag.isSystemTag || tag.isGlobal) {
-      // Find the tag in selectedTags after it's been added
-      setTimeout(() => {
-        const addedTag = this.selectedTags.find(t => t.tagResourceId === tag.tagResourceId);
-        if (addedTag && !addedTag.displayName && !addedTag.isOwnerAlias) {
-          this.showAliasPrompt(addedTag);
-        }
-      }, 100);
-    }
   }
 
   createNewTag(category: TagCategory) {
@@ -118,51 +102,6 @@ export class TagSelectorComponent implements OnInit {
     this.tagsChanged.emit([assignTag]);
     this.tagSearchControl.setValue('');
     this.showCreateOption = false;
-  }
-
-  showAliasPrompt(tag: RecipeTag) {
-    this.tagBeingAliased = tag;
-    this.aliasControl.setValue('');
-    this.aliasError = '';
-    // Focus the input after a short delay
-    setTimeout(() => {
-      const input = document.querySelector('.alias-input') as HTMLInputElement;
-      if (input) input.focus();
-    }, 50);
-  }
-
-  saveAlias() {
-    if (!this.tagBeingAliased) return;
-    
-    const aliasValue = this.aliasControl.value?.trim();
-    if (!aliasValue) {
-      this.cancelAlias();
-      return;
-    }
-
-    this.tagService.setAlias(this.tagBeingAliased.tagResourceId, {
-      alias: aliasValue,
-      showAliasPublicly: false
-    }).subscribe({
-      next: () => {
-        // Update the tag display
-        if (this.tagBeingAliased) {
-          this.tagBeingAliased.displayName = aliasValue;
-          this.tagBeingAliased.isOwnerAlias = true;
-        }
-        this.cancelAlias();
-      },
-      error: (err) => {
-        this.aliasError = err.message || 'Failed to save alias';
-        console.error('Error saving alias:', err);
-      }
-    });
-  }
-
-  cancelAlias() {
-    this.tagBeingAliased = null;
-    this.aliasControl.setValue('');
-    this.aliasError = '';
   }
 
   removeTag(tag: RecipeTag) {
@@ -191,7 +130,7 @@ export class TagSelectorComponent implements OnInit {
   }
 
   displayFn(tag: Tag): string {
-    return tag ? (tag.alias || tag.name) : '';
+    return tag ? tag.name : '';
   }
 
   getConfidencePercent(confidence?: number): number {
@@ -203,13 +142,14 @@ export class TagSelectorComponent implements OnInit {
   }
 
   getTagTooltip(tag: RecipeTag): string {
-    if (tag.isOwnerAlias && tag.globalName) {
-      return `Your name for: ${tag.globalName}`;
+    // If we have a detail (e.g., "Bobby Flay" for a Chef tag), show the global name too
+    if (tag.detail && tag.globalName) {
+      return `${tag.globalName}: ${tag.detail}`;
     }
-    return tag.name;
+    return tag.globalName;
   }
 
   getDisplayName(tag: RecipeTag): string {
-    return tag.displayName || tag.name;
+    return tag.displayName || tag.globalName;
   }
 }

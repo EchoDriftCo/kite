@@ -12,6 +12,8 @@ namespace RecipeVault.Dto.Output {
         public bool IsAiAssigned { get; set; }
         public decimal? Confidence { get; set; }
         public bool IsOverridden { get; set; }
-        public bool IsOwnerAlias { get; set; }
+        public string Detail { get; set; }
+        public string NormalizedEntityId { get; set; }
+        public int? NormalizedEntityType { get; set; }
     }
 }

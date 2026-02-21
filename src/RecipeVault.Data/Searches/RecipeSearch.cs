@@ -36,9 +36,9 @@ namespace RecipeVault.Data.Searches {
             if (!string.IsNullOrEmpty(Title)) {
                 var pattern = $"%{Title}%";
                 
-                // Include matching on tag names and aliases
-                // For owner searching own recipes: match on Tag.Name OR their UserTagAlias.Alias
-                // For public search: match on Tag.Name OR (Alias where ShowAliasPublicly=true) OR NormalizedEntityId
+                // Include matching on tag names, RecipeTag.Detail, and RecipeTag.NormalizedEntityId
+                // For owner searching own recipes: match on Tag.Name OR RecipeTag.Detail (on own recipes)
+                // For public search: match on Tag.Name OR RecipeTag.Detail OR RecipeTag.NormalizedEntityId
                 if (SearchingUserId.HasValue) {
                     // Owner searching their own recipes or public recipes
                     entities = entities.Where(x =>
@@ -51,18 +51,17 @@ namespace RecipeVault.Data.Searches {
                         x.RecipeTags.Any(rt => 
                             !rt.IsOverridden && (
                                 EF.Functions.ILike(rt.Tag.Name, pattern) ||
-                                // Owner's own aliases
+                                // Owner's own recipe details
                                 (x.CreatedSubject.SubjectId == SearchingUserId && 
-                                 rt.Tag.UserTagAliases.Any(uta => 
-                                    uta.UserId == SearchingUserId && 
-                                    EF.Functions.ILike(uta.Alias, pattern))) ||
-                                // Public aliases or normalized entities
-                                (x.IsPublic && rt.Tag.UserTagAliases.Any(uta =>
-                                    (uta.ShowAliasPublicly && EF.Functions.ILike(uta.Alias, pattern)) ||
-                                    (uta.NormalizedEntityId != null && EF.Functions.ILike(uta.NormalizedEntityId, pattern))))
+                                 rt.Detail != null && 
+                                 EF.Functions.ILike(rt.Detail, pattern)) ||
+                                // Public recipe details or normalized entities
+                                (x.IsPublic && (
+                                    (rt.Detail != null && EF.Functions.ILike(rt.Detail, pattern)) ||
+                                    (rt.NormalizedEntityId != null && EF.Functions.ILike(rt.NormalizedEntityId, pattern))))
                             )));
                 } else {
-                    // No user context, search public recipes only by tag names and public aliases
+                    // No user context, search public recipes only by tag names, details, and normalized entities
                     entities = entities.Where(x =>
                         EF.Functions.ILike(x.Title, pattern) ||
                         (x.Description != null && EF.Functions.ILike(x.Description, pattern)) ||
@@ -73,9 +72,8 @@ namespace RecipeVault.Data.Searches {
                         x.RecipeTags.Any(rt => 
                             !rt.IsOverridden && (
                                 EF.Functions.ILike(rt.Tag.Name, pattern) ||
-                                rt.Tag.UserTagAliases.Any(uta =>
-                                    (uta.ShowAliasPublicly && EF.Functions.ILike(uta.Alias, pattern)) ||
-                                    (uta.NormalizedEntityId != null && EF.Functions.ILike(uta.NormalizedEntityId, pattern)))
+                                (rt.Detail != null && EF.Functions.ILike(rt.Detail, pattern)) ||
+                                (rt.NormalizedEntityId != null && EF.Functions.ILike(rt.NormalizedEntityId, pattern))
                             )));
                 }
             }

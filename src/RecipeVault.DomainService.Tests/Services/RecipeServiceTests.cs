@@ -40,8 +40,7 @@ namespace RecipeVault.DomainService.Tests.Services {
         private RecipeService CreateService(Mock<IRecipeRepository> mockRepository, Mock<ITagRepository> mockTagRepository, Mock<IGeminiClient> mockGeminiClient, Mock<ISubjectPrincipal> mockSubjectPrincipal) {
             var mockLogger = CreateMockLogger<RecipeService>();
             var mockHttpClientFactory = MockRepository.Create<IHttpClientFactory>();
-            var mockUserTagAliasRepository = MockRepository.Create<IUserTagAliasRepository>();
-            return new RecipeService(mockRepository.Object, mockTagRepository.Object, mockUserTagAliasRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object, mockHttpClientFactory.Object);
+            return new RecipeService(mockRepository.Object, mockTagRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object, mockHttpClientFactory.Object);
         }
 
         [Fact]

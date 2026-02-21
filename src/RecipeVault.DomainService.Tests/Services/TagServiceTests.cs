@@ -28,9 +28,7 @@ namespace RecipeVault.DomainService.Tests.Services {
 
         private TagService CreateService(Mock<ITagRepository> mockRepository, Mock<ISubjectPrincipal> mockSubjectPrincipal) {
             var mockLogger = CreateMockLogger<TagService>();
-            var mockUserTagAliasRepository = MockRepository.Create<IUserTagAliasRepository>();
-            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
-            return new TagService(mockRepository.Object, mockUserTagAliasRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object);
+            return new TagService(mockRepository.Object, mockLogger.Object, mockSubjectPrincipal.Object);
         }
 
         [Fact]

@@ -50,8 +50,6 @@ namespace RecipeVault.Domain.Entities {
 
         public bool IsSystemTag { get; private set; }
 
-        public virtual ICollection<UserTagAlias> UserTagAliases { get; private set; } = new List<UserTagAlias>();
-
         public void Update(string name, TagCategory category) {
             var messages = new MessageList();
             messages.Aggregate(() => string.IsNullOrWhiteSpace(name), () => new InvalidValueError(nameof(name), name));
