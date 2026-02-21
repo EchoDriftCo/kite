@@ -330,12 +330,13 @@ export class RecipeFormComponent implements OnInit {
 
   populateFromParsedData(parsed: ParsedRecipe) {
     // Populate basic fields
+    // Note: imageUrl goes to sourceImageUrl, backend will import it to our storage
     this.recipeForm.patchValue({
       title: parsed.title || '',
       yield: parsed.yield || 4,
       prepTimeMinutes: parsed.prepTimeMinutes,
       cookTimeMinutes: parsed.cookTimeMinutes,
-      originalImageUrl: parsed.imageUrl || this.recipeForm.get('originalImageUrl')?.value || ''
+      sourceImageUrl: parsed.imageUrl || this.recipeForm.get('sourceImageUrl')?.value || ''
     });
 
     // Clear and populate ingredients
