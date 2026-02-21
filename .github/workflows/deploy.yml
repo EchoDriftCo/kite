@@ -70,9 +70,16 @@ jobs:
           # Install psql
           sudo apt-get update && sudo apt-get install -y postgresql-client
           
-          # Run migrations with timeout
+          # Debug: check if URL is set (don't print the actual value)
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "❌ SUPABASE_DB_URL is not set!"
+            exit 1
+          fi
+          echo "✓ SUPABASE_DB_URL is set"
+          
+          # Run migrations with timeout and SSL
           # Using direct connection (not pooler) for DDL operations
-          psql "$SUPABASE_DB_URL" \
+          psql "${SUPABASE_DB_URL}?sslmode=require" \
             -v ON_ERROR_STOP=1 \
             --set=statement_timeout=60000 \
             -f migrations.sql
