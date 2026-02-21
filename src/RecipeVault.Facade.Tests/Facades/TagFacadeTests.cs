@@ -19,6 +19,7 @@ using RecipeVault.DomainService;
 using RecipeVault.Facade.Mappers;
 using RecipeVault.TestUtilities.Builders;
 using RecipeVault.Facade.Tests.Base;
+using System.Collections.Generic;
 
 namespace RecipeVault.Facade.Tests.Facades {
     public class TagFacadeTests : FacadeTestBase {
@@ -31,6 +32,13 @@ namespace RecipeVault.Facade.Tests.Facades {
                 mock.Setup(x => x.SubjectId).Returns(TestSubjectId.ToString());
             }
             return mock;
+        }
+
+        private static void SetupUserAliasesMock(Mock<ITagService> mockService) {
+            mockService.Setup(x => x.GetUserAliasesAsync())
+                .ReturnsAsync(new List<UserTagAlias>());
+            mockService.Setup(x => x.GetUserAliasForTagAsync(It.IsAny<int>()))
+                .ReturnsAsync((UserTagAlias)null);
         }
 
         [Fact]
@@ -87,7 +95,7 @@ namespace RecipeVault.Facade.Tests.Facades {
             var mockService = MockRepository.Create<ITagService>();
             var mockLogger = CreateMockLogger<TagFacade>();
             var stubLockProvider = new StubDistributedLockProvider();
-            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
 
             var mapper = new TagMapper(subjectMapper);
 
@@ -106,6 +114,8 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .Setup(x => x.GetTagAsync(tag.TagResourceId))
                 .ReturnsAsync(tag)
                 .Verifiable();
+
+            SetupUserAliasesMock(mockService);
 
             var facade = new TagFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
@@ -161,6 +171,8 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .Setup(x => x.SearchTagsAsync(It.IsAny<TagSearch>()))
                 .ReturnsAsync(tags)
                 .Verifiable();
+
+            SetupUserAliasesMock(mockService);
 
             var facade = new TagFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 

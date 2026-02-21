@@ -34,6 +34,13 @@ namespace RecipeVault.Facade.Tests.Facades {
             return mock;
         }
 
+        private Mock<IUserTagAliasRepository> CreateMockUserTagAliasRepository() {
+            var mock = MockRepository.Create<IUserTagAliasRepository>();
+            mock.Setup(x => x.GetByUserIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(new List<UserTagAlias>());
+            return mock;
+        }
+
         private RecipeMapper CreateMapper() {
             return new RecipeMapper(subjectMapper, new TagMapper(subjectMapper));
         }
@@ -73,7 +80,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, MockRepository.Create<IUserTagAliasRepository>().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, CreateMockUserTagAliasRepository().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
             // Act
             var result = await facade.CreateRecipeAsync(dto);
@@ -116,7 +123,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(recipe)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, MockRepository.Create<IUserTagAliasRepository>().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, CreateMockUserTagAliasRepository().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
             // Act
             var result = await facade.GetRecipeAsync(recipe.RecipeResourceId);
@@ -171,7 +178,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(pagedList)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, MockRepository.Create<IUserTagAliasRepository>().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, CreateMockUserTagAliasRepository().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
             // Act
             var result = await facade.SearchRecipesAsync(searchDto);
@@ -217,7 +224,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, MockRepository.Create<IUserTagAliasRepository>().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, CreateMockUserTagAliasRepository().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
             // Act
             var result = await facade.UpdateRecipeAsync(recipe.RecipeResourceId, updateDto);
@@ -258,7 +265,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, MockRepository.Create<IUserTagAliasRepository>().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, CreateMockUserTagAliasRepository().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
             // Act
             var result = await facade.SetRecipeVisibilityAsync(recipe.RecipeResourceId, true);
@@ -295,7 +302,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, MockRepository.Create<IUserTagAliasRepository>().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, CreateMockUserTagAliasRepository().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
             // Act
             await facade.DeleteRecipeAsync(recipe.RecipeResourceId);
@@ -334,7 +341,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, MockRepository.Create<IUserTagAliasRepository>().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, CreateMockUserTagAliasRepository().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
             // Act
             var result = await facade.SetRecipeRatingAsync(recipe.RecipeResourceId, 4);
@@ -376,7 +383,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, MockRepository.Create<IUserTagAliasRepository>().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, CreateMockUserTagAliasRepository().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
             // Act
             var result = await facade.SetRecipeFavoriteAsync(recipe.RecipeResourceId, true);
@@ -418,7 +425,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, MockRepository.Create<IUserTagAliasRepository>().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, CreateMockUserTagAliasRepository().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
             // Act
             var result = await facade.GenerateShareTokenAsync(recipe.RecipeResourceId);
@@ -460,7 +467,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, MockRepository.Create<IUserTagAliasRepository>().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, CreateMockUserTagAliasRepository().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
             // Act
             var result = await facade.RevokeShareTokenAsync(recipe.RecipeResourceId);
@@ -482,7 +489,7 @@ namespace RecipeVault.Facade.Tests.Facades {
             var mockService = MockRepository.Create<IRecipeService>();
             var mockLogger = CreateMockLogger<RecipeFacade>();
             var stubLockProvider = new StubDistributedLockProvider();
-            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
 
             var mapper = CreateMapper();
 
@@ -502,7 +509,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(recipe)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, MockRepository.Create<IUserTagAliasRepository>().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, CreateMockUserTagAliasRepository().Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
 
             // Act
             var result = await facade.GetRecipeByShareTokenAsync("abc123");
