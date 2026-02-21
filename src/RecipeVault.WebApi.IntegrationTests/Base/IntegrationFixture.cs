@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Cortside.AspNetCore.Auditable.Entities;
 using Cortside.AspNetCore.EntityFramework;
 using Cortside.Common.Security;
+using Medallion.Threading;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -88,6 +89,10 @@ namespace RecipeVault.WebApi.IntegrationTests.Base {
                             client.BaseAddress = new Uri(_geminiMockServer.Url);
                             client.Timeout = TimeSpan.FromSeconds(30);
                         });
+
+                        // Replace distributed lock provider with in-memory implementation for tests
+                        services.RemoveAll<IDistributedLockProvider>();
+                        services.AddSingleton<IDistributedLockProvider>(new InMemoryDistributedLockProvider());
 
                         // Reconfigure JWT authentication to use HS256 with test secret
                         services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options => {
