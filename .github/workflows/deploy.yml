@@ -77,18 +77,22 @@ jobs:
           fi
           echo "✓ SUPABASE_DB_URL is set"
           
-          # Extract host from URL and resolve to IPv4
+          # Extract host from URL and resolve to IPv4 using dig
           DB_HOST=$(echo "$SUPABASE_DB_URL" | sed -n 's|.*@\([^:/]*\).*|\1|p')
           echo "Resolving $DB_HOST to IPv4..."
-          IPV4=$(getent ahostsv4 "$DB_HOST" | head -1 | awk '{print $1}')
-          echo "Using IPv4: $IPV4"
+          IPV4=$(dig +short A "$DB_HOST" | head -1)
           
-          # Replace hostname with IPv4 in connection string
-          SUPABASE_DB_URL_IPV4=$(echo "$SUPABASE_DB_URL" | sed "s|@${DB_HOST}:|@${IPV4}:|")
+          if [ -z "$IPV4" ]; then
+            echo "⚠️ Could not resolve IPv4, trying direct connection..."
+            FINAL_URL="${SUPABASE_DB_URL}?sslmode=require"
+          else
+            echo "Using IPv4: $IPV4"
+            FINAL_URL=$(echo "$SUPABASE_DB_URL" | sed "s|@${DB_HOST}:|@${IPV4}:|")"?sslmode=require"
+          fi
           
           # Run migrations with timeout and SSL
           # Using direct connection (not pooler) for DDL operations
-          psql "${SUPABASE_DB_URL_IPV4}?sslmode=require" \
+          psql "$FINAL_URL" \
             -v ON_ERROR_STOP=1 \
             --set=statement_timeout=60000 \
             -f migrations.sql
