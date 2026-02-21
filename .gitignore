@@ -65,4 +65,7 @@ src/RecipeVault.WebApi/appsettings.local.json
 
 # Visual Studio cache files
 .vs/*
+
+# Generated migration scripts (run generate-migration-sql.ps1)
 migrate.sql
+migrations/pending.sql
