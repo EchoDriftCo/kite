@@ -676,5 +676,122 @@ namespace RecipeVault.DomainService.Tests.Services {
                 () => service.GetRecipeByShareTokenAsync("invalidtoken")
             );
         }
+
+        [Fact]
+        public async Task AssignTagsToRecipeAsync_WithNewTagByName_CreatesTagAndAssignsWithEntityReference() {
+            // Arrange
+            // This test covers the bug where creating a new tag and assigning it in the same
+            // operation would fail because TagId=0 (identity not yet assigned).
+            // The fix uses the Tag entity reference so EF Core handles insert ordering.
+            var recipe = BuildRecipeWithOwner();
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            // Tag doesn't exist yet
+            mockTagRepository
+                .Setup(x => x.GetByNameAndCategoryAsync("New Tag", Domain.Enums.TagCategory.Custom))
+                .ReturnsAsync((Tag)null);
+
+            Tag capturedTag = null;
+            mockTagRepository
+                .Setup(x => x.AddAsync(It.IsAny<Tag>()))
+                .Callback<Tag>(t => capturedTag = t)
+                .ReturnsAsync((Tag t) => t);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            var tags = new List<AssignTagDto> {
+                new AssignTagDto { Name = "New Tag", Category = (int)Domain.Enums.TagCategory.Custom }
+            };
+
+            // Act
+            var result = await service.AssignTagsToRecipeAsync(recipe.RecipeResourceId, tags);
+
+            // Assert
+            result.RecipeTags.Count.ShouldBe(1);
+            var recipeTag = result.RecipeTags[0];
+
+            // The critical assertion: RecipeTag should have the Tag entity reference,
+            // not just TagId (which would be 0 for a new unsaved tag)
+            recipeTag.Tag.ShouldNotBeNull();
+            recipeTag.Tag.ShouldBe(capturedTag);
+            recipeTag.Tag.Name.ShouldBe("New Tag");
+
+            mockTagRepository.Verify(x => x.AddAsync(It.IsAny<Tag>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task AssignTagsToRecipeAsync_WithExistingTag_AssignsWithTagId() {
+            // Arrange
+            var recipe = BuildRecipeWithOwner();
+            var existingTag = new TagBuilder().WithName("Existing Tag").Build();
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            mockTagRepository
+                .Setup(x => x.GetAsync(existingTag.TagResourceId))
+                .ReturnsAsync(existingTag);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            var tags = new List<AssignTagDto> {
+                new AssignTagDto { TagResourceId = existingTag.TagResourceId }
+            };
+
+            // Act
+            var result = await service.AssignTagsToRecipeAsync(recipe.RecipeResourceId, tags);
+
+            // Assert
+            result.RecipeTags.Count.ShouldBe(1);
+            var recipeTag = result.RecipeTags[0];
+            recipeTag.TagId.ShouldBe(existingTag.TagId);
+
+            // Existing tags don't need a new tag created
+            mockTagRepository.Verify(x => x.AddAsync(It.IsAny<Tag>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AssignTagsToRecipeAsync_WithNonExistentTagResourceId_ThrowsNotFoundException() {
+            // Arrange
+            var recipe = BuildRecipeWithOwner();
+            var nonExistentTagId = Guid.NewGuid();
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(recipe.RecipeResourceId))
+                .ReturnsAsync(recipe);
+
+            mockTagRepository
+                .Setup(x => x.GetAsync(nonExistentTagId))
+                .ReturnsAsync((Tag)null);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            var tags = new List<AssignTagDto> {
+                new AssignTagDto { TagResourceId = nonExistentTagId }
+            };
+
+            // Act & Assert
+            await Should.ThrowAsync<TagNotFoundException>(
+                () => service.AssignTagsToRecipeAsync(recipe.RecipeResourceId, tags)
+            );
+        }
     }
 }

@@ -136,6 +136,8 @@ namespace RecipeVault.DomainService {
             using (logger.PushProperty("RecipeResourceId", entity.RecipeResourceId)) {
                 foreach (var tagDto in tags) {
                     Tag tag;
+                    bool isNewTag = false;
+
                     if (tagDto.TagResourceId.HasValue) {
                         tag = await tagRepository.GetAsync(tagDto.TagResourceId.Value).ConfigureAwait(false);
                         if (tag == null) {
@@ -147,19 +149,28 @@ namespace RecipeVault.DomainService {
                         if (tag == null) {
                             tag = new Tag(tagDto.Name, category, isGlobal: false);
                             await tagRepository.AddAsync(tag);
+                            isNewTag = true;
                         }
                     }
 
-                    // Skip if already assigned and not overridden
-                    var existing = entity.RecipeTags.FirstOrDefault(rt => rt.TagId == tag.TagId);
-                    if (existing != null) {
-                        if (existing.IsOverridden) {
-                            existing.ClearOverride();
+                    // Skip if already assigned and not overridden (only check for persisted tags)
+                    if (!isNewTag) {
+                        var existing = entity.RecipeTags.FirstOrDefault(rt => rt.TagId == tag.TagId);
+                        if (existing != null) {
+                            if (existing.IsOverridden) {
+                                existing.ClearOverride();
+                            }
+                            continue;
                         }
-                        continue;
                     }
 
-                    entity.AddTag(new RecipeTag(entity.RecipeId, tag.TagId, currentSubjectId, isAiAssigned: false, confidence: null));
+                    // Use Tag entity overload for new tags (TagId not yet assigned),
+                    // or TagId for persisted tags
+                    if (isNewTag) {
+                        entity.AddTag(new RecipeTag(entity.RecipeId, tag, currentSubjectId, isAiAssigned: false, confidence: null));
+                    } else {
+                        entity.AddTag(new RecipeTag(entity.RecipeId, tag.TagId, currentSubjectId, isAiAssigned: false, confidence: null));
+                    }
                 }
 
                 logger.LogInformation("Assigned {TagCount} tags to recipe", tags.Count);

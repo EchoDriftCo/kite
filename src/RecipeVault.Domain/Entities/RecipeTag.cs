@@ -20,6 +20,21 @@ namespace RecipeVault.Domain.Entities {
             AssignedDate = DateTime.UtcNow;
         }
 
+        /// <summary>
+        /// Creates a RecipeTag using a Tag entity reference.
+        /// Use this when the Tag may not yet be persisted (TagId not assigned).
+        /// EF Core will resolve the relationship on SaveChanges.
+        /// </summary>
+        public RecipeTag(int recipeId, Tag tag, Guid assignedBySubjectId, bool isAiAssigned, decimal? confidence) {
+            RecipeId = recipeId;
+            Tag = tag;
+            AssignedBySubjectId = assignedBySubjectId;
+            IsAiAssigned = isAiAssigned;
+            Confidence = confidence;
+            IsOverridden = false;
+            AssignedDate = DateTime.UtcNow;
+        }
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RecipeTagId { get; private set; }
