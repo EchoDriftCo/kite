@@ -21,6 +21,8 @@
 10. [AI Recipe Generation](#10-ai-recipe-generation)
 11. [Kitchen Equipment Filtering](#11-kitchen-equipment-filtering)
 12. [Grocery Delivery Integration](#12-grocery-delivery-integration)
+13. [Recipe Linking (Component Recipes)](#13-recipe-linking-component-recipes)
+14. [Recipe Mixing (AI Fusion)](#14-recipe-mixing-ai-fusion)
 
 ---
 
@@ -692,11 +694,56 @@ GET    /api/recipes/{id}/availability Check specific recipe vs pantry
 
 #### UX Design
 
-##### Pantry Management
+##### Quick Setup (First Time)
+
+On first visit, show scrollable quick-select of common ingredients derived from global recipe database:
+
+```
+┌─────────────────────────────────────────────────┐
+│  🥫 Stock Your Pantry                           │
+│  Select items you typically have on hand        │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  🥛 DAIRY & EGGS                                │
+│  ┌───────────────────────────────────────────┐  │
+│  │ ☑ Butter    ☑ Eggs    ☑ Milk             │  │
+│  │ ☐ Heavy cream  ☑ Cheddar  ☐ Parmesan     │  │
+│  │ ☐ Sour cream   ☐ Cream cheese  ☐ Yogurt  │  │
+│  └───────────────────────────────────────────┘  │
+│                                                 │
+│  🥩 PROTEINS                                    │
+│  ┌───────────────────────────────────────────┐  │
+│  │ ☑ Chicken breast  ☐ Ground beef          │  │
+│  │ ☐ Bacon    ☐ Pork chops    ☐ Shrimp      │  │
+│  │ ☐ Salmon   ☐ Tofu          ☐ Sausage     │  │
+│  └───────────────────────────────────────────┘  │
+│                                                 │
+│  🥬 PRODUCE                                     │
+│  ┌───────────────────────────────────────────┐  │
+│  │ ☑ Onions   ☑ Garlic   ☑ Potatoes         │  │
+│  │ ☐ Carrots  ☐ Celery   ☐ Bell peppers     │  │
+│  │ ☐ Tomatoes ☐ Lemons   ☐ Mushrooms        │  │
+│  └───────────────────────────────────────────┘  │
+│                                                 │
+│  🥫 PANTRY STAPLES                              │
+│  ┌───────────────────────────────────────────┐  │
+│  │ ☑ Olive oil   ☑ Salt    ☑ Black pepper   │  │
+│  │ ☑ Flour       ☑ Sugar   ☑ Chicken broth  │  │
+│  │ ☐ Rice        ☐ Pasta   ☐ Soy sauce      │  │
+│  │ ☐ Honey       ☐ Vinegar ☐ Canned tomatoes│  │
+│  └───────────────────────────────────────────┘  │
+│                                                 │
+│  📊 Items ranked by frequency in RecipeVault   │
+│                                                 │
+│  [Skip for now]              [Add 14 Items]    │
+└─────────────────────────────────────────────────┘
+```
+
+##### Pantry Management (After Setup)
 
 ```
 ┌─────────────────────────────────────────────┐
-│  🥫 My Pantry                    [+ Add]    │
+│  🥫 My Pantry             [+ Add] [⚡ Quick]│
 ├─────────────────────────────────────────────┤
 │  Filter: [All ▼]  Sort: [Category ▼]        │
 │                                             │
@@ -716,6 +763,8 @@ GET    /api/recipes/{id}/availability Check specific recipe vs pantry
 │                                             │
 └─────────────────────────────────────────────┘
 ```
+
+The "⚡ Quick" button reopens the quick-select view for fast bulk additions.
 
 ##### Recipe List with Availability
 
@@ -1599,6 +1648,9 @@ Track cooking activity to provide insights and encourage engagement.
 3. **See stats** — Most cooked recipes, monthly activity, streaks
 4. **Personal notes per cook** — "Used less salt", "Kids loved it"
 5. **Photo journal** — Attach photos of dishes I've made
+6. **Running average rating** — Personal rating averages across all cooks of a recipe
+7. **Smart suggestions** — Show previous notes when cooking again ("Last time: add extra cinnamon")
+8. **Photo prompts** — If no hero image exists, suggest adding one during logging
 
 ### Data Model
 
@@ -1715,19 +1767,57 @@ Clicking opens:
 │                                             │
 │  Servings made: [4____]                     │
 │                                             │
-│  How did it turn out?                       │
-│  ★ ★ ★ ★ ☆                                  │
+│  How did it turn out? (optional)            │
+│  ☆ ☆ ☆ ☆ ☆                                  │
+│  Your average: ★★★★☆ (4.2 across 5 cooks)   │
+│                                             │
+│  💡 Last time you noted:                    │
+│  "Add extra cinnamon, kids loved it"        │
 │                                             │
 │  Notes (optional):                          │
-│  [Added extra cinnamon, turned out great__] │
+│  [_______________________________________]  │
 │  [_______________________________________]  │
 │                                             │
 │  📷 Add photos                              │
 │  [Choose Files]                             │
 │                                             │
+│  ⚠️ This recipe has no hero image.          │
+│  [📸 Add a photo as hero image]             │
+│                                             │
 │  [Cancel]                      [Log Cook]   │
 └─────────────────────────────────────────────┘
 ```
+
+#### Running Average Rating
+
+Each recipe tracks the user's personal average rating across all cooks:
+
+```csharp
+// In RecipeDto or separate endpoint
+public class RecipePersonalStatsDto {
+    public int CookCount { get; set; }
+    public decimal? AverageRating { get; set; }  // Average of all logged ratings
+    public DateTime? LastCooked { get; set; }
+    public string LastNote { get; set; }  // Most recent note for suggestions
+}
+```
+
+Display on recipe detail:
+```
+┌─────────────────────────────────────────────┐
+│  Mom's Apple Pie                            │
+│  ★★★★☆ 4.2 average (5 cooks)               │
+│  Last made: Feb 15, 2026                    │
+└─────────────────────────────────────────────┘
+```
+
+#### Hero Image Prompt
+
+When logging a cook for a recipe without a hero image:
+
+1. Prompt user to optionally add a photo
+2. If they add one, offer to set it as the recipe's hero image
+3. Great for imported recipes that came from text/URL without images
 
 #### Cooking Stats Dashboard
 
@@ -2093,25 +2183,49 @@ GET    /api/recipes/{id}/equipment-check      Check if I can make this
 
 ### UX Design
 
-#### Equipment Setup
+#### Equipment Setup (Quick Select)
+
+Scrollable checklist sorted by frequency in global recipe database. Most-used equipment appears first:
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │  🍳 My Kitchen Equipment                            │
+│  Check the equipment you have                       │
 ├─────────────────────────────────────────────────────┤
 │                                                     │
-│  APPLIANCES                                         │
-│  ☑ Instant Pot       ☑ Air Fryer      ☐ Sous Vide  │
-│  ☑ Stand Mixer       ☐ Bread Machine  ☑ Blender    │
-│  ☑ Food Processor    ☑ Slow Cooker    ☐ Deep Fryer │
+│  APPLIANCES (sorted by recipe frequency)            │
+│  ┌────────────────────────────────────────────────┐ │
+│  │ ☑ Blender (847 recipes)                        │ │
+│  │ ☑ Food Processor (612 recipes)                 │ │
+│  │ ☑ Stand Mixer (534 recipes)                    │ │
+│  │ ☑ Instant Pot (423 recipes)                    │ │
+│  │ ☑ Air Fryer (389 recipes)                      │ │
+│  │ ☑ Slow Cooker (356 recipes)                    │ │
+│  │ ☐ Sous Vide (89 recipes)                       │ │
+│  │ ☐ Bread Machine (67 recipes)                   │ │
+│  │ ☐ Deep Fryer (45 recipes)                      │ │
+│  │ ☐ Ice Cream Maker (34 recipes)                 │ │
+│  └────────────────────────────────────────────────┘ │
 │                                                     │
 │  COOKWARE                                           │
-│  ☑ Dutch Oven        ☑ Cast Iron      ☐ Wok        │
-│  ☑ Grill/Grill Pan   ☐ Pizza Stone                 │
+│  ┌────────────────────────────────────────────────┐ │
+│  │ ☑ Cast Iron Skillet (723 recipes)              │ │
+│  │ ☑ Dutch Oven (456 recipes)                     │ │
+│  │ ☐ Wok (234 recipes)                            │ │
+│  │ ☐ Grill/Grill Pan (198 recipes)                │ │
+│  │ ☐ Pizza Stone (67 recipes)                     │ │
+│  └────────────────────────────────────────────────┘ │
 │                                                     │
 │  BAKEWARE                                           │
-│  ☑ Bundt Pan         ☐ Springform     ☑ Pie Dish   │
-│  ☑ Muffin Tin        ☐ Tart Pan                    │
+│  ┌────────────────────────────────────────────────┐ │
+│  │ ☑ Muffin Tin (312 recipes)                     │ │
+│  │ ☑ Pie Dish (234 recipes)                       │ │
+│  │ ☐ Bundt Pan (145 recipes)                      │ │
+│  │ ☐ Springform Pan (123 recipes)                 │ │
+│  │ ☐ Tart Pan (89 recipes)                        │ │
+│  └────────────────────────────────────────────────┘ │
+│                                                     │
+│  📊 Sorted by usage in RecipeVault recipes         │
 │                                                     │
 │                                    [Save Equipment] │
 └─────────────────────────────────────────────────────┘
@@ -2301,6 +2415,406 @@ public class GroceryItemMapper {
 
 ---
 
+## 13. Recipe Linking (Component Recipes)
+
+### Overview
+
+Link recipes together as components. A teriyaki sauce recipe can be linked as an ingredient in multiple main dishes. Think of it as recipe composition — building blocks that can be reused.
+
+### User Stories
+
+1. **Link recipe as ingredient** — "Teriyaki Sauce (see my recipe)" as an ingredient
+2. **Navigate between recipes** — Click linked ingredient to view component recipe
+3. **Combine times** — Total time includes component prep (optional)
+4. **Inline expansion** — Optionally expand component recipe inline
+5. **Track dependencies** — Know which recipes use a component
+
+### Use Cases
+
+```
+SAUCES & MARINADES
+├─ Custom teriyaki sauce → used in 5 stir-fry recipes
+├─ Pizza sauce → used in pizza, calzones, dipping
+└─ Salad dressing → used in multiple salads
+
+BASICS & BUILDING BLOCKS
+├─ Pie crust → used in apple pie, quiche, pot pie
+├─ Roux → used in mac and cheese, gravy, gumbo
+└─ Pizza dough → used in pizza, breadsticks, calzones
+
+PREP COMPONENTS
+├─ Caramelized onions → burgers, french onion soup, flatbread
+├─ Roasted garlic → dozens of recipes
+└─ Pickled red onions → tacos, sandwiches, salads
+```
+
+### Data Model
+
+```csharp
+[Table("RecipeLink")]
+public class RecipeLink {
+    public int RecipeLinkId { get; private set; }
+    
+    public int ParentRecipeId { get; private set; }  // The main recipe
+    public int LinkedRecipeId { get; private set; }  // The component recipe
+    
+    public int IngredientIndex { get; private set; }  // Which ingredient it replaces/augments
+    
+    [StringLength(200)]
+    public string DisplayText { get; private set; }  // "My Teriyaki Sauce" or custom
+    
+    public bool IncludeInTotalTime { get; private set; }  // Add component time to parent
+    public decimal? PortionUsed { get; private set; }  // Use 1/2 batch of sauce
+    
+    public virtual Recipe ParentRecipe { get; private set; }
+    public virtual Recipe LinkedRecipe { get; private set; }
+}
+```
+
+### Ingredient Display
+
+When an ingredient is linked to another recipe:
+
+```
+INGREDIENTS
+
+• 2 lbs chicken thighs, cubed
+• 1 cup Teriyaki Sauce 🔗           ← Link indicator
+• 2 cups jasmine rice
+• 1 bunch green onions, sliced
+```
+
+Clicking the 🔗 opens a popover or navigates to the linked recipe.
+
+### API Design
+
+```
+# Links
+POST   /api/recipes/{id}/links                Create link to component recipe
+GET    /api/recipes/{id}/links                Get linked recipes (components)
+DELETE /api/recipes/{id}/links/{linkId}       Remove link
+PUT    /api/recipes/{id}/links/{linkId}       Update link (portion, display text)
+
+# Reverse lookup
+GET    /api/recipes/{id}/used-in              Recipes that use this as a component
+
+# Search for linkable recipes
+GET    /api/recipes/linkable?query=sauce      Search my recipes for linking
+```
+
+### UX Design
+
+#### Adding a Link (in recipe edit)
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Edit Ingredient                                    │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  Ingredient: [1 cup teriyaki sauce_______________]  │
+│                                                     │
+│  🔗 Link to another recipe?                         │
+│  ┌────────────────────────────────────────────────┐ │
+│  │ Search my recipes...                           │ │
+│  │                                                │ │
+│  │ 🍶 My Teriyaki Sauce                           │ │
+│  │ 🥫 Quick Teriyaki Glaze                        │ │
+│  │ 🍯 Honey Teriyaki Marinade                     │ │
+│  └────────────────────────────────────────────────┘ │
+│                                                     │
+│  Options:                                           │
+│  ☑ Include component prep time in total            │
+│  Portion: [Full batch ▼]                           │
+│                                                     │
+│  [Cancel]                         [Link Recipe]    │
+└─────────────────────────────────────────────────────┘
+```
+
+#### Recipe View with Linked Ingredient
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Teriyaki Chicken                                   │
+│  ⏱️ 25 min (+ 15 min for sauce)                     │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  INGREDIENTS                                        │
+│                                                     │
+│  ○ 2 lbs chicken thighs                            │
+│  ○ 1 cup My Teriyaki Sauce 🔗                      │
+│    └─ [View Recipe] [Expand Here]                  │
+│  ○ 2 cups jasmine rice                             │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+#### "Used In" Display (on component recipe)
+
+```
+┌─────────────────────────────────────────────────────┐
+│  My Teriyaki Sauce                                  │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  📌 Used in 5 recipes:                              │
+│  • Teriyaki Chicken                                │
+│  • Beef Stir Fry                                   │
+│  • Teriyaki Salmon                                 │
+│  • + 2 more                                        │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+### Grocery List Integration
+
+When generating grocery lists:
+- Detect linked recipes
+- Include component ingredients
+- Adjust quantities based on portion used
+- De-duplicate across multiple links
+
+### Implementation Estimate
+
+- Backend: 8-12 hours
+- Frontend: 10-14 hours
+- Tests: 4-6 hours
+- **Total: 22-32 hours**
+
+---
+
+## 14. Recipe Mixing (AI Fusion)
+
+### Overview
+
+AI-powered recipe fusion that combines elements from two recipes based on user intent. Take the best of both worlds.
+
+### User Stories
+
+1. **Mix two recipes** — Combine Recipe A and Recipe B into something new
+2. **Specify intent** — "I like the sauce from A but the protein prep from B"
+3. **Surprise me mode** — Let AI find interesting combinations
+4. **Review and edit** — Preview the fusion before saving
+5. **Save as fork** — Mixed recipe links back to both parents
+
+### Mix Modes
+
+```
+MODE 1: GUIDED MIXING
+User specifies what they want from each recipe:
+"Take the spice blend from Recipe A, but use the cooking method from Recipe B"
+"Keep A's ingredients but follow B's technique"
+"Combine A's sauce with B's protein"
+
+MODE 2: SURPRISE ME
+AI analyzes both recipes and creates an interesting fusion:
+- Identifies complementary elements
+- Balances flavors and techniques
+- Creates something novel but coherent
+
+MODE 3: BEST OF BOTH
+AI picks the "best" elements from each:
+- Higher-rated components (if rating data exists)
+- More detailed instructions
+- Better technique descriptions
+```
+
+### Data Model
+
+```csharp
+// Mixed recipes store their lineage
+public class Recipe {
+    // Existing fields...
+    
+    // For mixed recipes (extends forking)
+    public int? MixedFromRecipeAId { get; private set; }
+    public int? MixedFromRecipeBId { get; private set; }
+    
+    [StringLength(500)]
+    public string MixIntent { get; private set; }  // User's mixing instructions
+}
+```
+
+### Gemini Prompt Structure
+
+```
+You are a professional chef creating fusion recipes.
+
+RECIPE A: "{title_a}"
+{full recipe A details}
+
+RECIPE B: "{title_b}"
+{full recipe B details}
+
+USER INTENT: "{user_intent}"
+(or "Create an interesting fusion that combines the best of both recipes")
+
+Create a new recipe that:
+1. Honors the user's intent (if specified)
+2. Results in a coherent, cookable dish
+3. Balances flavors and techniques from both sources
+4. Includes clear attribution of which elements came from which recipe
+
+Format as JSON with:
+- title (creative fusion name)
+- description (explaining the fusion)
+- ingredients (with notes on origin: "from A", "from B", "combined")
+- instructions
+- mixNotes (explaining what was combined and why)
+```
+
+### API Design
+
+```
+# Mix recipes
+POST /api/recipes/mix
+  Body: {
+    "recipeAId": "...",
+    "recipeBId": "...",
+    "intent": "Take the marinade from A but cook it like B",
+    // OR
+    "mode": "surprise"  // Let AI decide
+  }
+  Returns: Preview of mixed recipe
+
+# Refine mix
+POST /api/recipes/mix/refine
+  Body: {
+    "mixedRecipe": { ... },
+    "refinement": "Make it spicier"
+  }
+  Returns: Refined mixed recipe
+
+# Save mixed recipe
+POST /api/recipes/mix/save
+  Body: { mixed recipe }
+  Returns: Created RecipeDto with dual parentage
+```
+
+### UX Design
+
+#### Initiate Mix
+
+From recipe view, "Mix with..." option:
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Grandma's Meatloaf                                 │
+│                                                     │
+│  [Edit] [Fork] [🔀 Mix with...]                     │
+└─────────────────────────────────────────────────────┘
+```
+
+#### Select Second Recipe
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Mix "Grandma's Meatloaf" with...                   │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  Search: [korean bbq_________________________]      │
+│                                                     │
+│  ┌────────────────────────────────────────────────┐ │
+│  │ 🍖 Korean BBQ Beef                             │ │
+│  │    Gochujang glaze, sesame, green onions      │ │
+│  │    [Select]                                   │ │
+│  └────────────────────────────────────────────────┘ │
+│                                                     │
+│  ┌────────────────────────────────────────────────┐ │
+│  │ 🥩 Korean Bulgogi                              │ │
+│  │    Soy-marinated beef, pear, garlic           │ │
+│  │    [Select]                                   │ │
+│  └────────────────────────────────────────────────┘ │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+#### Specify Intent
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Mix Recipes                                        │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  Recipe A: Grandma's Meatloaf                       │
+│  Recipe B: Korean BBQ Beef                          │
+│                                                     │
+│  How do you want to mix them?                       │
+│                                                     │
+│  ○ 🎯 GUIDED                                        │
+│    Tell us what you want from each recipe:          │
+│    ┌──────────────────────────────────────────────┐ │
+│    │ Use the meatloaf base from A but add the    │ │
+│    │ Korean BBQ glaze and flavors from B         │ │
+│    └──────────────────────────────────────────────┘ │
+│                                                     │
+│  ○ 🎲 SURPRISE ME                                   │
+│    Let AI create an interesting fusion              │
+│                                                     │
+│  ○ ⭐ BEST OF BOTH                                  │
+│    AI picks the strongest elements from each        │
+│                                                     │
+│  [Cancel]                          [Create Mix]     │
+└─────────────────────────────────────────────────────┘
+```
+
+#### Preview Mixed Recipe
+
+```
+┌─────────────────────────────────────────────────────┐
+│  ✨ AI Mixed Recipe                                 │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  KOREAN BBQ MEATLOAF                                │
+│                                                     │
+│  A fusion of comfort food and Korean flavors —      │
+│  classic meatloaf glazed with gochujang and         │
+│  topped with sesame and green onions.               │
+│                                                     │
+│  🔗 Mixed from:                                     │
+│  • Grandma's Meatloaf (base, technique)            │
+│  • Korean BBQ Beef (glaze, toppings)               │
+│                                                     │
+│  INGREDIENTS                                        │
+│  • 1.5 lbs ground beef (from A)                    │
+│  • 1/2 cup breadcrumbs (from A)                    │
+│  • 3 tbsp gochujang (from B)                       │
+│  • 2 tbsp soy sauce (from B)                       │
+│  • 1 tbsp sesame oil (from B)                      │
+│  • ... (combined)                                   │
+│                                                     │
+│  INSTRUCTIONS                                       │
+│  1. Preheat oven to 350°F (from A)                 │
+│  2. Mix beef with Korean seasonings...              │
+│  ...                                                │
+│                                                     │
+│  ────────────────────────────────────────────────   │
+│                                                     │
+│  Not quite right?                                   │
+│  [🔄 Regenerate] [✏️ Refine: "less spicy"]          │
+│                                                     │
+│  [Discard]                   [Save to My Recipes]   │
+└─────────────────────────────────────────────────────┘
+```
+
+### Attribution Display
+
+On saved mixed recipes, show dual lineage:
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Korean BBQ Meatloaf                                │
+│  ↳ Mixed from "Grandma's Meatloaf" + "Korean BBQ"  │
+└─────────────────────────────────────────────────────┘
+```
+
+### Implementation Estimate
+
+- Backend: 10-14 hours
+- Frontend: 12-16 hours
+- Tests: 4-6 hours
+- **Total: 26-36 hours**
+
+---
+
 ## Summary: Total Estimates
 
 ### Core Features
@@ -2330,12 +2844,14 @@ public class GroceryItemMapper {
 | AI Recipe Generation | 8-12h | 10-14h | 4-6h | 22-32h |
 | Kitchen Equipment | 8-10h | 8-10h | 3-4h | 19-24h |
 | Grocery Delivery | 6-8h | 6-8h | 2-4h | 14-20h |
+| Recipe Linking | 8-12h | 10-14h | 4-6h | 22-32h |
+| Recipe Mixing | 10-14h | 12-16h | 4-6h | 26-36h |
 
-**Additional Features Subtotal: 120-168 hours**
+**Additional Features Subtotal: 168-236 hours**
 
 ---
 
-**Grand Total: 352-487 hours** (~9-12 weeks of focused development)
+**Grand Total: 400-555 hours** (~10-14 weeks of focused development)
 
 ---
 
@@ -2348,7 +2864,13 @@ Recipe Forking
      │
      ├──► Social Circles (fork shared recipes)
      │
-     └──► AI Recipe Generation (save as fork)
+     ├──► AI Recipe Generation (save as fork)
+     │
+     └──► Recipe Mixing (mixed recipes extend forking)
+
+Recipe Linking ──► Grocery List (include component ingredients)
+     │
+     └──► Nutrition (aggregate linked recipe nutrients)
 
 Pantry ◄── Shopping Suggestions
   │
@@ -2362,19 +2884,25 @@ Cooking Mode ◄── Voice Control (optional enhancement)
      │
      └──► Cooking History (auto-log when completing cook)
 
+Cooking History ──► Recipe hero images (prompt to add photo)
+
 Dietary Profiles
      │
      ├──► Recipe filtering (everywhere)
      │
      ├──► Smart Substitutions (auto-suggest for restrictions)
      │
-     └──► AI Recipe Generation (respect constraints)
+     ├──► AI Recipe Generation (respect constraints)
+     │
+     └──► Recipe Mixing (respect constraints in fusion)
 
 Collections ──► Social Circles (share collections to circles)
 
 Kitchen Equipment ──► Recipe filtering
      │
-     └──► AI Recipe Generation (respect equipment constraints)
+     ├──► AI Recipe Generation (respect equipment constraints)
+     │
+     └──► Recipe Mixing (respect equipment in fusion)
 ```
 
 ---
