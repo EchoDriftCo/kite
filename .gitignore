@@ -69,3 +69,6 @@ src/RecipeVault.WebApi/appsettings.local.json
 # Generated migration scripts (run generate-migration-sql.ps1)
 migrate.sql
 migrations/pending.sql
+
+# Local documentation (not committed)
+.local-docs/
