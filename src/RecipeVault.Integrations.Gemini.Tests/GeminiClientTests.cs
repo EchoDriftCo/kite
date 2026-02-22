@@ -233,16 +233,25 @@ namespace RecipeVault.Integrations.Gemini.Tests {
             var imageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
             var mimeType = "image/png";
 
-            configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns((string)null);
-            configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
+            // Clear environment variable to ensure test isolation
+            var originalEnvVar = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
+            Environment.SetEnvironmentVariable("GEMINI_API_KEY", null);
 
-            var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
+            try {
+                configurationMock.Setup(c => c["Gemini:ApiKey"]).Returns((string)null);
+                configurationMock.Setup(c => c["Gemini:Model"]).Returns("gemini-1.5-flash");
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<GeminiApiException>(() =>
-                geminiClient.ParseRecipeAsync(imageBase64, mimeType));
+                var geminiClient = new GeminiClient(httpClient, configurationMock.Object, loggerMock.Object);
 
-            ex.Message.ShouldContain("API key");
+                // Act & Assert
+                var ex = await Assert.ThrowsAsync<GeminiApiException>(() =>
+                    geminiClient.ParseRecipeAsync(imageBase64, mimeType));
+
+                ex.Message.ShouldContain("API key");
+            } finally {
+                // Restore original environment variable
+                Environment.SetEnvironmentVariable("GEMINI_API_KEY", originalEnvVar);
+            }
         }
 
         [Fact]
