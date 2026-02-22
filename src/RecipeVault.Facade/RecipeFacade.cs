@@ -19,14 +19,16 @@ namespace RecipeVault.Facade {
     public class RecipeFacade : IRecipeFacade {
         private readonly IUnitOfWork uow;
         private readonly IRecipeService recipeService;
+        private readonly ISubstitutionService substitutionService;
         private readonly RecipeMapper mapper;
         private readonly ILogger<RecipeFacade> logger;
         private readonly IDistributedLockProvider lockProvider;
         private readonly ISubjectPrincipal subjectPrincipal;
 
-        public RecipeFacade(ILogger<RecipeFacade> logger, IUnitOfWork uow, IRecipeService recipeService, RecipeMapper mapper, IDistributedLockProvider lockProvider, ISubjectPrincipal subjectPrincipal) {
+        public RecipeFacade(ILogger<RecipeFacade> logger, IUnitOfWork uow, IRecipeService recipeService, ISubstitutionService substitutionService, RecipeMapper mapper, IDistributedLockProvider lockProvider, ISubjectPrincipal subjectPrincipal) {
             this.uow = uow;
             this.recipeService = recipeService;
+            this.substitutionService = substitutionService;
             this.mapper = mapper;
             this.logger = logger;
             this.lockProvider = lockProvider;
@@ -245,6 +247,28 @@ namespace RecipeVault.Facade {
                 var currentSubjectId = CurrentSubjectId;
                 return forks.Convert(x => mapper.MapToDto(x, currentSubjectId));
             }
+        }
+
+        public async Task<SubstitutionResponseDto> GetSubstitutionsAsync(Guid recipeResourceId, SubstitutionRequestDto request) {
+            // No transaction needed - this is a read operation with external API call
+            var result = await substitutionService.GetSubstitutionsAsync(
+                recipeResourceId,
+                request.IngredientIndices,
+                request.DietaryConstraints
+            ).ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<RecipeDto> ApplySubstitutionsAsync(Guid recipeResourceId, ApplySubstitutionsDto request) {
+            var fork = await substitutionService.ApplySubstitutionsAsync(
+                recipeResourceId,
+                request.Selections,
+                request.ForkTitle
+            ).ConfigureAwait(false);
+
+            await uow.SaveChangesAsync().ConfigureAwait(false);
+            return mapper.MapToDto(fork, CurrentSubjectId);
         }
     }
 }

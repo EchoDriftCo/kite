@@ -38,6 +38,26 @@ namespace RecipeVault.Facade.Tests.Facades {
             return new RecipeMapper(subjectMapper, new TagMapper(subjectMapper));
         }
 
+        private RecipeFacade CreateFacade(
+            Mock<IUnitOfWork> mockUow,
+            Mock<IRecipeService> mockService,
+            RecipeMapper mapper,
+            IDistributedLockProvider lockProvider,
+            Mock<ISubjectPrincipal> mockSubjectPrincipal) {
+            
+            var mockLogger = CreateMockLogger<RecipeFacade>();
+            var mockSubstitutionService = MockRepository.Create<ISubstitutionService>();
+            
+            return new RecipeFacade(
+                mockLogger.Object,
+                mockUow.Object,
+                mockService.Object,
+                mockSubstitutionService.Object,
+                mapper,
+                lockProvider,
+                mockSubjectPrincipal.Object);
+        }
+
         [Fact]
         public async Task CreateRecipeAsync_WithValidDto_CreatesAndReturnsMappedDto() {
             // Arrange
@@ -73,7 +93,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = CreateFacade(mockUow, mockService, mapper, stubLockProvider, mockSubjectPrincipal);
 
             // Act
             var result = await facade.CreateRecipeAsync(dto);
@@ -116,7 +136,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(recipe)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = CreateFacade(mockUow, mockService, mapper, stubLockProvider, mockSubjectPrincipal);
 
             // Act
             var result = await facade.GetRecipeAsync(recipe.RecipeResourceId);
@@ -171,7 +191,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(pagedList)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = CreateFacade(mockUow, mockService, mapper, stubLockProvider, mockSubjectPrincipal);
 
             // Act
             var result = await facade.SearchRecipesAsync(searchDto);
@@ -217,7 +237,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = CreateFacade(mockUow, mockService, mapper, stubLockProvider, mockSubjectPrincipal);
 
             // Act
             var result = await facade.UpdateRecipeAsync(recipe.RecipeResourceId, updateDto);
@@ -258,7 +278,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = CreateFacade(mockUow, mockService, mapper, stubLockProvider, mockSubjectPrincipal);
 
             // Act
             var result = await facade.SetRecipeVisibilityAsync(recipe.RecipeResourceId, true);
@@ -295,7 +315,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = CreateFacade(mockUow, mockService, mapper, stubLockProvider, mockSubjectPrincipal);
 
             // Act
             await facade.DeleteRecipeAsync(recipe.RecipeResourceId);
@@ -334,7 +354,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = CreateFacade(mockUow, mockService, mapper, stubLockProvider, mockSubjectPrincipal);
 
             // Act
             var result = await facade.SetRecipeRatingAsync(recipe.RecipeResourceId, 4);
@@ -376,7 +396,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = CreateFacade(mockUow, mockService, mapper, stubLockProvider, mockSubjectPrincipal);
 
             // Act
             var result = await facade.SetRecipeFavoriteAsync(recipe.RecipeResourceId, true);
@@ -418,7 +438,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = CreateFacade(mockUow, mockService, mapper, stubLockProvider, mockSubjectPrincipal);
 
             // Act
             var result = await facade.GenerateShareTokenAsync(recipe.RecipeResourceId);
@@ -460,7 +480,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(1)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = CreateFacade(mockUow, mockService, mapper, stubLockProvider, mockSubjectPrincipal);
 
             // Act
             var result = await facade.RevokeShareTokenAsync(recipe.RecipeResourceId);
@@ -502,7 +522,7 @@ namespace RecipeVault.Facade.Tests.Facades {
                 .ReturnsAsync(recipe)
                 .Verifiable();
 
-            var facade = new RecipeFacade(mockLogger.Object, mockUow.Object, mockService.Object, mapper, stubLockProvider, mockSubjectPrincipal.Object);
+            var facade = CreateFacade(mockUow, mockService, mapper, stubLockProvider, mockSubjectPrincipal);
 
             // Act
             var result = await facade.GetRecipeByShareTokenAsync("abc123");

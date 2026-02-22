@@ -25,5 +25,7 @@ namespace RecipeVault.Facade {
         Task<RecipeDto> GetRecipeByShareTokenAsync(string shareToken);
         Task<RecipeDto> ForkRecipeAsync(Guid recipeResourceId, string newTitle = null);
         Task<PagedList<RecipeDto>> GetRecipeForksAsync(Guid recipeResourceId, int pageNumber = 1, int pageSize = 20);
+        Task<SubstitutionResponseDto> GetSubstitutionsAsync(Guid recipeResourceId, SubstitutionRequestDto request);
+        Task<RecipeDto> ApplySubstitutionsAsync(Guid recipeResourceId, ApplySubstitutionsDto request);
     }
 }

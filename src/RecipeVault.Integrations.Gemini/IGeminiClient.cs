@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using RecipeVault.Integrations.Gemini.Models;
 
 namespace RecipeVault.Integrations.Gemini {
     /// <summary>
@@ -51,6 +52,24 @@ namespace RecipeVault.Integrations.Gemini {
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Entity normalization result, or null if not a known entity</returns>
         Task<GeminiEntityNormalizationResponse> NormalizeEntityAsync(string entityName, int sourceType, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Analyze recipe and suggest ingredient substitutions
+        /// </summary>
+        /// <param name="recipeTitle">Recipe title</param>
+        /// <param name="allIngredients">Full list of recipe ingredients</param>
+        /// <param name="instructionsSummary">Condensed instructions for context</param>
+        /// <param name="targetIngredientIndices">Indices of specific ingredients to substitute (optional)</param>
+        /// <param name="dietaryConstraints">Dietary constraints to apply (e.g., "Gluten-Free")</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Substitution analysis with options for each ingredient</returns>
+        Task<GeminiSubstitutionAnalysis> AnalyzeSubstitutionsAsync(
+            string recipeTitle,
+            List<string> allIngredients,
+            string instructionsSummary,
+            List<int> targetIngredientIndices,
+            List<string> dietaryConstraints,
+            CancellationToken cancellationToken = default);
     }
 
     /// <summary>

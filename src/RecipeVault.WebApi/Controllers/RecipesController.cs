@@ -304,5 +304,36 @@ namespace RecipeVault.WebApi.Controllers {
                 return Ok(models);
             }
         }
+
+        /// <summary>
+        /// Get ingredient substitution suggestions for a recipe
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        /// <param name="request">substitution request with ingredient indices and/or dietary constraints</param>
+        [HttpPost("{id}/substitutions")]
+        [ProducesResponseType(typeof(SubstitutionResponseModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetSubstitutionsAsync(Guid id, [FromBody] SubstitutionRequestModel request) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var requestDto = recipeMapper.MapToDto(request);
+                var dto = await facade.GetSubstitutionsAsync(id, requestDto).ConfigureAwait(false);
+                var model = recipeMapper.Map(dto);
+                return Ok(model);
+            }
+        }
+
+        /// <summary>
+        /// Apply substitutions and create a forked recipe
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        /// <param name="request">substitution selections to apply</param>
+        [HttpPost("{id}/substitutions/apply")]
+        [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status201Created)]
+        public async Task<IActionResult> ApplySubstitutionsAsync(Guid id, [FromBody] ApplySubstitutionsModel request) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var requestDto = recipeMapper.MapToDto(request);
+                var dto = await facade.ApplySubstitutionsAsync(id, requestDto).ConfigureAwait(false);
+                return CreatedAtAction(nameof(GetRecipeAsync), new { id = dto.RecipeResourceId }, recipeMapper.Map(dto));
+            }
+        }
     }
 }

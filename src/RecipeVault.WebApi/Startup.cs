@@ -139,6 +139,9 @@ namespace RecipeVault.WebApi {
             services.AddScoped<DbContext>(sp => sp.GetRequiredService<RecipeVaultDbContext>());
             services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<RecipeVaultDbContext>());
 
+            // Add memory cache for substitution caching
+            services.AddMemoryCache();
+
             // Seed health check caches before the background service starts so cold-start
             // requests don't see 503. Must be registered before AddHealth so its StartAsync
             // runs first (hosted services start in registration order).

@@ -172,5 +172,65 @@ namespace RecipeVault.WebApi.Mappers {
                 Warnings = dto.Warnings
             };
         }
+
+        public SubstitutionRequestDto MapToDto(SubstitutionRequestModel model) {
+            if (model == null) {
+                return null;
+            }
+
+            return new SubstitutionRequestDto {
+                IngredientIndices = model.IngredientIndices,
+                DietaryConstraints = model.DietaryConstraints
+            };
+        }
+
+        public SubstitutionResponseModel Map(SubstitutionResponseDto dto) {
+            if (dto == null) {
+                return null;
+            }
+
+            return new SubstitutionResponseModel {
+                Analysis = dto.Analysis,
+                Cached = dto.Cached,
+                Substitutions = dto.Substitutions?.Select(s => new IngredientSubstitutionModel {
+                    OriginalIndex = s.OriginalIndex,
+                    OriginalText = s.OriginalText,
+                    Reason = s.Reason,
+                    Options = s.Options?.Select(o => new SubstitutionOptionModel {
+                        Name = o.Name,
+                        Notes = o.Notes,
+                        TechniqueAdjustments = o.TechniqueAdjustments,
+                        Ingredients = o.Ingredients?.Select(i => new SubstitutionIngredientModel {
+                            Quantity = i.Quantity,
+                            Unit = i.Unit,
+                            Item = i.Item
+                        }).ToList()
+                    }).ToList()
+                }).ToList()
+            };
+        }
+
+        public ApplySubstitutionsDto MapToDto(ApplySubstitutionsModel model) {
+            if (model == null) {
+                return null;
+            }
+
+            return new ApplySubstitutionsDto {
+                ForkTitle = model.ForkTitle,
+                Selections = model.Selections?.Select(s => new SubstitutionSelectionDto {
+                    IngredientIndex = s.IngredientIndex,
+                    SelectedOption = s.SelectedOption == null ? null : new SubstitutionOptionDto {
+                        Name = s.SelectedOption.Name,
+                        Notes = s.SelectedOption.Notes,
+                        TechniqueAdjustments = s.SelectedOption.TechniqueAdjustments,
+                        Ingredients = s.SelectedOption.Ingredients?.Select(i => new SubstitutionIngredientDto {
+                            Quantity = i.Quantity,
+                            Unit = i.Unit,
+                            Item = i.Item
+                        }).ToList()
+                    }
+                }).ToList()
+            };
+        }
     }
 }

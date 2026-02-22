@@ -784,5 +784,171 @@ Rules:
 
             return maxScore > 0 ? score / maxScore : 0;
         }
+
+        private const string SubstitutionPromptSpecific = @"You are a culinary expert helping with ingredient substitutions.
+
+Recipe: {recipeTitle}
+
+Full ingredient list (for context):
+{allIngredients}
+
+Instructions summary:
+{instructionsSummary}
+
+Please suggest substitutions for these specific ingredients:
+{targetIngredients}
+
+Dietary constraints to adhere to:
+{dietaryConstraints}
+
+For each ingredient, provide 2-3 substitution options. Each option should include:
+1. Replacement ingredient(s) with exact quantities
+2. Brief note on taste/texture impact
+3. Any technique adjustments needed
+
+Return ONLY valid JSON matching this schema:
+{{
+  ""analysis"": ""string (optional brief overview)"",
+  ""substitutions"": [
+    {{
+      ""originalIndex"": number,
+      ""original"": ""string (original ingredient text)"",
+      ""reason"": ""string or null (why this needs substitution)"",
+      ""options"": [
+        {{
+          ""name"": ""string (descriptive name for this option)"",
+          ""ingredients"": [
+            {{
+              ""quantity"": number or null,
+              ""unit"": ""string or null"",
+              ""item"": ""string""
+            }}
+          ],
+          ""notes"": ""string (taste/texture impact)"",
+          ""techniqueAdjustments"": ""string or null""
+        }}
+      ]
+    }}
+  ]
+}}";
+
+        private const string SubstitutionPromptDietary = @"You are a culinary expert helping adapt recipes for dietary needs.
+
+Recipe: {recipeTitle}
+
+Full ingredient list:
+{allIngredients}
+
+Instructions:
+{instructionsSummary}
+
+Evaluate this recipe for the following dietary constraints:
+{dietaryConstraints}
+
+Identify ALL ingredients that need substitution to meet these constraints.
+For each problematic ingredient, provide 2-3 substitution options.
+
+Return ONLY valid JSON matching this schema:
+{{
+  ""analysis"": ""string (brief overview of what needs changing)"",
+  ""substitutions"": [
+    {{
+      ""originalIndex"": number,
+      ""original"": ""string (original ingredient text)"",
+      ""reason"": ""string (why this violates the constraint)"",
+      ""options"": [
+        {{
+          ""name"": ""string (descriptive name for this option)"",
+          ""ingredients"": [
+            {{
+              ""quantity"": number or null,
+              ""unit"": ""string or null"",
+              ""item"": ""string""
+            }}
+          ],
+          ""notes"": ""string (taste/texture impact)"",
+          ""techniqueAdjustments"": ""string or null""
+        }}
+      ]
+    }}
+  ]
+}}";
+
+        /// <summary>
+        /// Analyze recipe and suggest ingredient substitutions
+        /// </summary>
+        public async Task<GeminiSubstitutionAnalysis> AnalyzeSubstitutionsAsync(
+            string recipeTitle,
+            List<string> allIngredients,
+            string instructionsSummary,
+            List<int> targetIngredientIndices,
+            List<string> dietaryConstraints,
+            CancellationToken cancellationToken = default) {
+
+            if (string.IsNullOrWhiteSpace(recipeTitle)) {
+                throw new ArgumentException("Recipe title is required", nameof(recipeTitle));
+            }
+
+            if (allIngredients == null || allIngredients.Count == 0) {
+                throw new ArgumentException("Ingredients list is required", nameof(allIngredients));
+            }
+
+            var hasTargetIngredients = targetIngredientIndices != null && targetIngredientIndices.Count > 0;
+            var hasConstraints = dietaryConstraints != null && dietaryConstraints.Count > 0;
+
+            if (!hasTargetIngredients && !hasConstraints) {
+                throw new ArgumentException("Must specify either target ingredients or dietary constraints");
+            }
+
+            // Build the prompt based on mode
+            string prompt;
+            if (hasTargetIngredients) {
+                // Mode A: Specific ingredients
+                var targetIngredientsText = string.Join("\n", 
+                    targetIngredientIndices.Select(i => $"- {allIngredients[i]}"));
+                
+                prompt = SubstitutionPromptSpecific
+                    .Replace("{recipeTitle}", recipeTitle)
+                    .Replace("{allIngredients}", string.Join("\n", allIngredients.Select((ing, i) => $"{i}. {ing}")))
+                    .Replace("{instructionsSummary}", instructionsSummary ?? "N/A")
+                    .Replace("{targetIngredients}", targetIngredientsText)
+                    .Replace("{dietaryConstraints}", hasConstraints ? string.Join(", ", dietaryConstraints) : "None");
+            } else {
+                // Mode B: Dietary constraints only
+                prompt = SubstitutionPromptDietary
+                    .Replace("{recipeTitle}", recipeTitle)
+                    .Replace("{allIngredients}", string.Join("\n", allIngredients.Select((ing, i) => $"{i}. {ing}")))
+                    .Replace("{instructionsSummary}", instructionsSummary ?? "N/A")
+                    .Replace("{dietaryConstraints}", string.Join(", ", dietaryConstraints));
+            }
+
+            logger.LogInformation("Sending substitution analysis request to Gemini API, recipeTitle={RecipeTitle}, targetCount={TargetCount}, constraints={Constraints}",
+                recipeTitle, targetIngredientIndices?.Count ?? 0, string.Join(",", dietaryConstraints ?? new List<string>()));
+
+            var textPart = await SendTextPromptAsync(prompt, cancellationToken).ConfigureAwait(false);
+
+            // Strip markdown code fences if present
+            var jsonText = textPart.Trim();
+            if (jsonText.StartsWith("```", StringComparison.Ordinal)) {
+                var firstNewline = jsonText.IndexOf('\n');
+                if (firstNewline > 0)
+                    jsonText = jsonText.Substring(firstNewline + 1);
+                if (jsonText.EndsWith("```", StringComparison.Ordinal))
+                    jsonText = jsonText.Substring(0, jsonText.Length - 3).Trim();
+            }
+
+            var result = JsonSerializer.Deserialize<GeminiSubstitutionAnalysis>(jsonText,
+                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+            if (result == null) {
+                logger.LogWarning("Failed to deserialize substitution analysis result");
+                throw new GeminiApiException("Could not parse Gemini response as substitution data");
+            }
+
+            logger.LogInformation("Successfully analyzed substitutions, found {Count} ingredients with substitution options",
+                result.Substitutions?.Count ?? 0);
+
+            return result;
+        }
     }
 }
