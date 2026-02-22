@@ -96,7 +96,7 @@ namespace RecipeVault.WebApi {
                         ValidateLifetime = true
                     };
 
-                    // Add detailed error logging
+                    // Add detailed error logging and claim mapping
                     options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents {
                         OnAuthenticationFailed = context => {
                             if (context.Exception.InnerException != null) {
@@ -105,6 +105,12 @@ namespace RecipeVault.WebApi {
                             return Task.CompletedTask;
                         },
                         OnTokenValidated = context => {
+                            // Map Supabase "email" claim to "upn" for Cortside SubjectPrincipal
+                            var identity = context.Principal?.Identity as System.Security.Claims.ClaimsIdentity;
+                            var emailClaim = identity?.FindFirst("email");
+                            if (emailClaim != null && identity?.FindFirst("upn") == null) {
+                                identity.AddClaim(new System.Security.Claims.Claim("upn", emailClaim.Value));
+                            }
                             return Task.CompletedTask;
                         },
                         OnChallenge = context => {
@@ -152,7 +158,7 @@ namespace RecipeVault.WebApi {
 
             // add SubjectPrincipal for auditing
             services.AddSubjectPrincipal();
-            services.AddTransient<ISubjectFactory<Subject>, DefaultSubjectFactory>();
+            services.AddTransient<ISubjectFactory<Subject>, SupabaseSubjectFactory>();
 
             // add CORS (from config or env vars)
             var corsOrigins = Configuration.GetSection("Cors:Origins").Get<string[]>()
