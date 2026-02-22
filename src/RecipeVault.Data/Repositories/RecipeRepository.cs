@@ -20,7 +20,9 @@ namespace RecipeVault.Data.Repositories {
                 .Include(x => x.Instructions)
                 .Include(x => x.RecipeTags).ThenInclude(rt => rt.Tag)
                 .Include(x => x.CreatedSubject)
-                .Include(x => x.LastModifiedSubject));
+                .Include(x => x.LastModifiedSubject)
+                .Include(x => x.ForkedFromRecipe)
+                    .ThenInclude(x => x.CreatedSubject));
 
             var result = new PagedList<Recipe> {
                 PageNumber = model.PageNumber,
@@ -47,6 +49,8 @@ namespace RecipeVault.Data.Repositories {
                 .Include(x => x.RecipeTags).ThenInclude(rt => rt.Tag)
                 .Include(x => x.CreatedSubject)
                 .Include(x => x.LastModifiedSubject)
+                .Include(x => x.ForkedFromRecipe)
+                    .ThenInclude(x => x.CreatedSubject)
                 .FirstOrDefaultAsync(r => r.RecipeResourceId == id);
         }
 
@@ -55,6 +59,8 @@ namespace RecipeVault.Data.Repositories {
                 .Include(x => x.Ingredients)
                 .Include(x => x.RecipeTags).ThenInclude(rt => rt.Tag)
                 .Include(x => x.CreatedSubject)
+                .Include(x => x.ForkedFromRecipe)
+                    .ThenInclude(x => x.CreatedSubject)
                 .FirstOrDefaultAsync(r => r.RecipeId == recipeId);
         }
 
@@ -70,6 +76,8 @@ namespace RecipeVault.Data.Repositories {
                 .Include(x => x.RecipeTags).ThenInclude(rt => rt.Tag)
                 .Include(x => x.CreatedSubject)
                 .Include(x => x.LastModifiedSubject)
+                .Include(x => x.ForkedFromRecipe)
+                    .ThenInclude(x => x.CreatedSubject)
                 .FirstOrDefaultAsync(r => r.ShareToken == shareToken);
         }
     }
