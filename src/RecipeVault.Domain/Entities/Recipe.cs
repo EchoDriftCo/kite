@@ -187,6 +187,17 @@ namespace RecipeVault.Domain.Entities {
                 fork.SetSourceImageUrl(SourceImageUrl);
             }
 
+            // Copy tags (will be re-assigned to new owner by service)
+            foreach (var rt in RecipeTags) {
+                fork.AddTag(new RecipeTag(
+                    0,  // RecipeId will be set when saved
+                    rt.TagId,
+                    Guid.Empty,  // SubjectId will be set by service
+                    rt.IsAiAssigned,
+                    rt.Confidence
+                ));
+            }
+
             return fork;
         }
     }

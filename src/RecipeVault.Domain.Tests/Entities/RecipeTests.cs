@@ -402,5 +402,53 @@ namespace RecipeVault.Domain.Tests.Entities {
             fork.IsFavorite.ShouldBeFalse();
             fork.ShareToken.ShouldBeNull();
         }
+
+        [Fact]
+        public void Recipe_Fork_CopiesTags() {
+            // Arrange
+            var original = new RecipeBuilder()
+                .WithTitle("Original Recipe")
+                .Build();
+
+            // Add tags to original
+            var tag1 = new RecipeTag(
+                recipeId: 1,
+                tagId: 10,
+                assignedBySubjectId: Guid.NewGuid(),
+                isAiAssigned: true,
+                confidence: 0.95m
+            );
+
+            var tag2 = new RecipeTag(
+                recipeId: 1,
+                tagId: 20,
+                assignedBySubjectId: Guid.NewGuid(),
+                isAiAssigned: false,
+                confidence: null
+            );
+
+            original.AddTag(tag1);
+            original.AddTag(tag2);
+
+            // Act
+            var fork = original.Fork();
+
+            // Assert
+            fork.RecipeTags.Count.ShouldBe(2);
+            
+            var forkedTag1 = fork.RecipeTags[0];
+            forkedTag1.TagId.ShouldBe(10);
+            forkedTag1.IsAiAssigned.ShouldBe(true);
+            forkedTag1.Confidence.ShouldBe(0.95m);
+            forkedTag1.RecipeId.ShouldBe(0);  // Will be set when saved
+            forkedTag1.AssignedBySubjectId.ShouldBe(Guid.Empty);  // Will be set by service
+
+            var forkedTag2 = fork.RecipeTags[1];
+            forkedTag2.TagId.ShouldBe(20);
+            forkedTag2.IsAiAssigned.ShouldBe(false);
+            forkedTag2.Confidence.ShouldBeNull();
+            forkedTag2.RecipeId.ShouldBe(0);  // Will be set when saved
+            forkedTag2.AssignedBySubjectId.ShouldBe(Guid.Empty);  // Will be set by service
+        }
     }
 }
