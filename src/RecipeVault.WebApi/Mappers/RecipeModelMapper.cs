@@ -66,6 +66,13 @@ namespace RecipeVault.WebApi.Mappers {
                     NormalizedEntityId = t.NormalizedEntityId,
                     NormalizedEntityType = t.NormalizedEntityType
                 }).ToList(),
+                ForkedFrom = dto.ForkedFrom != null ? new ForkedFromModel {
+                    RecipeResourceId = dto.ForkedFrom.RecipeResourceId,
+                    Title = dto.ForkedFrom.Title,
+                    OwnerName = dto.ForkedFrom.OwnerName,
+                    IsAvailable = dto.ForkedFrom.IsAvailable
+                } : null,
+                ForkCount = dto.ForkCount,
                 CreatedDate = dto.CreatedDate,
                 CreatedSubject = subjectModelMapper.Map(dto.CreatedSubject),
                 LastModifiedDate = dto.LastModifiedDate,

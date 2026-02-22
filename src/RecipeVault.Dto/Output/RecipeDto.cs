@@ -23,5 +23,7 @@ namespace RecipeVault.Dto.Output {
         public bool IsOwner { get; set; }
         public string ShareToken { get; set; }
         public List<RecipeTagDto> Tags { get; set; }
+        public ForkedFromDto ForkedFrom { get; set; }
+        public int ForkCount { get; set; }
     }
 }

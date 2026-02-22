@@ -274,5 +274,35 @@ namespace RecipeVault.WebApi.Controllers {
 
             return Ok(new UploadImageResponseModel { Url = url });
         }
+
+        /// <summary>
+        /// Fork a recipe to create a personal copy
+        /// </summary>
+        /// <param name="id">the resource id of the recipe to fork</param>
+        /// <param name="input">optional customization for the fork</param>
+        [HttpPost("{id}/fork")]
+        [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status201Created)]
+        public async Task<IActionResult> ForkRecipeAsync(Guid id, [FromBody] ForkRecipeModel input) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var dto = await facade.ForkRecipeAsync(id, input?.Title).ConfigureAwait(false);
+                return CreatedAtAction(nameof(GetRecipeAsync), new { id = dto.RecipeResourceId }, recipeMapper.Map(dto));
+            }
+        }
+
+        /// <summary>
+        /// Get public forks of a recipe
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        /// <param name="pageNumber">page number (default 1)</param>
+        /// <param name="pageSize">page size (default 20)</param>
+        [HttpGet("{id}/forks")]
+        [ProducesResponseType(typeof(PagedList<RecipeModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetRecipeForksAsync(Guid id, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var dtos = await facade.GetRecipeForksAsync(id, pageNumber, pageSize).ConfigureAwait(false);
+                var models = dtos.Convert(x => recipeMapper.Map(x));
+                return Ok(models);
+            }
+        }
     }
 }

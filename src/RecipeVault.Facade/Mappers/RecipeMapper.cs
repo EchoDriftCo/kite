@@ -65,6 +65,24 @@ namespace RecipeVault.Facade.Mappers {
                     .Where(rt => !rt.IsOverridden)
                     .Select(rt => tagMapper.MapToRecipeTagDto(rt))
                     .ToList(),
+                ForkedFrom = entity.ForkedFromRecipe != null
+                    ? new ForkedFromDto {
+                        RecipeResourceId = entity.ForkedFromRecipe.RecipeResourceId,
+                        Title = entity.ForkedFromRecipe.Title,
+                        OwnerName = entity.ForkedFromRecipe.CreatedSubject != null
+                            ? $"{entity.ForkedFromRecipe.CreatedSubject.GivenName} {entity.ForkedFromRecipe.CreatedSubject.FamilyName}".Trim()
+                            : "Unknown",
+                        IsAvailable = true
+                    }
+                    : (entity.ForkedFromRecipeId.HasValue
+                        ? new ForkedFromDto {
+                            RecipeResourceId = Guid.Empty,
+                            Title = null,
+                            OwnerName = null,
+                            IsAvailable = false
+                        }
+                        : null),
+                ForkCount = entity.Forks?.Count(f => f.IsPublic) ?? 0,
                 CreatedDate = entity.CreatedDate,
                 LastModifiedDate = entity.LastModifiedDate,
                 CreatedSubject = subjectMapper.MapToDto(entity.CreatedSubject),

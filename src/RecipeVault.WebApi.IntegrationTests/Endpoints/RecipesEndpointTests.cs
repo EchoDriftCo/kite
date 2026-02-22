@@ -183,6 +183,137 @@ namespace RecipeVault.WebApi.IntegrationTests.Endpoints {
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         }
 
+        [Fact]
+        public async Task ForkRecipe_WithPublicRecipe_ReturnsCreatedWithFork() {
+            // Arrange
+            var original = new RecipeBuilder()
+                .WithTitle("Original Recipe to Fork")
+                .WithYield(4)
+                .WithIsPublic(true)
+                .Build();
+            
+            var ingredients = new List<RecipeIngredient>
+            {
+                new RecipeIngredientBuilder().WithItem("flour").WithSortOrder(1).Build(),
+                new RecipeIngredientBuilder().WithItem("sugar").WithSortOrder(2).Build()
+            };
+            original.SetIngredients(ingredients);
+            
+            var instructions = new List<RecipeInstruction>
+            {
+                new RecipeInstructionBuilder().WithStepNumber(1).WithInstruction("Mix ingredients").Build()
+            };
+            original.SetInstructions(instructions);
+            
+            await _fixture.AddToDbAsync(original);
+
+            var forkInput = new ForkRecipeModel
+            {
+                Title = "My Forked Version"
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, $"api/v1/recipes/{original.RecipeResourceId}/fork")
+            {
+                Content = JsonContent.Create(forkInput)
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _authToken);
+
+            // Act
+            var response = await _fixture.HttpClient.SendAsync(request);
+
+            // Assert
+            response.StatusCode.ShouldBe(HttpStatusCode.Created);
+            response.Headers.Location.ShouldNotBeNull();
+
+            var fork = await response.Content.ReadFromJsonAsync<RecipeModel>();
+            fork.ShouldNotBeNull();
+            fork.Title.ShouldBe("My Forked Version");
+            fork.RecipeResourceId.ShouldNotBe(original.RecipeResourceId);
+            fork.Yield.ShouldBe(original.Yield);
+            fork.Ingredients.Count.ShouldBe(2);
+            fork.Instructions.Count.ShouldBe(1);
+            fork.ForkedFrom.ShouldNotBeNull();
+            fork.ForkedFrom.RecipeResourceId.ShouldBe(original.RecipeResourceId);
+            fork.ForkedFrom.Title.ShouldBe("Original Recipe to Fork");
+            fork.ForkedFrom.IsAvailable.ShouldBeTrue();
+            fork.IsPublic.ShouldBeFalse(); // Forks start private
+        }
+
+        [Fact]
+        public async Task ForkRecipe_WithoutCustomTitle_UsesDefaultTitle() {
+            // Arrange
+            var original = new RecipeBuilder()
+                .WithTitle("Original Recipe")
+                .WithIsPublic(true)
+                .Build();
+            await _fixture.AddToDbAsync(original);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, $"api/v1/recipes/{original.RecipeResourceId}/fork")
+            {
+                Content = JsonContent.Create(new ForkRecipeModel())
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _authToken);
+
+            // Act
+            var response = await _fixture.HttpClient.SendAsync(request);
+
+            // Assert
+            response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+            var fork = await response.Content.ReadFromJsonAsync<RecipeModel>();
+            fork.Title.ShouldBe("Original Recipe (Copy)");
+        }
+
+        [Fact]
+        public async Task GetRecipeForks_WithPublicForks_ReturnsPagedList() {
+            // Arrange
+            var original = new RecipeBuilder()
+                .WithTitle("Popular Recipe")
+                .WithIsPublic(true)
+                .Build();
+            await _fixture.AddToDbAsync(original);
+
+            // Create a public fork
+            var publicFork = original.Fork("Public Fork");
+            publicFork.SetVisibility(true);
+            await _fixture.AddToDbAsync(publicFork);
+
+            // Create a private fork (should not appear in results)
+            var privateFork = original.Fork("Private Fork");
+            privateFork.SetVisibility(false);
+            await _fixture.AddToDbAsync(privateFork);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, $"api/v1/recipes/{original.RecipeResourceId}/forks");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _authToken);
+
+            // Act
+            var response = await _fixture.HttpClient.SendAsync(request);
+
+            // Assert
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.ShouldNotBeNull();
+            // The response should contain only the public fork
+        }
+
+        [Fact]
+        public async Task ForkRecipe_WithNonexistentRecipe_ReturnsNotFound() {
+            // Arrange
+            var nonexistentId = Guid.NewGuid();
+            var request = new HttpRequestMessage(HttpMethod.Post, $"api/v1/recipes/{nonexistentId}/fork")
+            {
+                Content = JsonContent.Create(new ForkRecipeModel())
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _authToken);
+
+            // Act
+            var response = await _fixture.HttpClient.SendAsync(request);
+
+            // Assert
+            response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        }
+
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);

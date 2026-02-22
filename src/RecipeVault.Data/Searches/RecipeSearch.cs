@@ -17,6 +17,7 @@ namespace RecipeVault.Data.Searches {
         public bool? IsFavorite { get; set; }
         public int? MinRating { get; set; }
         public Guid? SearchingUserId { get; set; }  // Used to match user's own aliases
+        public int? ForkedFromRecipeId { get; set; }
 
         public IQueryable<Recipe> Build(IQueryable<Recipe> entities) {
             if (IncludePublic && CreatedSubjectId.HasValue) {
@@ -94,6 +95,10 @@ namespace RecipeVault.Data.Searches {
 
             if (MinRating.HasValue) {
                 entities = entities.Where(x => x.Rating.HasValue && x.Rating.Value >= MinRating.Value);
+            }
+
+            if (ForkedFromRecipeId.HasValue) {
+                entities = entities.Where(x => x.ForkedFromRecipeId == ForkedFromRecipeId.Value);
             }
 
             return entities;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using Cortside.AspNetCore.Auditable.Entities;
 using Cortside.Common.Messages;
 using Cortside.Common.Messages.MessageExceptions;
@@ -11,6 +12,7 @@ using UUIDNext;
 namespace RecipeVault.Domain.Entities {
     [Index(nameof(RecipeResourceId), IsUnique = true)]
     [Index(nameof(ShareToken), IsUnique = true)]
+    [Index(nameof(ForkedFromRecipeId))]
     [Table("Recipe")]
     public class Recipe : AuditableEntity {
         protected Recipe() {
@@ -66,6 +68,13 @@ namespace RecipeVault.Domain.Entities {
 
         [StringLength(12)]
         public string ShareToken { get; private set; }
+
+        // Forking fields
+        public int? ForkedFromRecipeId { get; private set; }
+        public virtual Recipe ForkedFromRecipe { get; private set; }
+        
+        private readonly List<Recipe> forks = new();
+        public virtual IReadOnlyList<Recipe> Forks => forks;
 
         private readonly List<RecipeIngredient> ingredients = new();
         public virtual IReadOnlyList<RecipeIngredient> Ingredients => ingredients;
@@ -146,6 +155,39 @@ namespace RecipeVault.Domain.Entities {
 
         public void RemoveTag(RecipeTag recipeTag) {
             recipeTags.Remove(recipeTag);
+        }
+
+        public Recipe Fork(string newTitle = null) {
+            var fork = new Recipe(
+                title: newTitle ?? $"{Title} (Copy)",
+                yield: Yield,
+                prepTimeMinutes: PrepTimeMinutes,
+                cookTimeMinutes: CookTimeMinutes,
+                description: Description,
+                source: null,  // Clear source - this is now user's recipe
+                originalImageUrl: OriginalImageUrl,
+                isPublic: false  // Forks start private
+            );
+
+            // Copy ingredients
+            fork.SetIngredients(Ingredients.Select(i => new RecipeIngredient(
+                i.SortOrder, i.Quantity, i.Unit, i.Item, i.Preparation, i.RawText
+            )).ToList());
+
+            // Copy instructions
+            fork.SetInstructions(Instructions.Select(i => new RecipeInstruction(
+                i.StepNumber, i.Instruction, i.RawText
+            )).ToList());
+
+            // Link to original
+            fork.ForkedFromRecipeId = RecipeId;
+
+            // Copy image URL if exists
+            if (!string.IsNullOrEmpty(SourceImageUrl)) {
+                fork.SetSourceImageUrl(SourceImageUrl);
+            }
+
+            return fork;
         }
     }
 }

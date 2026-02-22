@@ -24,5 +24,7 @@ namespace RecipeVault.WebApi.Models.Responses {
         public List<RecipeIngredientModel> Ingredients { get; set; }
         public List<RecipeInstructionModel> Instructions { get; set; }
         public List<RecipeTagModel> Tags { get; set; }
+        public ForkedFromModel ForkedFrom { get; set; }
+        public int ForkCount { get; set; }
     }
 }

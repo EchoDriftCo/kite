@@ -886,5 +886,141 @@ namespace RecipeVault.DomainService.Tests.Services {
 
             mockRepository.Verify(x => x.AddAsync(It.IsAny<Recipe>()), Times.Once);
         }
+
+        [Fact]
+        public async Task ForkRecipeAsync_WithPublicRecipe_CreatesForkSuccessfully() {
+            // Arrange
+            var original = new RecipeBuilder()
+                .WithTitle("Original Recipe")
+                .WithIsPublic(true)
+                .Build();
+            original.CreatedSubject = new Subject(Guid.NewGuid(), "Original Owner", "Original", "Owner", "owner@example.com");
+
+            var ingredients = new List<RecipeIngredient>
+            {
+                new RecipeIngredientBuilder().WithItem("flour").WithSortOrder(1).Build()
+            };
+            original.SetIngredients(ingredients);
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(original.RecipeResourceId))
+                .ReturnsAsync(original)
+                .Verifiable();
+
+            mockRepository
+                .Setup(x => x.AddAsync(It.IsAny<Recipe>()))
+                .ReturnsAsync((Recipe recipe) => recipe)
+                .Verifiable();
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            var fork = await service.ForkRecipeAsync(original.RecipeResourceId);
+
+            // Assert
+            fork.ShouldNotBeNull();
+            fork.RecipeResourceId.ShouldNotBe(original.RecipeResourceId);
+            fork.Title.ShouldBe("Original Recipe (Copy)");
+            fork.ForkedFromRecipeId.ShouldBe(original.RecipeId);
+            fork.Ingredients.Count.ShouldBe(1);
+            fork.Ingredients[0].Item.ShouldBe("flour");
+
+            mockRepository.Verify(x => x.GetAsync(original.RecipeResourceId), Times.Once);
+            mockRepository.Verify(x => x.AddAsync(It.IsAny<Recipe>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ForkRecipeAsync_WithOwnRecipe_CreatesForkSuccessfully() {
+            // Arrange
+            var original = BuildRecipeWithOwner(new RecipeBuilder()
+                .WithTitle("My Recipe")
+                .WithIsPublic(false));
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(original.RecipeResourceId))
+                .ReturnsAsync(original)
+                .Verifiable();
+
+            mockRepository
+                .Setup(x => x.AddAsync(It.IsAny<Recipe>()))
+                .ReturnsAsync((Recipe recipe) => recipe)
+                .Verifiable();
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            var fork = await service.ForkRecipeAsync(original.RecipeResourceId);
+
+            // Assert
+            fork.ShouldNotBeNull();
+            fork.ForkedFromRecipeId.ShouldBe(original.RecipeId);
+            mockRepository.Verify(x => x.AddAsync(It.IsAny<Recipe>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ForkRecipeAsync_WithCustomTitle_UsesTitleProvided() {
+            // Arrange
+            var original = new RecipeBuilder()
+                .WithTitle("Original Recipe")
+                .WithIsPublic(true)
+                .Build();
+            original.CreatedSubject = new Subject(Guid.NewGuid(), "Owner", "Owner", "Name", "owner@example.com");
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(original.RecipeResourceId))
+                .ReturnsAsync(original)
+                .Verifiable();
+
+            mockRepository
+                .Setup(x => x.AddAsync(It.IsAny<Recipe>()))
+                .ReturnsAsync((Recipe recipe) => recipe)
+                .Verifiable();
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            var fork = await service.ForkRecipeAsync(original.RecipeResourceId, "My Custom Fork");
+
+            // Assert
+            fork.Title.ShouldBe("My Custom Fork");
+        }
+
+        [Fact]
+        public async Task ForkRecipeAsync_WithNonexistentRecipe_ThrowsRecipeNotFoundException() {
+            // Arrange
+            var nonExistentId = Guid.NewGuid();
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal(true);
+
+            mockRepository
+                .Setup(x => x.GetAsync(nonExistentId))
+                .ReturnsAsync((Recipe)null)
+                .Verifiable();
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act & Assert
+            await Should.ThrowAsync<RecipeNotFoundException>(async () =>
+                await service.ForkRecipeAsync(nonExistentId)
+            );
+        }
     }
 }

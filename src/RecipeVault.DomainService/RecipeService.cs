@@ -456,5 +456,48 @@ namespace RecipeVault.DomainService {
                 // Don't fail the entire operation if normalization fails
             }
         }
+
+        public async Task<Recipe> ForkRecipeAsync(Guid recipeResourceId, string newTitle = null) {
+            // Get original (respects visibility - own or public)
+            var original = await GetRecipeAsync(recipeResourceId).ConfigureAwait(false);
+
+            using (logger.PushProperty("OriginalRecipeResourceId", original.RecipeResourceId)) {
+                var fork = original.Fork(newTitle);
+
+                // Fix up tag assignments with current user
+                var currentSubjectId = Guid.Parse(subjectPrincipal.SubjectId);
+                foreach (var rt in fork.RecipeTags.ToList()) {
+                    fork.RemoveTag(rt);
+                    fork.AddTag(new RecipeTag(
+                        fork.RecipeId,
+                        rt.TagId,
+                        currentSubjectId,
+                        isAiAssigned: false,
+                        confidence: null
+                    ));
+                }
+
+                await recipeRepository.AddAsync(fork).ConfigureAwait(false);
+
+                logger.LogInformation("Forked recipe {OriginalId} to {ForkId}",
+                    original.RecipeResourceId, fork.RecipeResourceId);
+
+                return fork;
+            }
+        }
+
+        public async Task<PagedList<Recipe>> GetRecipeForksAsync(Guid recipeResourceId, int pageNumber = 1, int pageSize = 20) {
+            var original = await GetRecipeAsync(recipeResourceId).ConfigureAwait(false);
+
+            // Create search for forks of this recipe that are public
+            var search = new RecipeSearch {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                ForkedFromRecipeId = original.RecipeId,
+                IsPublic = true  // Only return public forks
+            };
+
+            return await recipeRepository.SearchAsync(search).ConfigureAwait(false);
+        }
     }
 }

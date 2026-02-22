@@ -231,5 +231,20 @@ namespace RecipeVault.Facade {
                 return mapper.MapToDto(recipe, CurrentSubjectId);
             }
         }
+
+        public async Task<RecipeDto> ForkRecipeAsync(Guid recipeResourceId, string newTitle = null) {
+            var fork = await recipeService.ForkRecipeAsync(recipeResourceId, newTitle).ConfigureAwait(false);
+            await uow.SaveChangesAsync().ConfigureAwait(false);
+
+            return mapper.MapToDto(fork, CurrentSubjectId);
+        }
+
+        public async Task<PagedList<RecipeDto>> GetRecipeForksAsync(Guid recipeResourceId, int pageNumber = 1, int pageSize = 20) {
+            await using (var tx = await uow.BeginReadUncommitedAsync().ConfigureAwait(false)) {
+                var forks = await recipeService.GetRecipeForksAsync(recipeResourceId, pageNumber, pageSize).ConfigureAwait(false);
+                var currentSubjectId = CurrentSubjectId;
+                return forks.Convert(x => mapper.MapToDto(x, currentSubjectId));
+            }
+        }
     }
 }

@@ -293,5 +293,114 @@ namespace RecipeVault.Domain.Tests.Entities {
             recipe.IsFavorite.ShouldBeFalse();
             recipe.ShareToken.ShouldBeNull();
         }
+
+        [Fact]
+        public void Recipe_Fork_CreatesNewRecipeWithSameContent() {
+            // Arrange
+            var original = new RecipeBuilder()
+                .WithTitle("Original Recipe")
+                .WithYield(4)
+                .WithPrepTimeMinutes(15)
+                .WithCookTimeMinutes(30)
+                .WithDescription("Original description")
+                .WithOriginalImageUrl("https://example.com/image.jpg")
+                .Build();
+
+            var ingredients = new List<RecipeIngredient>
+            {
+                new RecipeIngredientBuilder().WithItem("flour").WithSortOrder(1).WithQuantity(2).WithUnit("cups").Build(),
+                new RecipeIngredientBuilder().WithItem("sugar").WithSortOrder(2).WithQuantity(1).WithUnit("cup").Build()
+            };
+            original.SetIngredients(ingredients);
+
+            var instructions = new List<RecipeInstruction>
+            {
+                new RecipeInstructionBuilder().WithStepNumber(1).WithInstruction("Mix ingredients").Build(),
+                new RecipeInstructionBuilder().WithStepNumber(2).WithInstruction("Bake").Build()
+            };
+            original.SetInstructions(instructions);
+
+            original.SetSourceImageUrl("https://example.com/source.jpg");
+
+            // Act
+            var fork = original.Fork();
+
+            // Assert
+            fork.ShouldNotBeNull();
+            fork.RecipeResourceId.ShouldNotBe(original.RecipeResourceId);
+            fork.RecipeResourceId.ShouldNotBe(Guid.Empty);
+            fork.Title.ShouldBe("Original Recipe (Copy)");
+            fork.Yield.ShouldBe(4);
+            fork.PrepTimeMinutes.ShouldBe(15);
+            fork.CookTimeMinutes.ShouldBe(30);
+            fork.Description.ShouldBe("Original description");
+            fork.OriginalImageUrl.ShouldBe("https://example.com/image.jpg");
+            fork.SourceImageUrl.ShouldBe("https://example.com/source.jpg");
+            fork.Source.ShouldBeNull(); // Source is cleared on fork
+            fork.IsPublic.ShouldBeFalse(); // Forks start private
+            fork.ForkedFromRecipeId.ShouldBe(original.RecipeId);
+
+            // Verify ingredients copied
+            fork.Ingredients.Count.ShouldBe(2);
+            fork.Ingredients[0].Item.ShouldBe("flour");
+            fork.Ingredients[1].Item.ShouldBe("sugar");
+
+            // Verify instructions copied
+            fork.Instructions.Count.ShouldBe(2);
+            fork.Instructions[0].Instruction.ShouldBe("Mix ingredients");
+            fork.Instructions[1].Instruction.ShouldBe("Bake");
+        }
+
+        [Fact]
+        public void Recipe_Fork_WithCustomTitle_UsesProvidedTitle() {
+            // Arrange
+            var original = new RecipeBuilder()
+                .WithTitle("Original Recipe")
+                .Build();
+
+            // Act
+            var fork = original.Fork("My Custom Version");
+
+            // Assert
+            fork.Title.ShouldBe("My Custom Version");
+        }
+
+        [Fact]
+        public void Recipe_Fork_WithoutSourceImage_CopiesCorrectly() {
+            // Arrange
+            var original = new RecipeBuilder()
+                .WithTitle("Original Recipe")
+                .Build();
+
+            // Act
+            var fork = original.Fork();
+
+            // Assert
+            fork.SourceImageUrl.ShouldBeNull();
+        }
+
+        [Fact]
+        public void Recipe_Fork_ClearsPersonalData() {
+            // Arrange
+            var original = new RecipeBuilder()
+                .WithTitle("Original Recipe")
+                .WithSource("Personal source")
+                .WithIsPublic(true)
+                .Build();
+
+            original.SetRating(5);
+            original.SetFavorite(true);
+            original.GenerateShareToken();
+
+            // Act
+            var fork = original.Fork();
+
+            // Assert
+            fork.Source.ShouldBeNull();
+            fork.IsPublic.ShouldBeFalse();
+            fork.Rating.ShouldBeNull();
+            fork.IsFavorite.ShouldBeFalse();
+            fork.ShareToken.ShouldBeNull();
+        }
     }
 }
