@@ -41,16 +41,9 @@ namespace RecipeVault.DomainService {
         }
 
         public async Task<Recipe> CreateRecipeAsync(UpdateRecipeDto dto) {
-            var originalImageUrl = dto.OriginalImageUrl;
-            
-            // If we have a source image URL but no original (local) image, import it
-            if (string.IsNullOrWhiteSpace(originalImageUrl) && !string.IsNullOrWhiteSpace(dto.SourceImageUrl)) {
-                var fileName = $"recipes/{Guid.NewGuid()}.jpg";
-                originalImageUrl = await imageStorage.ImportFromUrlAsync(dto.SourceImageUrl, fileName).ConfigureAwait(false);
-                logger.LogInformation("Imported image from {SourceUrl} to {LocalUrl}", dto.SourceImageUrl, originalImageUrl);
-            }
-            
-            var entity = new Recipe(dto.Title, dto.Yield, dto.PrepTimeMinutes, dto.CookTimeMinutes, dto.Description, dto.Source, originalImageUrl, dto.IsPublic);
+            // Create recipe with provided display image (if any)
+            // SourceImageUrl is for preserving original document photos and should NOT be used as display image
+            var entity = new Recipe(dto.Title, dto.Yield, dto.PrepTimeMinutes, dto.CookTimeMinutes, dto.Description, dto.Source, dto.OriginalImageUrl, dto.IsPublic);
 
             if (!string.IsNullOrWhiteSpace(dto.SourceImageUrl)) {
                 entity.SetSourceImageUrl(dto.SourceImageUrl);

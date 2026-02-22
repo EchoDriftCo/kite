@@ -794,5 +794,97 @@ namespace RecipeVault.DomainService.Tests.Services {
                 () => service.AssignTagsToRecipeAsync(recipe.RecipeResourceId, tags)
             );
         }
+
+        [Fact]
+        public async Task CreateRecipeAsync_WithOnlySourceImageUrl_DoesNotSetDisplayImage() {
+            // Arrange
+            // When importing from a recipe card/document photo, ONLY SourceImageUrl should be set,
+            // NOT the display image (OriginalImageUrl). The source image is for preserving the original document.
+            var dto = new UpdateRecipeDtoBuilder()
+                .WithOriginalImageUrl(null)
+                .Build();
+            dto.SourceImageUrl = "https://storage.example.com/recipe-card-photo.jpg";
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
+
+            mockRepository
+                .Setup(x => x.AddAsync(It.IsAny<Recipe>()))
+                .ReturnsAsync((Recipe recipe) => recipe)
+                .Verifiable();
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            var result = await service.CreateRecipeAsync(dto);
+
+            // Assert
+            result.OriginalImageUrl.ShouldBeNull(); // Display image should NOT be set
+            result.SourceImageUrl.ShouldBe("https://storage.example.com/recipe-card-photo.jpg"); // Source image should be set
+
+            mockRepository.Verify(x => x.AddAsync(It.IsAny<Recipe>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateRecipeAsync_WithOnlyDisplayImage_SetsOnlyDisplayImage() {
+            // Arrange
+            var dto = new UpdateRecipeDtoBuilder()
+                .WithOriginalImageUrl("https://example.com/hero-image.jpg")
+                .Build();
+            dto.SourceImageUrl = null;
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
+
+            mockRepository
+                .Setup(x => x.AddAsync(It.IsAny<Recipe>()))
+                .ReturnsAsync((Recipe recipe) => recipe)
+                .Verifiable();
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            var result = await service.CreateRecipeAsync(dto);
+
+            // Assert
+            result.OriginalImageUrl.ShouldBe("https://example.com/hero-image.jpg");
+            result.SourceImageUrl.ShouldBeNull();
+
+            mockRepository.Verify(x => x.AddAsync(It.IsAny<Recipe>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateRecipeAsync_WithBothDisplayAndSourceImages_SetsBothCorrectly() {
+            // Arrange
+            var dto = new UpdateRecipeDtoBuilder()
+                .WithOriginalImageUrl("https://example.com/hero-image.jpg")
+                .Build();
+            dto.SourceImageUrl = "https://storage.example.com/recipe-card-photo.jpg";
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
+
+            mockRepository
+                .Setup(x => x.AddAsync(It.IsAny<Recipe>()))
+                .ReturnsAsync((Recipe recipe) => recipe)
+                .Verifiable();
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            var result = await service.CreateRecipeAsync(dto);
+
+            // Assert
+            result.OriginalImageUrl.ShouldBe("https://example.com/hero-image.jpg");
+            result.SourceImageUrl.ShouldBe("https://storage.example.com/recipe-card-photo.jpg");
+
+            mockRepository.Verify(x => x.AddAsync(It.IsAny<Recipe>()), Times.Once);
+        }
     }
 }
