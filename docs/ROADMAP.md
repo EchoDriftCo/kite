@@ -6,12 +6,21 @@
 
 ## Table of Contents
 
+**Core Features**
 1. [Recipe Forking & Remixes](#1-recipe-forking--remixes)
 2. [Social Circles](#2-social-circles)
 3. [Nutrition Integration](#3-nutrition-integration)
 4. [Smart Substitutions & "What Can I Make?"](#4-smart-substitutions--what-can-i-make)
 5. [Import & Export](#5-import--export)
 6. [Voice & Cooking Mode](#6-voice--cooking-mode)
+
+**Additional Features**
+7. [Recipe Collections & Cookbooks](#7-recipe-collections--cookbooks)
+8. [Dietary Profiles](#8-dietary-profiles)
+9. [Cooking History & Stats](#9-cooking-history--stats)
+10. [AI Recipe Generation](#10-ai-recipe-generation)
+11. [Kitchen Equipment Filtering](#11-kitchen-equipment-filtering)
+12. [Grocery Delivery Integration](#12-grocery-delivery-integration)
 
 ---
 
@@ -1180,7 +1189,1121 @@ POST /api/recipes/{id}/cooking-data
 
 ---
 
+## 7. Recipe Collections & Cookbooks
+
+### Overview
+
+Organize recipes into themed collections. Think "playlists for recipes" — curated groups that make sense to the user.
+
+### User Stories
+
+1. **Create collection** — "Italian Favorites", "Quick Weeknight Dinners", "Holiday Baking"
+2. **Add recipes to collections** — One recipe can be in multiple collections
+3. **Browse by collection** — Filter recipe list by collection
+4. **Share collections** — Share entire collection via link (public) or to circles
+5. **Featured collections** — Curated collections from RecipeVault team
+
+### Data Model
+
+```csharp
+[Table("Collection")]
+public class Collection {
+    public int CollectionId { get; private set; }
+    public Guid CollectionResourceId { get; private set; }
+    
+    public int SubjectId { get; private set; }
+    
+    [Required, StringLength(100)]
+    public string Name { get; private set; }
+    
+    [StringLength(500)]
+    public string Description { get; private set; }
+    
+    [StringLength(1000)]
+    public string CoverImageUrl { get; private set; }  // Optional custom cover
+    
+    public bool IsPublic { get; private set; }
+    public bool IsFeatured { get; private set; }  // Admin-curated
+    
+    public int SortOrder { get; private set; }  // User's preferred display order
+    
+    public DateTime CreatedDate { get; private set; }
+    public DateTime? LastModifiedDate { get; private set; }
+    
+    public virtual Subject Subject { get; private set; }
+    public virtual ICollection<CollectionRecipe> CollectionRecipes { get; private set; }
+}
+
+[Table("CollectionRecipe")]
+public class CollectionRecipe {
+    public int CollectionRecipeId { get; private set; }
+    public int CollectionId { get; private set; }
+    public int RecipeId { get; private set; }
+    
+    public int SortOrder { get; private set; }  // Order within collection
+    public DateTime AddedDate { get; private set; }
+    
+    public virtual Collection Collection { get; private set; }
+    public virtual Recipe Recipe { get; private set; }
+}
+```
+
+### API Design
+
+```
+# Collections
+POST   /api/collections                       Create collection
+GET    /api/collections                       List my collections
+GET    /api/collections/{id}                  Get collection with recipes
+PUT    /api/collections/{id}                  Update collection
+DELETE /api/collections/{id}                  Delete collection
+PUT    /api/collections/reorder               Reorder my collections
+
+# Collection recipes
+POST   /api/collections/{id}/recipes          Add recipe to collection
+DELETE /api/collections/{id}/recipes/{recipeId}  Remove recipe
+PUT    /api/collections/{id}/recipes/reorder  Reorder recipes in collection
+
+# Discovery
+GET    /api/collections/featured              Get featured collections
+GET    /api/collections/public?search=italian Search public collections
+
+# Quick action from recipe view
+POST   /api/recipes/{id}/collections          Add recipe to collection(s)
+  Body: { "collectionIds": ["...", "..."] }
+```
+
+### UX Design
+
+#### Collection List View
+
+```
+┌─────────────────────────────────────────────┐
+│  📚 My Collections                   [+ New]│
+├─────────────────────────────────────────────┤
+│                                             │
+│  ┌──────────────┐  ┌──────────────┐         │
+│  │  🍝          │  │  ⏱️          │         │
+│  │              │  │              │         │
+│  │  Italian     │  │  Quick       │         │
+│  │  Favorites   │  │  Weeknights  │         │
+│  │  12 recipes  │  │  8 recipes   │         │
+│  └──────────────┘  └──────────────┘         │
+│                                             │
+│  ┌──────────────┐  ┌──────────────┐         │
+│  │  🎄          │  │  🌱          │         │
+│  │              │  │              │         │
+│  │  Holiday     │  │  Healthy     │         │
+│  │  Baking      │  │  Eats        │         │
+│  │  15 recipes  │  │  6 recipes   │         │
+│  └──────────────┘  └──────────────┘         │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+#### Add to Collection (from recipe)
+
+```
+┌─────────────────────────────────────────────┐
+│  Add "Spaghetti Carbonara" to Collection    │
+├─────────────────────────────────────────────┤
+│                                             │
+│  ☑ Italian Favorites                        │
+│  ☐ Quick Weeknights                         │
+│  ☐ Holiday Baking                           │
+│  ☑ Date Night Dinners                       │
+│                                             │
+│  [+ Create New Collection]                  │
+│                                             │
+│  [Cancel]                    [Save]         │
+└─────────────────────────────────────────────┘
+```
+
+### Smart Collections (Future)
+
+Auto-generated collections based on rules:
+
+```typescript
+interface SmartCollection {
+  name: string;
+  rules: CollectionRule[];
+  // e.g., "High Protein" = recipes where nutrition.protein > 30g
+  // e.g., "Under 30 Minutes" = recipes where totalTime <= 30
+  // e.g., "5-Star Recipes" = recipes where rating == 5
+}
+```
+
+### Implementation Estimate
+
+- Backend: 6-8 hours
+- Frontend: 8-12 hours
+- Tests: 3-4 hours
+- **Total: 17-24 hours**
+
+---
+
+## 8. Dietary Profiles
+
+### Overview
+
+Users set their dietary restrictions and preferences once. The app then:
+- Auto-filters recipe discovery
+- Warns when recipes conflict with restrictions
+- Suggests substitutions automatically
+- Filters meal plan suggestions
+
+### User Stories
+
+1. **Set dietary profile** — "I'm lactose intolerant and avoid pork"
+2. **See warnings** — Recipe detail shows ⚠️ if it conflicts with profile
+3. **Auto-filter discovery** — Public recipe browse respects my restrictions
+4. **Household profiles** — Set restrictions for family members
+5. **Temporary modes** — "I'm doing Whole30 this month"
+
+### Restriction Types
+
+```
+ALLERGIES (serious, always warn)
+├─ Peanuts
+├─ Tree Nuts
+├─ Shellfish
+├─ Fish
+├─ Eggs
+├─ Milk/Dairy
+├─ Wheat/Gluten
+├─ Soy
+└─ Sesame
+
+INTOLERANCES (uncomfortable, warn)
+├─ Lactose
+├─ Gluten sensitivity
+└─ FODMAPs
+
+DIETARY CHOICES (preference, filter)
+├─ Vegetarian
+├─ Vegan
+├─ Pescatarian
+├─ Kosher
+├─ Halal
+├─ Keto/Low-carb
+├─ Paleo
+└─ Whole30
+
+AVOID INGREDIENTS (custom)
+├─ [User-defined list]
+└─ e.g., "cilantro", "blue cheese"
+```
+
+### Data Model
+
+```csharp
+[Table("DietaryProfile")]
+public class DietaryProfile {
+    public int DietaryProfileId { get; private set; }
+    public int SubjectId { get; private set; }
+    
+    [StringLength(100)]
+    public string ProfileName { get; private set; }  // "Me", "Kids", "Guest"
+    
+    public bool IsDefault { get; private set; }  // Primary profile for filtering
+    
+    public virtual Subject Subject { get; private set; }
+    public virtual ICollection<DietaryRestriction> Restrictions { get; private set; }
+    public virtual ICollection<AvoidedIngredient> AvoidedIngredients { get; private set; }
+}
+
+[Table("DietaryRestriction")]
+public class DietaryRestriction {
+    public int DietaryRestrictionId { get; private set; }
+    public int DietaryProfileId { get; private set; }
+    
+    public RestrictionType Type { get; private set; }  // Allergy, Intolerance, Choice
+    
+    [Required, StringLength(50)]
+    public string RestrictionCode { get; private set; }  // "peanuts", "vegan", etc.
+    
+    public RestrictionSeverity Severity { get; private set; }  // Strict, Flexible
+    
+    public virtual DietaryProfile DietaryProfile { get; private set; }
+}
+
+public enum RestrictionType { Allergy, Intolerance, DietaryChoice }
+public enum RestrictionSeverity { Strict, Flexible }
+
+[Table("AvoidedIngredient")]
+public class AvoidedIngredient {
+    public int AvoidedIngredientId { get; private set; }
+    public int DietaryProfileId { get; private set; }
+    
+    [Required, StringLength(100)]
+    public string IngredientName { get; private set; }  // Normalized
+    
+    [StringLength(200)]
+    public string Reason { get; private set; }  // Optional: "tastes like soap"
+    
+    public virtual DietaryProfile DietaryProfile { get; private set; }
+}
+
+// Temporary diet programs
+[Table("DietProgram")]
+public class DietProgram {
+    public int DietProgramId { get; private set; }
+    public int SubjectId { get; private set; }
+    
+    [Required, StringLength(50)]
+    public string ProgramCode { get; private set; }  // "whole30", "keto", etc.
+    
+    public DateTime StartDate { get; private set; }
+    public DateTime? EndDate { get; private set; }
+    
+    public bool IsActive { get; private set; }
+    
+    public virtual Subject Subject { get; private set; }
+}
+```
+
+### Conflict Detection
+
+```csharp
+public class DietaryConflictService {
+    // Map restrictions to ingredient patterns
+    private static readonly Dictionary<string, string[]> RestrictionIngredients = new() {
+        ["dairy"] = new[] { "milk", "cream", "butter", "cheese", "yogurt", "whey" },
+        ["gluten"] = new[] { "flour", "wheat", "barley", "rye", "bread", "pasta" },
+        ["peanuts"] = new[] { "peanut", "peanuts", "peanut butter", "peanut oil" },
+        ["shellfish"] = new[] { "shrimp", "crab", "lobster", "clam", "mussel", "oyster" },
+        // ... etc
+    };
+    
+    public List<DietaryConflict> CheckRecipe(Recipe recipe, DietaryProfile profile) {
+        var conflicts = new List<DietaryConflict>();
+        
+        foreach (var ingredient in recipe.Ingredients) {
+            foreach (var restriction in profile.Restrictions) {
+                if (IngredientMatchesRestriction(ingredient, restriction)) {
+                    conflicts.Add(new DietaryConflict {
+                        IngredientIndex = ingredient.SortOrder,
+                        IngredientText = ingredient.RawText,
+                        RestrictionCode = restriction.RestrictionCode,
+                        Severity = restriction.Severity,
+                        Type = restriction.Type
+                    });
+                }
+            }
+        }
+        
+        return conflicts;
+    }
+}
+```
+
+### API Design
+
+```
+# Profiles
+GET    /api/dietary-profiles                  List my profiles
+POST   /api/dietary-profiles                  Create profile
+PUT    /api/dietary-profiles/{id}             Update profile
+DELETE /api/dietary-profiles/{id}             Delete profile
+PUT    /api/dietary-profiles/{id}/default     Set as default
+
+# Restrictions
+POST   /api/dietary-profiles/{id}/restrictions      Add restriction
+DELETE /api/dietary-profiles/{id}/restrictions/{code}  Remove restriction
+
+# Avoided ingredients
+POST   /api/dietary-profiles/{id}/avoided           Add avoided ingredient
+DELETE /api/dietary-profiles/{id}/avoided/{id}      Remove avoided ingredient
+
+# Conflict check
+GET    /api/recipes/{id}/dietary-check              Check recipe vs default profile
+  Query: ?profileId=...  (optional, uses default if not specified)
+  Returns: { conflicts: [...], canEat: boolean, warnings: [...] }
+
+# Recipe filtering
+GET    /api/recipes?respectDietary=true             Filter by dietary profile
+GET    /api/recipes/public?respectDietary=true      Public browse with filtering
+```
+
+### UX Design
+
+#### Profile Setup
+
+```
+┌─────────────────────────────────────────────────┐
+│  🥗 Dietary Profile                              │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  Profile: [Me ▼]  [+ Add Profile]               │
+│                                                 │
+│  ⚠️ ALLERGIES (always warn)                     │
+│  ┌────────────────────────────────────────────┐ │
+│  │ ☑ Peanuts    ☐ Tree Nuts    ☐ Shellfish   │ │
+│  │ ☐ Fish       ☐ Eggs         ☑ Dairy       │ │
+│  │ ☐ Wheat      ☐ Soy          ☐ Sesame      │ │
+│  └────────────────────────────────────────────┘ │
+│                                                 │
+│  🌿 DIETARY CHOICES                             │
+│  ┌────────────────────────────────────────────┐ │
+│  │ ☐ Vegetarian  ☐ Vegan    ☐ Pescatarian    │ │
+│  │ ☐ Kosher      ☐ Halal    ☐ Keto           │ │
+│  └────────────────────────────────────────────┘ │
+│                                                 │
+│  🚫 INGREDIENTS TO AVOID                        │
+│  ┌────────────────────────────────────────────┐ │
+│  │ cilantro ✕    blue cheese ✕               │ │
+│  │ [+ Add ingredient]                         │ │
+│  └────────────────────────────────────────────┘ │
+│                                                 │
+│                               [Save Profile]    │
+└─────────────────────────────────────────────────┘
+```
+
+#### Recipe Warning Display
+
+```
+┌─────────────────────────────────────────────────┐
+│  Creamy Mushroom Pasta                          │
+│                                                 │
+│  ⚠️ DIETARY CONFLICT                            │
+│  ┌────────────────────────────────────────────┐ │
+│  │ This recipe contains:                      │ │
+│  │ • Heavy cream (dairy allergy)              │ │
+│  │ • Parmesan cheese (dairy allergy)          │ │
+│  │                                            │ │
+│  │ [Find Substitutions]  [Cook Anyway]        │ │
+│  └────────────────────────────────────────────┘ │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+### Implementation Estimate
+
+- Backend: 10-14 hours
+- Frontend: 10-14 hours
+- Tests: 4-6 hours
+- **Total: 24-34 hours**
+
+---
+
+## 9. Cooking History & Stats
+
+### Overview
+
+Track cooking activity to provide insights and encourage engagement.
+
+### User Stories
+
+1. **Log when I cook** — Quick "I made this" button
+2. **View cooking history** — Calendar of what I've cooked
+3. **See stats** — Most cooked recipes, monthly activity, streaks
+4. **Personal notes per cook** — "Used less salt", "Kids loved it"
+5. **Photo journal** — Attach photos of dishes I've made
+
+### Data Model
+
+```csharp
+[Table("CookingLog")]
+public class CookingLog {
+    public int CookingLogId { get; private set; }
+    public Guid CookingLogResourceId { get; private set; }
+    
+    public int RecipeId { get; private set; }
+    public int SubjectId { get; private set; }
+    
+    public DateTime CookedDate { get; private set; }
+    
+    public decimal? ScaleFactor { get; private set; }  // If they scaled the recipe
+    public int? ServingsMade { get; private set; }
+    
+    [StringLength(1000)]
+    public string Notes { get; private set; }  // Personal notes for this cook
+    
+    public int? Rating { get; private set; }  // How did it turn out? 1-5
+    
+    public virtual Recipe Recipe { get; private set; }
+    public virtual Subject Subject { get; private set; }
+    public virtual ICollection<CookingLogPhoto> Photos { get; private set; }
+}
+
+[Table("CookingLogPhoto")]
+public class CookingLogPhoto {
+    public int CookingLogPhotoId { get; private set; }
+    public int CookingLogId { get; private set; }
+    
+    [Required, StringLength(1000)]
+    public string ImageUrl { get; private set; }
+    
+    [StringLength(200)]
+    public string Caption { get; private set; }
+    
+    public int SortOrder { get; private set; }
+    
+    public virtual CookingLog CookingLog { get; private set; }
+}
+```
+
+### Stats Calculations
+
+```csharp
+public class CookingStatsDto {
+    // All-time
+    public int TotalCooks { get; set; }
+    public int UniqueRecipes { get; set; }
+    public DateTime? FirstCookDate { get; set; }
+    
+    // Period stats
+    public int CooksThisMonth { get; set; }
+    public int CooksThisYear { get; set; }
+    
+    // Streaks
+    public int CurrentStreak { get; set; }  // Days in a row with a cook
+    public int LongestStreak { get; set; }
+    
+    // Top recipes
+    public List<RecipeCountDto> MostCooked { get; set; }  // Top 10
+    public List<RecipeCountDto> RecentFavorites { get; set; }  // Most cooked last 30 days
+    
+    // Insights
+    public string MostActiveDayOfWeek { get; set; }  // "Sunday"
+    public decimal AverageCooksPerWeek { get; set; }
+}
+```
+
+### API Design
+
+```
+# Cooking log
+POST   /api/cooking-log                       Log a cook
+GET    /api/cooking-log                       List cooking history
+GET    /api/cooking-log/{id}                  Get specific log entry
+PUT    /api/cooking-log/{id}                  Update log entry
+DELETE /api/cooking-log/{id}                  Delete log entry
+
+# Photos
+POST   /api/cooking-log/{id}/photos           Add photo
+DELETE /api/cooking-log/{id}/photos/{photoId} Remove photo
+
+# Stats
+GET    /api/cooking-log/stats                 Get cooking stats
+GET    /api/cooking-log/calendar?year=2026&month=2  Calendar view
+
+# Recipe-specific
+GET    /api/recipes/{id}/cooking-log          History for specific recipe
+```
+
+### UX Design
+
+#### Quick Log Button (on recipe)
+
+```
+┌─────────────────────────────────────────────┐
+│  Mom's Apple Pie                            │
+│                                             │
+│  [Edit] [Share] [🍳 I Made This]            │
+└─────────────────────────────────────────────┘
+```
+
+Clicking opens:
+
+```
+┌─────────────────────────────────────────────┐
+│  Log Your Cook                              │
+├─────────────────────────────────────────────┤
+│                                             │
+│  When: [Today ▼]                            │
+│                                             │
+│  Servings made: [4____]                     │
+│                                             │
+│  How did it turn out?                       │
+│  ★ ★ ★ ★ ☆                                  │
+│                                             │
+│  Notes (optional):                          │
+│  [Added extra cinnamon, turned out great__] │
+│  [_______________________________________]  │
+│                                             │
+│  📷 Add photos                              │
+│  [Choose Files]                             │
+│                                             │
+│  [Cancel]                      [Log Cook]   │
+└─────────────────────────────────────────────┘
+```
+
+#### Cooking Stats Dashboard
+
+```
+┌─────────────────────────────────────────────────────┐
+│  📊 Your Cooking Stats                              │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │
+│  │     47      │  │     23      │  │     12      │  │
+│  │  Total      │  │  Unique     │  │  Current    │  │
+│  │  Cooks      │  │  Recipes    │  │  Streak 🔥  │  │
+│  └─────────────┘  └─────────────┘  └─────────────┘  │
+│                                                     │
+│  MOST COOKED                                        │
+│  1. 🥧 Mom's Apple Pie (8 times)                    │
+│  2. 🍝 Spaghetti Carbonara (6 times)                │
+│  3. 🌮 Chicken Tacos (5 times)                      │
+│                                                     │
+│  ACTIVITY (Last 6 Months)                           │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  █ █   █ █ █ █   █ █ █   █ █ █ █ █   █ █     │  │
+│  │  Sep   Oct       Nov     Dec         Jan Feb │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                     │
+│  💡 You cook most on Sundays!                       │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+### Implementation Estimate
+
+- Backend: 8-12 hours
+- Frontend: 12-16 hours
+- Tests: 4-6 hours
+- **Total: 24-34 hours**
+
+---
+
+## 10. AI Recipe Generation
+
+### Overview
+
+Generate new recipes from natural language descriptions using Gemini.
+
+### User Stories
+
+1. **Describe what I want** — "A creamy pasta with mushrooms and bacon"
+2. **Generate variations** — "Give me 3 different versions"
+3. **Specify constraints** — "Make it keto-friendly" or "Under 30 minutes"
+4. **Refine results** — "Make it spicier" or "Use chicken instead"
+5. **Save generated recipe** — Save to my library with AI attribution
+
+### Generation Modes
+
+```
+MODE 1: Free-form description
+"A cozy soup for a cold day with whatever vegetables are in season"
+
+MODE 2: Ingredient-driven
+"I have chicken thighs, coconut milk, and curry paste"
+
+MODE 3: Style/cuisine
+"Thai-inspired appetizer for a dinner party"
+
+MODE 4: Constraint-based
+"High protein breakfast under 400 calories that I can meal prep"
+
+MODE 5: Remix existing
+"Make my grandma's meatloaf recipe but vegetarian"
+```
+
+### Prompt Engineering
+
+```
+System: You are a professional chef creating recipes. Generate detailed, 
+tested recipes with accurate measurements and clear instructions.
+
+User request: {user_description}
+
+Constraints:
+- Dietary: {from dietary profile}
+- Time: {if specified}
+- Skill level: {if specified}
+- Equipment: {from equipment profile}
+
+Generate a complete recipe including:
+1. Creative but descriptive title
+2. Brief description (2-3 sentences)
+3. Prep time and cook time
+4. Yield/servings
+5. Complete ingredient list with precise measurements
+6. Step-by-step instructions
+7. Tips and variations
+8. Suggested tags (dietary, cuisine, meal type)
+
+Format as JSON matching RecipeVault schema.
+```
+
+### API Design
+
+```
+# Generate recipe
+POST /api/recipes/generate
+  Body: {
+    "prompt": "creamy mushroom pasta with a kick",
+    "constraints": {
+      "maxTime": 30,
+      "dietary": ["vegetarian"],
+      "skillLevel": "beginner"
+    },
+    "variations": 1  // Number of variations to generate (1-3)
+  }
+  Returns: Generated recipe(s) for preview
+
+# Refine generated recipe
+POST /api/recipes/generate/refine
+  Body: {
+    "previousRecipe": { ... },
+    "refinement": "make it spicier and add a garnish suggestion"
+  }
+  Returns: Refined recipe
+
+# Save generated recipe
+POST /api/recipes/generate/save
+  Body: { generated recipe + any user edits }
+  Returns: Created RecipeDto
+```
+
+### UX Design
+
+#### Generation Interface
+
+```
+┌─────────────────────────────────────────────────────┐
+│  ✨ Create a Recipe with AI                         │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  Describe what you want to make:                    │
+│  ┌───────────────────────────────────────────────┐  │
+│  │ A creamy pasta dish with mushrooms and bacon  │  │
+│  │ that's impressive enough for date night       │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                     │
+│  Constraints (optional):                            │
+│  ⏱️ Max time: [Any ▼]                               │
+│  👨‍🍳 Skill level: [Any ▼]                            │
+│  🥗 Respect my dietary profile: ☑                   │
+│                                                     │
+│  [Generate Recipe]                                  │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+#### Preview Generated Recipe
+
+```
+┌─────────────────────────────────────────────────────┐
+│  ✨ AI Generated Recipe                             │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  CREAMY BACON MUSHROOM FETTUCCINE                   │
+│                                                     │
+│  Rich, restaurant-quality pasta with crispy bacon,  │
+│  sautéed cremini mushrooms, and a silky parmesan    │
+│  cream sauce. Perfect for impressing your date.     │
+│                                                     │
+│  ⏱️ 25 min  |  🍽️ Serves 2  |  👨‍🍳 Intermediate     │
+│                                                     │
+│  INGREDIENTS                                        │
+│  • 8 oz fettuccine                                  │
+│  • 4 strips thick-cut bacon, diced                  │
+│  • 8 oz cremini mushrooms, sliced                   │
+│  • 3 cloves garlic, minced                          │
+│  • 1 cup heavy cream                                │
+│  • ½ cup parmesan, freshly grated                   │
+│  • Fresh thyme, salt, pepper                        │
+│                                                     │
+│  INSTRUCTIONS                                       │
+│  1. Cook pasta according to package...              │
+│  2. While pasta cooks, crisp bacon in...            │
+│  ...                                                │
+│                                                     │
+│  ────────────────────────────────────────────────   │
+│                                                     │
+│  Not quite right?                                   │
+│  [🔄 Regenerate] [✏️ Refine: "make it lighter"]     │
+│                                                     │
+│  [Discard]                    [Save to My Recipes]  │
+└─────────────────────────────────────────────────────┘
+```
+
+### Cost Management
+
+Gemini API costs per generation. Mitigations:
+
+1. **Rate limiting** — Max 10 generations per day per user (free tier)
+2. **Caching** — Cache popular prompts
+3. **Premium feature** — Unlimited generation for paid users
+4. **Prompt optimization** — Minimize token usage
+
+### Implementation Estimate
+
+- Backend: 8-12 hours
+- Frontend: 10-14 hours
+- Tests: 4-6 hours
+- **Total: 22-32 hours**
+
+---
+
+## 11. Kitchen Equipment Filtering
+
+### Overview
+
+Track what equipment users have and filter recipes accordingly.
+
+### User Stories
+
+1. **Set my equipment** — "I have an Instant Pot, air fryer, and stand mixer"
+2. **Filter recipes** — Show only recipes I can make with my equipment
+3. **See what I'm missing** — "This recipe needs a food processor"
+4. **Equipment suggestions** — "Buy a Dutch oven to unlock 15 recipes"
+
+### Common Equipment
+
+```
+APPLIANCES
+├─ Instant Pot / Pressure Cooker
+├─ Slow Cooker / Crock-Pot
+├─ Air Fryer
+├─ Stand Mixer
+├─ Food Processor
+├─ Blender (regular)
+├─ Immersion Blender
+├─ Bread Machine
+├─ Sous Vide
+├─ Deep Fryer
+├─ Rice Cooker
+├─ Waffle Iron
+└─ Ice Cream Maker
+
+COOKWARE
+├─ Dutch Oven
+├─ Cast Iron Skillet
+├─ Wok
+├─ Grill / Grill Pan
+├─ Pizza Stone
+├─ Roasting Pan
+├─ Steamer Basket
+└─ Double Boiler
+
+BAKEWARE
+├─ Bundt Pan
+├─ Springform Pan
+├─ Tart Pan
+├─ Pie Dish
+├─ Ramekins
+├─ Muffin Tin
+└─ Loaf Pan
+
+TOOLS
+├─ Mandoline
+├─ Kitchen Scale
+├─ Meat Thermometer
+├─ Piping Bags
+├─ Torch (for crème brûlée)
+└─ Mortar & Pestle
+```
+
+### Data Model
+
+```csharp
+[Table("Equipment")]
+public class Equipment {
+    public int EquipmentId { get; private set; }
+    
+    [Required, StringLength(100)]
+    public string Name { get; private set; }
+    
+    [Required, StringLength(100)]
+    public string Code { get; private set; }  // "instant-pot", "air-fryer"
+    
+    public EquipmentCategory Category { get; private set; }
+    
+    [StringLength(500)]
+    public string Description { get; private set; }
+    
+    public bool IsCommon { get; private set; }  // Assume most users have it (pots, pans)
+}
+
+public enum EquipmentCategory { Appliance, Cookware, Bakeware, Tool }
+
+[Table("UserEquipment")]
+public class UserEquipment {
+    public int UserEquipmentId { get; private set; }
+    public int SubjectId { get; private set; }
+    public int EquipmentId { get; private set; }
+    
+    public DateTime AddedDate { get; private set; }
+    
+    public virtual Subject Subject { get; private set; }
+    public virtual Equipment Equipment { get; private set; }
+}
+
+[Table("RecipeEquipment")]
+public class RecipeEquipment {
+    public int RecipeEquipmentId { get; private set; }
+    public int RecipeId { get; private set; }
+    public int EquipmentId { get; private set; }
+    
+    public bool IsRequired { get; private set; }  // vs "helpful but optional"
+    
+    public virtual Recipe Recipe { get; private set; }
+    public virtual Equipment Equipment { get; private set; }
+}
+```
+
+### Equipment Detection
+
+Auto-detect equipment from recipe instructions:
+
+```csharp
+public class EquipmentDetector {
+    private static readonly Dictionary<string, string[]> EquipmentPatterns = new() {
+        ["instant-pot"] = new[] { "instant pot", "pressure cooker", "pressure cook" },
+        ["air-fryer"] = new[] { "air fryer", "air fry", "air-fry" },
+        ["slow-cooker"] = new[] { "slow cooker", "crock pot", "crockpot" },
+        ["stand-mixer"] = new[] { "stand mixer", "kitchenaid", "fitted with paddle" },
+        ["food-processor"] = new[] { "food processor", "pulse until" },
+        ["dutch-oven"] = new[] { "dutch oven" },
+        ["cast-iron"] = new[] { "cast iron", "cast-iron skillet" },
+        // ... etc
+    };
+    
+    public List<string> DetectEquipment(Recipe recipe) {
+        var text = string.Join(" ", recipe.Instructions.Select(i => i.Instruction)).ToLower();
+        return EquipmentPatterns
+            .Where(kv => kv.Value.Any(pattern => text.Contains(pattern)))
+            .Select(kv => kv.Key)
+            .ToList();
+    }
+}
+```
+
+### API Design
+
+```
+# User equipment
+GET    /api/equipment                         List all equipment options
+GET    /api/my-equipment                      List my equipment
+POST   /api/my-equipment                      Add equipment
+DELETE /api/my-equipment/{code}               Remove equipment
+
+# Recipe equipment
+GET    /api/recipes/{id}/equipment            Get equipment for recipe
+POST   /api/recipes/{id}/equipment/detect     Auto-detect from instructions
+PUT    /api/recipes/{id}/equipment            Set equipment (manual override)
+
+# Filtering
+GET    /api/recipes?hasEquipment=true         Filter by my equipment
+GET    /api/recipes/{id}/equipment-check      Check if I can make this
+```
+
+### UX Design
+
+#### Equipment Setup
+
+```
+┌─────────────────────────────────────────────────────┐
+│  🍳 My Kitchen Equipment                            │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  APPLIANCES                                         │
+│  ☑ Instant Pot       ☑ Air Fryer      ☐ Sous Vide  │
+│  ☑ Stand Mixer       ☐ Bread Machine  ☑ Blender    │
+│  ☑ Food Processor    ☑ Slow Cooker    ☐ Deep Fryer │
+│                                                     │
+│  COOKWARE                                           │
+│  ☑ Dutch Oven        ☑ Cast Iron      ☐ Wok        │
+│  ☑ Grill/Grill Pan   ☐ Pizza Stone                 │
+│                                                     │
+│  BAKEWARE                                           │
+│  ☑ Bundt Pan         ☐ Springform     ☑ Pie Dish   │
+│  ☑ Muffin Tin        ☐ Tart Pan                    │
+│                                                     │
+│                                    [Save Equipment] │
+└─────────────────────────────────────────────────────┘
+```
+
+#### Recipe Filter Toggle
+
+```
+┌─────────────────────────────────────────────┐
+│  [My Recipes ▼]                             │
+│                                             │
+│  Filters:                                   │
+│  ☑ Only recipes I have equipment for        │
+│  ☐ Under 30 minutes                         │
+│  ☐ Vegetarian                               │
+└─────────────────────────────────────────────┘
+```
+
+### Implementation Estimate
+
+- Backend: 8-10 hours
+- Frontend: 8-10 hours
+- Tests: 3-4 hours
+- **Total: 19-24 hours**
+
+---
+
+## 12. Grocery Delivery Integration
+
+### Overview
+
+Send ingredient lists directly to grocery delivery services (Instacart, Walmart, Amazon Fresh).
+
+### User Stories
+
+1. **Add to cart** — One-click add all recipe ingredients to Instacart
+2. **Meal plan shopping** — Add entire meal plan's grocery list to cart
+3. **Smart matching** — Match ingredients to actual products
+4. **Store selection** — Choose preferred store/service
+5. **Price comparison** — See prices across services (future)
+
+### Integration Options
+
+#### Option A: Instacart Partner API
+
+- Official API for partners
+- Requires business agreement
+- Best UX (deep integration)
+- Revenue share model
+
+#### Option B: Universal Affiliate Links
+
+- Use Instacart's public "add to cart" URL scheme
+- No API agreement needed
+- Less seamless (opens Instacart website)
+- Can include affiliate tracking
+
+```
+https://www.instacart.com/store/recipes?ingredients=chicken+breast,olive+oil,garlic
+```
+
+#### Option C: Multiple Service Links
+
+Provide links to multiple services:
+- Instacart
+- Walmart Grocery
+- Amazon Fresh
+- Shipt
+
+User chooses their preferred service.
+
+### Data Model
+
+```csharp
+[Table("UserGroceryPreference")]
+public class UserGroceryPreference {
+    public int UserGroceryPreferenceId { get; private set; }
+    public int SubjectId { get; private set; }
+    
+    public GroceryService PreferredService { get; private set; }
+    
+    [StringLength(100)]
+    public string PreferredStore { get; private set; }  // "Costco", "Whole Foods"
+    
+    [StringLength(20)]
+    public string ZipCode { get; private set; }
+    
+    public virtual Subject Subject { get; private set; }
+}
+
+public enum GroceryService { Instacart, Walmart, AmazonFresh, Shipt, Manual }
+```
+
+### API Design
+
+```
+# Preferences
+GET    /api/grocery/preferences               Get my preferences
+PUT    /api/grocery/preferences               Update preferences
+
+# Cart building
+POST   /api/grocery/cart/from-recipe/{id}     Build cart from recipe
+POST   /api/grocery/cart/from-mealplan/{id}   Build cart from meal plan
+POST   /api/grocery/cart/from-list            Build cart from grocery list
+
+# Service links
+GET    /api/grocery/checkout-url              Get checkout URL for service
+  Query: ?service=instacart&items=...
+  Returns: { url: "https://instacart.com/..." }
+```
+
+### UX Design
+
+#### On Recipe View
+
+```
+┌─────────────────────────────────────────────────────┐
+│  INGREDIENTS                           [🛒 Shop]    │
+│                                                     │
+│  • 2 lbs chicken breast                             │
+│  • 1 tbsp olive oil                                 │
+│  • 4 cloves garlic                                  │
+│  • ...                                              │
+└─────────────────────────────────────────────────────┘
+```
+
+Clicking Shop:
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Shop for Ingredients                               │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  Add all ingredients to:                            │
+│                                                     │
+│  ┌─────────────────────────────────────────────┐    │
+│  │  🥕 Instacart                                │    │
+│  │     Opens Instacart with ingredients added  │    │
+│  └─────────────────────────────────────────────┘    │
+│                                                     │
+│  ┌─────────────────────────────────────────────┐    │
+│  │  🟦 Walmart Grocery                          │    │
+│  │     Opens Walmart with ingredients          │    │
+│  └─────────────────────────────────────────────┘    │
+│                                                     │
+│  ┌─────────────────────────────────────────────┐    │
+│  │  📦 Amazon Fresh                             │    │
+│  │     Opens Amazon with ingredients           │    │
+│  └─────────────────────────────────────────────┘    │
+│                                                     │
+│  [Set Default Service]                              │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+### Ingredient Normalization
+
+Challenge: Recipe says "2 lbs chicken breast" but Instacart needs product search.
+
+```csharp
+public class GroceryItemMapper {
+    public string NormalizeForSearch(string ingredientText) {
+        // "2 lbs boneless skinless chicken breast, cut into cubes"
+        // → "chicken breast boneless skinless"
+        
+        // Remove quantities
+        // Remove preparations (diced, chopped, etc.)
+        // Keep key descriptors (boneless, organic, etc.)
+        
+        return normalizedSearchTerm;
+    }
+}
+```
+
+### Monetization
+
+- Instacart affiliate program: commission on orders
+- Potential for Instacart partnership (better integration, higher commission)
+- Premium feature: price comparison across services
+
+### Implementation Estimate
+
+- Backend: 6-8 hours
+- Frontend: 6-8 hours
+- Tests: 2-4 hours
+- **Total: 14-20 hours**
+
+---
+
 ## Summary: Total Estimates
+
+### Core Features
 
 | Feature | Backend | Frontend | Tests | Total |
 |---------|---------|----------|-------|-------|
@@ -1195,7 +2318,24 @@ POST /api/recipes/{id}/cooking-data
 | Export | 6-8h | 2-4h | 2-3h | 10-15h |
 | Voice/Cooking Mode | 4-6h | 32-40h | 6-10h | 42-56h |
 
-**Grand Total: 232-319 hours** (roughly 6-8 weeks of focused development)
+**Core Features Subtotal: 232-319 hours**
+
+### Additional Features
+
+| Feature | Backend | Frontend | Tests | Total |
+|---------|---------|----------|-------|-------|
+| Collections/Cookbooks | 6-8h | 8-12h | 3-4h | 17-24h |
+| Dietary Profiles | 10-14h | 10-14h | 4-6h | 24-34h |
+| Cooking History & Stats | 8-12h | 12-16h | 4-6h | 24-34h |
+| AI Recipe Generation | 8-12h | 10-14h | 4-6h | 22-32h |
+| Kitchen Equipment | 8-10h | 8-10h | 3-4h | 19-24h |
+| Grocery Delivery | 6-8h | 6-8h | 2-4h | 14-20h |
+
+**Additional Features Subtotal: 120-168 hours**
+
+---
+
+**Grand Total: 352-487 hours** (~9-12 weeks of focused development)
 
 ---
 
@@ -1206,15 +2346,35 @@ Recipe Forking
      │
      ├──► Smart Substitutions (requires fork to save)
      │
-     └──► Social Circles (fork shared recipes)
+     ├──► Social Circles (fork shared recipes)
+     │
+     └──► AI Recipe Generation (save as fork)
 
 Pantry ◄── Shopping Suggestions
   │
-  └──► "What Can I Make?" filter
+  ├──► "What Can I Make?" filter
+  │
+  └──► Grocery Delivery (shop for missing items)
 
 Browser Extension ──► Batch Import (uses same parsing)
 
 Cooking Mode ◄── Voice Control (optional enhancement)
+     │
+     └──► Cooking History (auto-log when completing cook)
+
+Dietary Profiles
+     │
+     ├──► Recipe filtering (everywhere)
+     │
+     ├──► Smart Substitutions (auto-suggest for restrictions)
+     │
+     └──► AI Recipe Generation (respect constraints)
+
+Collections ──► Social Circles (share collections to circles)
+
+Kitchen Equipment ──► Recipe filtering
+     │
+     └──► AI Recipe Generation (respect equipment constraints)
 ```
 
 ---
