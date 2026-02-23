@@ -160,12 +160,12 @@
 
   .option-ingredients {
     font-size: 0.9rem;
-    color: rgba(0, 0, 0, 0.7);
+    opacity: 0.85; // Use opacity for theme-neutral dimming
     margin-bottom: 8px;
     line-height: 1.5;
 
     strong {
-      color: rgba(0, 0, 0, 0.87);
+      opacity: 1; // Full opacity for quantities/numbers
     }
   }
 
@@ -175,7 +175,7 @@
     align-items: flex-start;
     gap: 6px;
     font-size: 0.85rem;
-    color: rgba(0, 0, 0, 0.6);
+    color: #424242; // Explicit dark text for light background
     margin-top: 8px;
     padding: 8px;
     background-color: #f5f5f5;
@@ -187,14 +187,20 @@
       height: 16px;
       margin-top: 2px;
       flex-shrink: 0;
+      color: #616161; // Dark icon color
     }
   }
 
   .option-technique {
     background-color: #fff3e0;
+    color: #e65100; // Dark orange text for technique box
 
     strong {
       margin-right: 4px;
+    }
+
+    mat-icon {
+      color: #e65100;
     }
   }
 
@@ -202,12 +208,18 @@
   &:last-child {
     margin-top: 8px;
     padding-top: 8px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid rgba(128, 128, 128, 0.3); // Theme-neutral border
 
     .option-notes {
       background-color: transparent;
+      color: inherit; // Inherit from theme for transparent background
       padding: 0;
       font-style: italic;
+
+      mat-icon {
+        color: inherit;
+        opacity: 0.6;
+      }
     }
   }
 }
