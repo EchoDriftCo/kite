@@ -24,7 +24,7 @@ mat-dialog-content {
   }
 
   .instructions {
-    color: rgba(0, 0, 0, 0.7);
+    opacity: 0.7; // Theme-aware dimming
     margin-bottom: 24px;
   }
 
@@ -38,15 +38,17 @@ mat-dialog-content {
     align-items: center;
     gap: 8px;
     padding: 12px;
-    background-color: #ffebee;
+    background-color: rgba(244, 67, 54, 0.15); // Semi-transparent red - works in both themes
+    border: 1px solid rgba(244, 67, 54, 0.3);
     border-radius: 4px;
     margin-bottom: 16px;
-    color: #c62828;
+    color: inherit; // Theme-aware text
 
     mat-icon {
       font-size: 20px;
       width: 20px;
       height: 20px;
+      color: #ef5350; // Bright red - visible on both themes
     }
   }
 
@@ -175,7 +177,8 @@ mat-dialog-content {
   }
 
   .tips {
-    background-color: #e3f2fd;
+    background-color: rgba(25, 118, 210, 0.15); // Semi-transparent blue - works in both themes
+    border: 1px solid rgba(25, 118, 210, 0.3);
     padding: 16px;
     border-radius: 8px;
     margin-top: 24px;
@@ -187,12 +190,13 @@ mat-dialog-content {
       margin: 0 0 12px;
       font-size: 0.875rem;
       font-weight: 600;
-      color: #1976d2;
+      color: inherit; // Theme-aware text
 
       mat-icon {
         font-size: 18px;
         width: 18px;
         height: 18px;
+        color: #42a5f5; // Bright blue - visible on both themes
       }
     }
 
@@ -202,11 +206,12 @@ mat-dialog-content {
       
       li {
         font-size: 0.875rem;
-        color: rgba(0, 0, 0, 0.7);
+        opacity: 0.85; // Theme-aware dimming
         margin-bottom: 6px;
 
         strong {
           font-weight: 600;
+          opacity: 1; // Full opacity for emphasis
         }
 
         &:last-child {

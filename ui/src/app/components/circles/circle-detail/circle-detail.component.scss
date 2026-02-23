@@ -14,9 +14,14 @@
     align-items: center;
     gap: 8px;
     padding: 16px;
-    background-color: #ffebee;
-    color: #c62828;
+    background-color: rgba(244, 67, 54, 0.15); // Semi-transparent red - works in both themes
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    color: inherit; // Theme-aware text
     border-radius: 4px;
+
+    mat-icon {
+      color: #ef5350; // Bright red - visible on both themes
+    }
   }
 
   .header {
@@ -155,8 +160,9 @@
               padding: 2px 8px;
               border-radius: 12px;
               font-size: 12px;
-              background-color: #fff3e0;
-              color: #f57c00;
+              background-color: rgba(255, 152, 0, 0.15); // Semi-transparent orange - works in both themes
+              border: 1px solid rgba(255, 152, 0, 0.3);
+              color: #ffa726; // Bright orange - visible on both themes
             }
           }
         }
