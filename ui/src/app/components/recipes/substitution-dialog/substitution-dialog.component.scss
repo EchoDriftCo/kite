@@ -16,7 +16,7 @@
 
   mat-dialog-actions {
     padding: 16px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid rgba(128, 128, 128, 0.3); // Theme-neutral border
   }
 }
 
@@ -31,7 +31,7 @@
   .hint {
     margin-top: 0;
     margin-bottom: 24px;
-    color: rgba(0, 0, 0, 0.6);
+    opacity: 0.7; // Use opacity instead of hardcoded color for theme compatibility
     font-size: 0.9rem;
   }
 }
@@ -55,7 +55,7 @@
   max-height: 300px;
   overflow-y: auto;
   padding: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid rgba(128, 128, 128, 0.3); // Theme-neutral border
   border-radius: 4px;
 
   .ingredient-checkbox {
@@ -221,6 +221,7 @@
   background-color: #e8f5e9;
   border-radius: 4px;
   margin-bottom: 24px;
+  color: #1b5e20; // Explicit dark text for green background
 
   mat-icon {
     color: #388e3c;
@@ -236,7 +237,7 @@
     p {
       margin: 0;
       font-size: 0.95rem;
-      color: rgba(0, 0, 0, 0.87);
+      color: #1b5e20; // Explicit dark text
     }
   }
 }
@@ -295,6 +296,7 @@
   background-color: #ffebee;
   border-radius: 4px;
   margin-top: 16px;
+  color: #b71c1c; // Explicit dark text for red background
 
   mat-icon {
     color: #c62828;
@@ -306,7 +308,7 @@
   span {
     flex: 1;
     font-size: 0.9rem;
-    color: #c62828;
+    color: #b71c1c; // Explicit dark text
   }
 }
 
