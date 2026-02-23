@@ -208,8 +208,15 @@ namespace RecipeVault.DomainService {
 
             // Validate all selections now have the required data
             foreach (var selection in selections) {
-                if (selection.SelectedOption == null || selection.SelectedOption.Ingredients == null || selection.SelectedOption.Ingredients.Count == 0) {
-                    throw new ArgumentException($"Selection for ingredient index {selection.IngredientIndex} is missing substitution data");
+                if (selection.SelectedOption == null) {
+                    throw new ArgumentException(
+                        $"Selection for ingredient index {selection.IngredientIndex} is missing substitution data. " +
+                        $"OptionIndex={selection.OptionIndex}. The substitution cache may have expired - please try again.");
+                }
+                if (selection.SelectedOption.Ingredients == null || selection.SelectedOption.Ingredients.Count == 0) {
+                    throw new ArgumentException(
+                        $"Selection for ingredient index {selection.IngredientIndex} has no substitute ingredients defined. " +
+                        $"Option='{selection.SelectedOption.Name}'. This may be a data issue - please select a different option.");
                 }
             }
 
