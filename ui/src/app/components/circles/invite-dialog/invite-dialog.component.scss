@@ -1,0 +1,59 @@
+mat-dialog-content {
+  min-width: 450px;
+  padding: 16px 24px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.invite-section {
+  padding: 20px 0;
+
+  h3 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .help-text {
+    color: #757575;
+    font-size: 14px;
+    margin: 0 0 16px 0;
+  }
+
+  form {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+
+    mat-form-field {
+      flex: 1;
+    }
+
+    button {
+      margin-top: 8px;
+    }
+  }
+
+  .invite-link-container {
+    .expiry-note {
+      color: #9e9e9e;
+      font-size: 12px;
+      margin: 4px 0 0 0;
+    }
+  }
+}
+
+mat-divider {
+  margin: 8px 0;
+}
+
+.error-message {
+  padding: 12px;
+  background-color: #ffebee;
+  color: #c62828;
+  border-radius: 4px;
+  margin-top: 16px;
+  font-size: 14px;
+}

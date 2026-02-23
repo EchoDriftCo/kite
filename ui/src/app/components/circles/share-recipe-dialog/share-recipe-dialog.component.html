@@ -1,0 +1,52 @@
+<h2 mat-dialog-title>Share "{{ data.recipeTitle }}"</h2>
+
+<mat-dialog-content>
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-message">
+      {{ error }}
+    </div>
+  }
+
+  @if (!loading && !error) {
+    @if (circles.length === 0) {
+      <div class="empty-state">
+        <p>You don't have any circles yet. Create a circle first to share recipes.</p>
+      </div>
+    } @else {
+      <div class="circles-list">
+        <p class="help-text">Select circles to share this recipe with:</p>
+        @for (circle of circles; track circle.circleResourceId) {
+          <div class="circle-item">
+            <mat-checkbox 
+              [checked]="isSelected(circle.circleResourceId)"
+              (change)="toggleCircle(circle.circleResourceId)">
+              <div class="circle-info">
+                <div class="circle-name">{{ circle.name }}</div>
+                @if (circle.description) {
+                  <div class="circle-description">{{ circle.description }}</div>
+                }
+              </div>
+            </mat-checkbox>
+          </div>
+        }
+      </div>
+    }
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="saving">Cancel</button>
+  <button 
+    mat-raised-button 
+    color="primary" 
+    (click)="onShare()" 
+    [disabled]="selectedCircleIds.size === 0 || saving || circles.length === 0">
+    {{ saving ? 'Sharing...' : 'Share' }}
+  </button>
+</mat-dialog-actions>

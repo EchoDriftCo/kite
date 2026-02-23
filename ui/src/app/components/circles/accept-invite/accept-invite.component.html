@@ -1,0 +1,66 @@
+<div class="accept-invite-container">
+  <mat-card class="invite-card">
+    @if (loading) {
+      <mat-card-content>
+        <div class="loading-state">
+          <mat-spinner diameter="48"></mat-spinner>
+          <p>Loading invitation...</p>
+        </div>
+      </mat-card-content>
+    }
+
+    @if (!loading && error) {
+      <mat-card-content>
+        <div class="error-state">
+          <mat-icon>error_outline</mat-icon>
+          <h2>Unable to Accept Invitation</h2>
+          <p>{{ error }}</p>
+          <button mat-raised-button color="primary" (click)="goToCircles()">
+            Go to My Circles
+          </button>
+        </div>
+      </mat-card-content>
+    }
+
+    @if (!loading && !error && invite && !success) {
+      <mat-card-header>
+        <mat-icon mat-card-avatar>group_add</mat-icon>
+        <mat-card-title>Circle Invitation</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="invite-details">
+          <p class="invite-message">
+            <strong>{{ invite.invitedByEmail }}</strong> has invited you to join:
+          </p>
+          <h2 class="circle-name">{{ invite.circleName }}</h2>
+          <p class="help-text">
+            By accepting, you'll be able to view and share recipes with members of this circle.
+          </p>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="acceptInvite()"
+          [disabled]="accepting">
+          {{ accepting ? 'Accepting...' : 'Accept Invitation' }}
+        </button>
+        <button mat-button (click)="goToCircles()">
+          Maybe Later
+        </button>
+      </mat-card-actions>
+    }
+
+    @if (success) {
+      <mat-card-content>
+        <div class="success-state">
+          <mat-icon>check_circle</mat-icon>
+          <h2>Welcome!</h2>
+          <p>You've successfully joined the circle.</p>
+          <p class="redirect-message">Redirecting to circle...</p>
+        </div>
+      </mat-card-content>
+    }
+  </mat-card>
+</div>

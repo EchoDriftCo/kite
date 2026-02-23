@@ -1,0 +1,117 @@
+<div class="circle-detail-container">
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-message">
+      <mat-icon>error</mat-icon>
+      {{ error }}
+      <button mat-button (click)="goBack()">Go Back</button>
+    </div>
+  }
+
+  @if (!loading && !error && circle) {
+    <div class="header">
+      <button mat-icon-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title-section">
+        <h1>{{ circle.name }}</h1>
+        @if (circle.description) {
+          <p class="description">{{ circle.description }}</p>
+        }
+      </div>
+      <div class="actions">
+        @if (canEdit()) {
+          <button mat-button [matMenuTriggerFor]="menu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="openEditDialog()">
+              <mat-icon>edit</mat-icon>
+              <span>Edit Circle</span>
+            </button>
+            <button mat-menu-item (click)="deleteCircle()">
+              <mat-icon>delete</mat-icon>
+              <span>Delete Circle</span>
+            </button>
+          </mat-menu>
+        } @else {
+          <button mat-button (click)="leaveCircle()">
+            <mat-icon>exit_to_app</mat-icon>
+            Leave Circle
+          </button>
+        }
+      </div>
+    </div>
+
+    <mat-tab-group>
+      <mat-tab label="Recipes ({{ recipes.length }})">
+        <div class="tab-content">
+          @if (recipes.length === 0) {
+            <div class="empty-state">
+              <mat-icon>restaurant_menu</mat-icon>
+              <p>No recipes shared yet</p>
+            </div>
+          } @else {
+            <div class="recipes-grid">
+              @for (recipe of recipes; track recipe.circleRecipeResourceId) {
+                <mat-card class="recipe-card" (click)="viewRecipe(recipe)">
+                  @if (recipe.recipeImageUrl) {
+                    <img mat-card-image [src]="recipe.recipeImageUrl" [alt]="recipe.recipeTitle">
+                  }
+                  <mat-card-content>
+                    <h3>{{ recipe.recipeTitle }}</h3>
+                    <p class="shared-by">
+                      Shared by {{ recipe.sharedByEmail }}
+                    </p>
+                  </mat-card-content>
+                </mat-card>
+              }
+            </div>
+          }
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Members ({{ members.length }})">
+        <div class="tab-content">
+          <div class="members-header">
+            @if (canManageMembers()) {
+              <button mat-raised-button color="primary" (click)="openInviteDialog()">
+                <mat-icon>person_add</mat-icon>
+                Invite Members
+              </button>
+            }
+          </div>
+
+          <div class="members-list">
+            @for (member of members; track member.circleMemberResourceId) {
+              <div class="member-item">
+                <mat-icon class="member-avatar">account_circle</mat-icon>
+                <div class="member-info">
+                  <div class="member-email">{{ member.userEmail || 'Unknown' }}</div>
+                  <div class="member-status">
+                    <span class="role-badge" [class]="'role-' + member.role.toLowerCase()">
+                      {{ member.role }}
+                    </span>
+                    @if (member.status === 'Pending') {
+                      <span class="status-badge">Pending</span>
+                    }
+                  </div>
+                </div>
+                @if (canManageMembers() && member.role !== 'Owner') {
+                  <button mat-icon-button (click)="removeMember(member)">
+                    <mat-icon>remove_circle_outline</mat-icon>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  }
+</div>

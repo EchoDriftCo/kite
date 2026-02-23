@@ -1,0 +1,63 @@
+<h2 mat-dialog-title>Invite to "{{ data.circle.name }}"</h2>
+
+<mat-dialog-content>
+  <div class="invite-section">
+    <h3>Invite by Email</h3>
+    <form [formGroup]="emailForm" (ngSubmit)="sendEmailInvite()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email Address</mat-label>
+        <input matInput formControlName="email" placeholder="friend@example.com" type="email">
+        @if (emailForm.get('email')?.hasError('required') && emailForm.get('email')?.touched) {
+          <mat-error>Email is required</mat-error>
+        }
+        @if (emailForm.get('email')?.hasError('email')) {
+          <mat-error>Please enter a valid email</mat-error>
+        }
+      </mat-form-field>
+      <button 
+        mat-raised-button 
+        color="primary" 
+        type="submit"
+        [disabled]="emailForm.invalid || sendingEmail">
+        {{ sendingEmail ? 'Sending...' : 'Send Invite' }}
+      </button>
+    </form>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="invite-section">
+    <h3>Or Share Link</h3>
+    <p class="help-text">Anyone with this link can join the circle</p>
+    
+    @if (!inviteLink) {
+      <button 
+        mat-stroked-button 
+        (click)="generateInviteLink()"
+        [disabled]="generatingLink">
+        {{ generatingLink ? 'Generating...' : 'Generate Invite Link' }}
+      </button>
+    } @else {
+      <div class="invite-link-container">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Invite Link</mat-label>
+          <input matInput [value]="inviteLink" readonly>
+          <button mat-icon-button matSuffix (click)="copyInviteLink()">
+            <mat-icon>content_copy</mat-icon>
+          </button>
+        </mat-form-field>
+        <p class="expiry-note">Link expires in 7 days</p>
+      </div>
+    }
+  </div>
+
+  @if (error) {
+    <div class="error-message">
+      {{ error }}
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onClose()">Close</button>
+</mat-dialog-actions>

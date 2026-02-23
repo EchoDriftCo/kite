@@ -1,0 +1,26 @@
+.full-width {
+  width: 100%;
+}
+
+mat-dialog-content {
+  min-width: 400px;
+  padding-top: 16px;
+}
+
+.error-message {
+  padding: 12px;
+  background-color: #ffebee;
+  color: #c62828;
+  border-radius: 4px;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+mat-dialog-actions {
+  padding: 16px 24px;
+
+  button mat-spinner {
+    display: inline-block;
+    vertical-align: middle;
+  }
+}

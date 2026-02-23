@@ -1,0 +1,59 @@
+mat-dialog-content {
+  min-width: 400px;
+  min-height: 200px;
+  padding: 16px 24px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.error-message {
+  padding: 12px;
+  background-color: #ffebee;
+  color: #c62828;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: #757575;
+}
+
+.circles-list {
+  .help-text {
+    color: #616161;
+    margin: 0 0 16px 0;
+    font-size: 14px;
+  }
+
+  .circle-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    mat-checkbox {
+      width: 100%;
+    }
+
+    .circle-info {
+      .circle-name {
+        font-weight: 500;
+        margin-bottom: 2px;
+      }
+
+      .circle-description {
+        color: #757575;
+        font-size: 12px;
+      }
+    }
+  }
+}

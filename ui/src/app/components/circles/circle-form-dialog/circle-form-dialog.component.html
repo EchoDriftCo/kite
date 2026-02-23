@@ -1,0 +1,49 @@
+<h2 mat-dialog-title>{{ data.isEdit ? 'Edit Circle' : 'Create Circle' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Circle Name</mat-label>
+      <input matInput formControlName="name" placeholder="Family Recipes" required>
+      @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+        <mat-error>Name is required</mat-error>
+      }
+      @if (form.get('name')?.hasError('maxlength')) {
+        <mat-error>Name must be 100 characters or less</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description (optional)</mat-label>
+      <textarea 
+        matInput 
+        formControlName="description" 
+        placeholder="Share family favorites and new discoveries"
+        rows="3"></textarea>
+      @if (form.get('description')?.hasError('maxlength')) {
+        <mat-error>Description must be 500 characters or less</mat-error>
+      }
+    </mat-form-field>
+
+    @if (error) {
+      <div class="error-message">
+        {{ error }}
+      </div>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="loading">Cancel</button>
+  <button 
+    mat-raised-button 
+    color="primary" 
+    (click)="onSubmit()" 
+    [disabled]="form.invalid || loading">
+    @if (loading) {
+      <mat-spinner diameter="20"></mat-spinner>
+    } @else {
+      {{ data.isEdit ? 'Save Changes' : 'Create Circle' }}
+    }
+  </button>
+</mat-dialog-actions>

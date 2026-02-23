@@ -23,6 +23,7 @@ import {
   SubstitutionDialogData,
   SubstitutionDialogResult
 } from '../substitution-dialog/substitution-dialog.component';
+import { ShareRecipeDialogComponent } from '../../circles/share-recipe-dialog/share-recipe-dialog.component';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -280,6 +281,24 @@ export class RecipeDetailComponent implements OnInit {
         this.snackBar.open('Substitutions applied! Opening new recipe...', 'OK', { duration: 3000 });
         // Navigate to the forked recipe
         this.router.navigate(['/recipes', result.forkedRecipeId]);
+      }
+    });
+  }
+
+  shareToCircles() {
+    if (!this.recipeId || !this.recipe) return;
+
+    const dialogRef = this.dialog.open(ShareRecipeDialogComponent, {
+      width: '500px',
+      data: {
+        recipeId: this.recipeId,
+        recipeTitle: this.recipe.title
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.snackBar.open('Recipe shared to circles!', 'Close', { duration: 3000 });
       }
     });
   }
