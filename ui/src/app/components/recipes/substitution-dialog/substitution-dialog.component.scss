@@ -80,13 +80,14 @@
   align-items: center;
   gap: 8px;
   padding: 12px;
-  background-color: #e3f2fd;
+  background-color: rgba(25, 118, 210, 0.15); // Semi-transparent blue - works in both themes
+  border: 1px solid rgba(25, 118, 210, 0.3);
   border-radius: 4px;
   margin-top: 16px;
-  color: #0d47a1; // Explicit dark text for colored background
+  color: inherit; // Inherit from theme
 
   mat-icon {
-    color: #1976d2;
+    color: #42a5f5; // Brighter blue that's visible on both light and dark
     font-size: 20px;
     width: 20px;
     height: 20px;
@@ -94,7 +95,7 @@
 
   span {
     font-size: 0.9rem;
-    color: #0d47a1; // Explicit dark text
+    color: inherit; // Inherit from theme
   }
 }
 
