@@ -1,6 +1,6 @@
 <div class="import-dialog">
   <h2 mat-dialog-title>
-    <mat-icon>{{ activeTab === 'url' ? 'link' : 'photo_camera' }}</mat-icon>
+    <mat-icon>{{ activeTab === 'url' ? 'link' : activeTab === 'paprika' ? 'upload_file' : 'photo_camera' }}</mat-icon>
     Import Recipe
   </h2>
 
@@ -126,6 +126,73 @@
           </div>
         </div>
       </mat-tab>
+
+      <!-- Paprika Tab -->
+      <mat-tab label="From Paprika">
+        <div class="tab-content">
+          <p class="instructions">
+            Import recipes from Paprika Recipe Manager. Export your recipes from Paprika as a .paprikarecipes file.
+          </p>
+
+          @if (!paprikaFile) {
+            <div
+              class="drop-zone"
+              [class.drag-over]="paprikaDragOver"
+              (drop)="onPaprikaFileDrop($event)"
+              (dragover)="onPaprikaDragOver($event)"
+              (dragleave)="onPaprikaDragLeave($event)">
+
+              <mat-icon class="upload-icon">upload_file</mat-icon>
+
+              <p class="drop-text">
+                <strong>Drag & drop</strong> your .paprikarecipes file here, or
+              </p>
+
+              <label for="paprika-file-input" class="file-button">
+                <button mat-raised-button color="primary" type="button" onclick="document.getElementById('paprika-file-input').click()">
+                  <mat-icon>folder_open</mat-icon>
+                  Choose File
+                </button>
+              </label>
+
+              <input
+                id="paprika-file-input"
+                type="file"
+                accept=".paprikarecipes"
+                (change)="onPaprikaFileSelected($event)"
+                style="display: none">
+
+              <p class="file-info">Accepts: .paprikarecipes files (max 50MB)</p>
+            </div>
+          } @else {
+            <div class="file-preview">
+              <div class="file-info-card">
+                <mat-icon class="file-icon">description</mat-icon>
+                <div class="file-details">
+                  <p class="file-name">{{ paprikaFile.name }}</p>
+                  <p class="file-size">{{ (paprikaFile.size / 1024).toFixed(1) }} KB</p>
+                </div>
+                <button mat-icon-button (click)="clearPaprikaFile()" [disabled]="loading" matTooltip="Remove file">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+          }
+
+          <div class="tips">
+            <h4>
+              <mat-icon>lightbulb</mat-icon>
+              How to export from Paprika:
+            </h4>
+            <ul>
+              <li><strong>iOS/Mac:</strong> Go to Settings → Export Recipes → Select recipes → Export</li>
+              <li><strong>Android:</strong> Menu → Export Recipes → Choose recipes → Save</li>
+              <li>All recipes will be imported as private (not visible to others)</li>
+              <li>Categories from Paprika will be converted to tags</li>
+            </ul>
+          </div>
+        </div>
+      </mat-tab>
     </mat-tab-group>
   </mat-dialog-content>
 
@@ -147,12 +214,12 @@
       @if (loading) {
         <ng-container>
           <mat-spinner diameter="20"></mat-spinner>
-          <span>{{ activeTab === 'url' ? 'Fetching recipe...' : 'Analyzing image...' }}</span>
+          <span>{{ activeTab === 'url' ? 'Fetching recipe...' : activeTab === 'paprika' ? 'Importing recipes...' : 'Analyzing image...' }}</span>
         </ng-container>
       } @else {
         <ng-container>
-          <mat-icon>auto_fix_high</mat-icon>
-          <span>Import Recipe</span>
+          <mat-icon>{{ activeTab === 'paprika' ? 'upload' : 'auto_fix_high' }}</mat-icon>
+          <span>{{ activeTab === 'paprika' ? 'Import Recipes' : 'Import Recipe' }}</span>
         </ng-container>
       }
     </button>

@@ -120,3 +120,21 @@ export interface ParsedInstruction {
   instruction: string;
   rawText?: string;
 }
+
+export interface ImportedRecipe {
+  recipeResourceId: string;
+  title: string;
+}
+
+export interface ImportError {
+  recipeName: string;
+  errorMessage: string;
+}
+
+export interface PaprikaImportResult {
+  totalRecipes: number;
+  successCount: number;
+  failureCount: number;
+  importedRecipes: ImportedRecipe[];
+  errors: ImportError[];
+}

@@ -8,7 +8,8 @@ import {
   RecipeSearchRequest,
   PagedResult,
   ParseRecipeRequest,
-  ParseRecipeResponse
+  ParseRecipeResponse,
+  PaprikaImportResult
 } from '../models/recipe.model';
 import { AssignTagsRequest } from '../models/tag.model';
 
@@ -153,5 +154,15 @@ export class RecipeService {
 
   getSharedRecipe(token: string): Observable<Recipe> {
     return this.api.get<Recipe>(`${this.endpoint}/shared/${token}`);
+  }
+
+  /**
+   * Import recipes from Paprika (.paprikarecipes file)
+   */
+  importFromPaprika(file: File): Observable<PaprikaImportResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    return this.api.post<PaprikaImportResult>('import/paprika', formData);
   }
 }

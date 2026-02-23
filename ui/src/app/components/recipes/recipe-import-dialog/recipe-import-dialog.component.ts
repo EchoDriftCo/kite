@@ -22,6 +22,7 @@ export interface ImportResult {
   imageData?: string;
   imageMimeType?: string;
   sourceUrl?: string;
+  paprikaResult?: any;
 }
 
 @Component({
@@ -47,7 +48,7 @@ export interface ImportResult {
 export class RecipeImportDialogComponent {
   loading = false;
   error = '';
-  activeTab: 'image' | 'url' = 'image';
+  activeTab: 'image' | 'url' | 'paprika' = 'image';
 
   // Image tab state
   selectedFile: File | null = null;
@@ -61,13 +62,23 @@ export class RecipeImportDialogComponent {
   // URL tab state
   recipeUrl = '';
 
+  // Paprika tab state
+  paprikaFile: File | null = null;
+  paprikaDragOver = false;
+
   constructor(
     private dialogRef: MatDialogRef<RecipeImportDialogComponent>,
     private recipeService: RecipeService
   ) {}
 
   onTabChange(index: number) {
-    this.activeTab = index === 0 ? 'image' : 'url';
+    if (index === 0) {
+      this.activeTab = 'image';
+    } else if (index === 1) {
+      this.activeTab = 'url';
+    } else {
+      this.activeTab = 'paprika';
+    }
     this.error = '';
   }
 
@@ -158,12 +169,15 @@ export class RecipeImportDialogComponent {
   get isImportDisabled(): boolean {
     if (this.loading) return true;
     if (this.activeTab === 'image') return !this.selectedFile;
-    return !this.recipeUrl.trim();
+    if (this.activeTab === 'url') return !this.recipeUrl.trim();
+    return !this.paprikaFile;
   }
 
   async importRecipe() {
     if (this.activeTab === 'url') {
       await this.importFromUrl();
+    } else if (this.activeTab === 'paprika') {
+      await this.importFromPaprika();
     } else {
       await this.importFromImage();
     }
@@ -277,5 +291,86 @@ export class RecipeImportDialogComponent {
       reader.onerror = error => reject(error);
       reader.readAsDataURL(file);
     });
+  }
+
+  // Paprika import methods
+  onPaprikaFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.handlePaprikaFile(input.files[0]);
+    }
+  }
+
+  onPaprikaFileDrop(event: DragEvent) {
+    event.preventDefault();
+    this.paprikaDragOver = false;
+
+    const files = event.dataTransfer?.files;
+    if (files && files[0]) {
+      this.handlePaprikaFile(files[0]);
+    }
+  }
+
+  onPaprikaDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.paprikaDragOver = true;
+  }
+
+  onPaprikaDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.paprikaDragOver = false;
+  }
+
+  handlePaprikaFile(file: File) {
+    // Validate file extension
+    if (!file.name.toLowerCase().endsWith('.paprikarecipes')) {
+      this.error = 'Please select a .paprikarecipes file';
+      return;
+    }
+
+    // Validate file size (max 50MB - Paprika files can be large with images)
+    if (file.size > 50 * 1024 * 1024) {
+      this.error = 'File must be less than 50MB';
+      return;
+    }
+
+    this.paprikaFile = file;
+    this.error = '';
+  }
+
+  clearPaprikaFile() {
+    this.paprikaFile = null;
+    this.error = '';
+  }
+
+  private async importFromPaprika() {
+    if (!this.paprikaFile) {
+      this.error = 'Please select a Paprika file';
+      return;
+    }
+
+    this.loading = true;
+    this.error = '';
+
+    try {
+      const result = await this.recipeService.importFromPaprika(this.paprikaFile).toPromise();
+
+      if (!result) {
+        throw new Error('Failed to import recipes from Paprika file');
+      }
+
+      // Close dialog with Paprika import result
+      const importResult: ImportResult = {
+        success: true,
+        paprikaResult: result
+      };
+
+      this.dialogRef.close(importResult);
+
+    } catch (err: any) {
+      this.error = err.error?.message || err.message || 'Failed to import from Paprika file. Please try again.';
+      this.loading = false;
+      console.error('Paprika import error:', err);
+    }
   }
 }

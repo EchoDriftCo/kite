@@ -307,7 +307,26 @@ export class RecipeFormComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe((result: ImportResult) => {
-      if (result?.success && result.parsedData) {
+      if (!result?.success) return;
+
+      // Handle Paprika import (batch import of multiple recipes)
+      if (result.paprikaResult) {
+        const paprikaResult = result.paprikaResult;
+        if (paprikaResult.successCount > 0) {
+          // Navigate to recipes list and show success message
+          this.router.navigate(['/recipes']).then(() => {
+            // Could show a toast/snackbar here with import summary
+            console.log(`Successfully imported ${paprikaResult.successCount} recipes`);
+            if (paprikaResult.failureCount > 0) {
+              console.warn(`Failed to import ${paprikaResult.failureCount} recipes`, paprikaResult.errors);
+            }
+          });
+        }
+        return;
+      }
+
+      // Handle single recipe import (Image/URL)
+      if (result.parsedData) {
         this.populateFromParsedData(result.parsedData);
 
         // Store image data for upload on save

@@ -130,6 +130,50 @@ mat-dialog-content {
     }
   }
 
+  .file-preview {
+    margin: 16px 0;
+
+    .file-info-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+
+      .file-icon {
+        font-size: 36px;
+        width: 36px;
+        height: 36px;
+        color: var(--primary-color, #3f51b5);
+      }
+
+      .file-details {
+        flex: 1;
+
+        .file-name {
+          margin: 0 0 4px;
+          font-weight: 500;
+          color: rgba(0, 0, 0, 0.87);
+          word-break: break-word;
+        }
+
+        .file-size {
+          margin: 0;
+          font-size: 0.75rem;
+          color: rgba(0, 0, 0, 0.6);
+        }
+      }
+
+      button {
+        mat-icon {
+          margin: 0;
+        }
+      }
+    }
+  }
+
   .tips {
     background-color: #e3f2fd;
     padding: 16px;
@@ -160,6 +204,10 @@ mat-dialog-content {
         font-size: 0.875rem;
         color: rgba(0, 0, 0, 0.7);
         margin-bottom: 6px;
+
+        strong {
+          font-weight: 600;
+        }
 
         &:last-child {
           margin-bottom: 0;
