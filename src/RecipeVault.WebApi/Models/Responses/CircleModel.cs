@@ -8,7 +8,7 @@ namespace RecipeVault.WebApi.Models.Responses {
         public Guid CircleResourceId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public int OwnerSubjectId { get; set; }
+        public Guid OwnerSubjectId { get; set; }
         public DateTime CreatedDate { get; set; }
         public List<CircleMemberModel> Members { get; set; }
         public List<CircleRecipeModel> SharedRecipes { get; set; }
@@ -17,7 +17,7 @@ namespace RecipeVault.WebApi.Models.Responses {
     }
 
     public class CircleMemberModel {
-        public int SubjectId { get; set; }
+        public Guid SubjectId { get; set; }
         public string Role { get; set; }
         public string Status { get; set; }
         public DateTime? JoinedDate { get; set; }
@@ -26,7 +26,7 @@ namespace RecipeVault.WebApi.Models.Responses {
     public class CircleRecipeModel {
         public Guid RecipeResourceId { get; set; }
         public string Title { get; set; }
-        public int SharedBySubjectId { get; set; }
+        public Guid SharedBySubjectId { get; set; }
         public DateTime SharedDate { get; set; }
     }
 

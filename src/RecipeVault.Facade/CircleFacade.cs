@@ -110,7 +110,7 @@ namespace RecipeVault.Facade {
             }
         }
 
-        public async Task RemoveMemberAsync(Guid circleResourceId, int subjectId) {
+        public async Task RemoveMemberAsync(Guid circleResourceId, Guid subjectId) {
             var lockName = GetLockName(circleResourceId);
 
             logger.LogDebug("Acquiring lock for {LockName}", lockName);

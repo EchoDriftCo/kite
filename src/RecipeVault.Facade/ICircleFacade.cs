@@ -16,7 +16,7 @@ namespace RecipeVault.Facade {
         Task<CircleInviteDto> InviteToCircleAsync(Guid circleResourceId, InviteToCircleDto dto);
         Task<CircleDto> AcceptInviteAsync(Guid inviteToken);
         Task<CircleInviteDto> GetInviteDetailsAsync(Guid inviteToken);
-        Task RemoveMemberAsync(Guid circleResourceId, int subjectId);
+        Task RemoveMemberAsync(Guid circleResourceId, Guid subjectId);
         Task LeaveCircleAsync(Guid circleResourceId);
         
         Task<CircleDto> ShareRecipeToCircleAsync(Guid circleResourceId, ShareRecipeToCircleDto dto);

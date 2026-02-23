@@ -11,7 +11,7 @@ namespace RecipeVault.Domain.Entities {
         protected CircleRecipe() {
         }
 
-        public CircleRecipe(int circleId, int recipeId, int sharedBySubjectId) {
+        public CircleRecipe(int circleId, int recipeId, Guid sharedBySubjectId) {
             CircleId = circleId;
             RecipeId = recipeId;
             SharedBySubjectId = sharedBySubjectId;
@@ -28,7 +28,7 @@ namespace RecipeVault.Domain.Entities {
         public int RecipeId { get; private set; }
         public virtual Recipe Recipe { get; private set; }
 
-        public int SharedBySubjectId { get; private set; }
+        public Guid SharedBySubjectId { get; private set; }
 
         public DateTime SharedDate { get; private set; }
     }

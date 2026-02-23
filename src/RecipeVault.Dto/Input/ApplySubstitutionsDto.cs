@@ -27,7 +27,12 @@ namespace RecipeVault.Dto.Input {
         public int IngredientIndex { get; set; }
 
         /// <summary>
-        /// The selected substitution option data
+        /// Index of the selected substitution option (preferred - more efficient)
+        /// </summary>
+        public int? OptionIndex { get; set; }
+
+        /// <summary>
+        /// The selected substitution option data (alternative to OptionIndex)
         /// </summary>
         public SubstitutionOptionDto SelectedOption { get; set; }
     }

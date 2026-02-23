@@ -19,6 +19,9 @@ namespace RecipeVault.DomainService.Tests {
         private readonly Mock<ISubjectPrincipal> mockSubjectPrincipal;
         private readonly CircleService service;
 
+        private static readonly Guid SubjectId1 = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        private static readonly Guid SubjectId2 = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
         public CircleServiceTests() {
             mockCircleRepository = new Mock<ICircleRepository>();
             mockRecipeRepository = new Mock<IRecipeRepository>();
@@ -26,7 +29,7 @@ namespace RecipeVault.DomainService.Tests {
             mockSubjectPrincipal = new Mock<ISubjectPrincipal>();
             
             // Default subject ID
-            mockSubjectPrincipal.Setup(x => x.SubjectId).Returns("1");
+            mockSubjectPrincipal.Setup(x => x.SubjectId).Returns(SubjectId1.ToString());
             
             service = new CircleService(
                 mockCircleRepository.Object,
@@ -55,7 +58,7 @@ namespace RecipeVault.DomainService.Tests {
             Assert.NotNull(result);
             Assert.Equal("Family Recipes", result.Name);
             Assert.Equal("Our family favorites", result.Description);
-            Assert.Equal(1, result.OwnerSubjectId);
+            Assert.Equal(SubjectId1, result.OwnerSubjectId);
             mockCircleRepository.Verify(x => x.AddAsync(It.IsAny<Circle>()), Times.Once);
         }
 
@@ -63,8 +66,8 @@ namespace RecipeVault.DomainService.Tests {
         public async Task GetCircleAsync_WhenUserIsMember_ShouldReturnCircle() {
             // Arrange
             var circleId = Guid.NewGuid();
-            var circle = new Circle("Test Circle", "Test", 1);
-            circle.AddMember(1, CircleRole.Owner, MemberStatus.Active);
+            var circle = new Circle("Test Circle", "Test", SubjectId1);
+            circle.AddMember(SubjectId1, CircleRole.Owner, MemberStatus.Active);
 
             mockCircleRepository
                 .Setup(x => x.GetAsync(circleId))
@@ -82,14 +85,14 @@ namespace RecipeVault.DomainService.Tests {
         public async Task GetCircleAsync_WhenUserIsNotMember_ShouldThrowException() {
             // Arrange
             var circleId = Guid.NewGuid();
-            var circle = new Circle("Test Circle", "Test", 2); // Different owner
-            circle.AddMember(2, CircleRole.Owner, MemberStatus.Active);
+            var circle = new Circle("Test Circle", "Test", SubjectId2); // Different owner
+            circle.AddMember(SubjectId2, CircleRole.Owner, MemberStatus.Active);
 
             mockCircleRepository
                 .Setup(x => x.GetAsync(circleId))
                 .ReturnsAsync(circle);
 
-            mockSubjectPrincipal.Setup(x => x.SubjectId).Returns("1"); // Different user
+            mockSubjectPrincipal.Setup(x => x.SubjectId).Returns(SubjectId1.ToString()); // Different user
 
             // Act & Assert
             await Assert.ThrowsAsync<CircleNotFoundException>(() => service.GetCircleAsync(circleId));
@@ -99,8 +102,8 @@ namespace RecipeVault.DomainService.Tests {
         public async Task InviteToCircleAsync_WhenUserIsOwner_ShouldCreateInvite() {
             // Arrange
             var circleId = Guid.NewGuid();
-            var circle = new Circle("Test Circle", "Test", 1);
-            circle.AddMember(1, CircleRole.Owner, MemberStatus.Active);
+            var circle = new Circle("Test Circle", "Test", SubjectId1);
+            circle.AddMember(SubjectId1, CircleRole.Owner, MemberStatus.Active);
 
             var inviteDto = new InviteToCircleDto {
                 InviteeEmail = "test@example.com"
@@ -123,9 +126,9 @@ namespace RecipeVault.DomainService.Tests {
         public async Task InviteToCircleAsync_WhenUserIsMember_ShouldThrowException() {
             // Arrange
             var circleId = Guid.NewGuid();
-            var circle = new Circle("Test Circle", "Test", 2);
-            circle.AddMember(2, CircleRole.Owner, MemberStatus.Active);
-            circle.AddMember(1, CircleRole.Member, MemberStatus.Active);
+            var circle = new Circle("Test Circle", "Test", SubjectId2);
+            circle.AddMember(SubjectId2, CircleRole.Owner, MemberStatus.Active);
+            circle.AddMember(SubjectId1, CircleRole.Member, MemberStatus.Active);
 
             var inviteDto = new InviteToCircleDto {
                 InviteeEmail = "test@example.com"
@@ -144,8 +147,8 @@ namespace RecipeVault.DomainService.Tests {
         public async Task DeleteCircleAsync_WhenUserIsOwner_ShouldDeleteCircle() {
             // Arrange
             var circleId = Guid.NewGuid();
-            var circle = new Circle("Test Circle", "Test", 1);
-            circle.AddMember(1, CircleRole.Owner, MemberStatus.Active);
+            var circle = new Circle("Test Circle", "Test", SubjectId1);
+            circle.AddMember(SubjectId1, CircleRole.Owner, MemberStatus.Active);
 
             mockCircleRepository
                 .Setup(x => x.GetAsync(circleId))
@@ -162,9 +165,9 @@ namespace RecipeVault.DomainService.Tests {
         public async Task DeleteCircleAsync_WhenUserIsNotOwner_ShouldThrowException() {
             // Arrange
             var circleId = Guid.NewGuid();
-            var circle = new Circle("Test Circle", "Test", 2); // Different owner
-            circle.AddMember(2, CircleRole.Owner, MemberStatus.Active);
-            circle.AddMember(1, CircleRole.Admin, MemberStatus.Active);
+            var circle = new Circle("Test Circle", "Test", SubjectId2); // Different owner
+            circle.AddMember(SubjectId2, CircleRole.Owner, MemberStatus.Active);
+            circle.AddMember(SubjectId1, CircleRole.Admin, MemberStatus.Active);
 
             mockCircleRepository
                 .Setup(x => x.GetAsync(circleId))

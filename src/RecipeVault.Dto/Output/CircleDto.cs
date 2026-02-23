@@ -6,7 +6,7 @@ namespace RecipeVault.Dto.Output {
         public Guid CircleResourceId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public int OwnerSubjectId { get; set; }
+        public Guid OwnerSubjectId { get; set; }
         public DateTime CreatedDate { get; set; }
         public List<CircleMemberDto> Members { get; set; }
         public List<CircleRecipeDto> SharedRecipes { get; set; }
@@ -15,7 +15,7 @@ namespace RecipeVault.Dto.Output {
     }
 
     public class CircleMemberDto {
-        public int SubjectId { get; set; }
+        public Guid SubjectId { get; set; }
         public string Role { get; set; }
         public string Status { get; set; }
         public DateTime? JoinedDate { get; set; }
@@ -24,7 +24,7 @@ namespace RecipeVault.Dto.Output {
     public class CircleRecipeDto {
         public Guid RecipeResourceId { get; set; }
         public string Title { get; set; }
-        public int SharedBySubjectId { get; set; }
+        public Guid SharedBySubjectId { get; set; }
         public DateTime SharedDate { get; set; }
     }
 

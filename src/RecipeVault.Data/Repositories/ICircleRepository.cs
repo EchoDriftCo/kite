@@ -12,6 +12,6 @@ namespace RecipeVault.Data.Repositories {
         Task RemoveAsync(Circle circle);
         Task<CircleInvite> GetInviteByTokenAsync(Guid inviteToken);
         Task<CircleRecipe> GetCircleRecipeAsync(int circleId, int recipeId);
-        Task<CircleMember> GetMemberAsync(int circleId, int subjectId);
+        Task<CircleMember> GetMemberAsync(int circleId, Guid subjectId);
     }
 }

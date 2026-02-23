@@ -16,7 +16,7 @@ namespace RecipeVault.Domain.Entities {
         protected Circle() {
         }
 
-        public Circle(string name, string description, int ownerSubjectId) {
+        public Circle(string name, string description, Guid ownerSubjectId) {
             CircleResourceId = Uuid.NewDatabaseFriendly(Database.SqlServer);
             members = new List<CircleMember>();
             sharedRecipes = new List<CircleRecipe>();
@@ -42,7 +42,7 @@ namespace RecipeVault.Domain.Entities {
         [StringLength(500)]
         public string Description { get; private set; }
 
-        public int OwnerSubjectId { get; private set; }
+        public Guid OwnerSubjectId { get; private set; }
 
         private readonly List<CircleMember> members = new();
         public virtual IReadOnlyList<CircleMember> Members => members;
@@ -62,7 +62,7 @@ namespace RecipeVault.Domain.Entities {
             Description = description;
         }
 
-        public CircleMember AddMember(int subjectId, CircleRole role, MemberStatus status) {
+        public CircleMember AddMember(Guid subjectId, CircleRole role, MemberStatus status) {
             var member = new CircleMember(CircleId, subjectId, role, status);
             members.Add(member);
             return member;
@@ -72,7 +72,7 @@ namespace RecipeVault.Domain.Entities {
             members.Remove(member);
         }
 
-        public CircleRecipe ShareRecipe(int recipeId, int sharedBySubjectId) {
+        public CircleRecipe ShareRecipe(int recipeId, Guid sharedBySubjectId) {
             // Check if already shared
             if (sharedRecipes.Exists(sr => sr.RecipeId == recipeId)) {
                 throw new InvalidOperationException("Recipe is already shared to this circle");
@@ -87,7 +87,7 @@ namespace RecipeVault.Domain.Entities {
             sharedRecipes.Remove(circleRecipe);
         }
 
-        public CircleInvite CreateInvite(string inviteeEmail, int invitedBySubjectId, DateTime expiresDate) {
+        public CircleInvite CreateInvite(string inviteeEmail, Guid invitedBySubjectId, DateTime expiresDate) {
             var invite = new CircleInvite(CircleId, inviteeEmail, invitedBySubjectId, expiresDate);
             invites.Add(invite);
             return invite;

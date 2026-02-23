@@ -219,6 +219,7 @@ namespace RecipeVault.WebApi.Mappers {
                 ForkTitle = model.ForkTitle,
                 Selections = model.Selections?.Select(s => new SubstitutionSelectionDto {
                     IngredientIndex = s.IngredientIndex,
+                    OptionIndex = s.OptionIndex,
                     SelectedOption = s.SelectedOption == null ? null : new SubstitutionOptionDto {
                         Name = s.SelectedOption.Name,
                         Notes = s.SelectedOption.Notes,

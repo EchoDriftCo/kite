@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Cortside.AspNetCore.Auditable.Entities;
 using Microsoft.EntityFrameworkCore;
 using RecipeVault.Domain.Enums;
 
@@ -11,7 +12,7 @@ namespace RecipeVault.Domain.Entities {
         protected CircleMember() {
         }
 
-        public CircleMember(int circleId, int subjectId, CircleRole role, MemberStatus status) {
+        public CircleMember(int circleId, Guid subjectId, CircleRole role, MemberStatus status) {
             CircleId = circleId;
             SubjectId = subjectId;
             Role = role;
@@ -27,7 +28,11 @@ namespace RecipeVault.Domain.Entities {
         public int CircleId { get; private set; }
         public virtual Circle Circle { get; private set; }
 
-        public int SubjectId { get; private set; }
+        /// <summary>
+        /// References Subject.SubjectId (Guid) - the user's resource identifier.
+        /// </summary>
+        public Guid SubjectId { get; private set; }
+        public virtual Subject Subject { get; private set; }
 
         public CircleRole Role { get; private set; }
 

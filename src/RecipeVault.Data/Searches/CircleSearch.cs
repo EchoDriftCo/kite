@@ -10,8 +10,8 @@ namespace RecipeVault.Data.Searches {
 
         public IQueryable<Circle> Build(IQueryable<Circle> entities) {
             if (SubjectId.HasValue) {
-                var subjectIdInt = int.Parse(SubjectId.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture);
-                entities = entities.Where(x => x.Members.Any(m => m.SubjectId == subjectIdInt));
+                // CircleMember.SubjectId is now Guid, matching Subject.SubjectId
+                entities = entities.Where(x => x.Members.Any(m => m.SubjectId == SubjectId.Value));
             }
 
             if (OwnedOnly.HasValue && OwnedOnly.Value && SubjectId.HasValue) {

@@ -150,7 +150,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// <param name="subjectId">the subject id of the member to remove</param>
         [HttpDelete("{id}/members/{subjectId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> RemoveMemberAsync(Guid id, int subjectId) {
+        public async Task<IActionResult> RemoveMemberAsync(Guid id, Guid subjectId) {
             using (LogContext.PushProperty("CircleResourceId", id)) {
                 await facade.RemoveMemberAsync(id, subjectId).ConfigureAwait(false);
                 return StatusCode((int)HttpStatusCode.NoContent);

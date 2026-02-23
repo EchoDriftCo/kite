@@ -13,7 +13,7 @@ namespace RecipeVault.Domain.Entities {
         protected CircleInvite() {
         }
 
-        public CircleInvite(int circleId, string inviteeEmail, int invitedBySubjectId, DateTime expiresDate) {
+        public CircleInvite(int circleId, string inviteeEmail, Guid invitedBySubjectId, DateTime expiresDate) {
             InviteToken = Uuid.NewDatabaseFriendly(Database.SqlServer);
             CircleId = circleId;
             InviteeEmail = inviteeEmail;
@@ -35,7 +35,7 @@ namespace RecipeVault.Domain.Entities {
         [StringLength(255)]
         public string InviteeEmail { get; private set; }
 
-        public int InvitedBySubjectId { get; private set; }
+        public Guid InvitedBySubjectId { get; private set; }
 
         public DateTime CreatedDate { get; private set; }
 

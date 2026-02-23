@@ -126,6 +126,69 @@ namespace RecipeVault.DomainService {
         }
 
         /// <summary>
+        /// Resolve substitution selections - if OptionIndex is provided, fetch the option data from cache
+        /// </summary>
+        private async Task ResolveSelectionsAsync(Guid recipeResourceId, List<SubstitutionSelectionDto> selections) {
+            // Check if any selections need resolution (have OptionIndex but not SelectedOption)
+            var selectionsNeedingResolution = selections
+                .Where(s => s.OptionIndex.HasValue && s.SelectedOption == null)
+                .ToList();
+
+            if (selectionsNeedingResolution.Count == 0) {
+                return; // All selections already have SelectedOption
+            }
+
+            logger.LogInformation("Resolving {Count} selections from OptionIndex for recipe {RecipeId}",
+                selectionsNeedingResolution.Count, recipeResourceId);
+
+            // We need to fetch substitutions to resolve the option indices
+            // Build a cache key that would include all ingredient indices that need resolution
+            var ingredientIndices = selectionsNeedingResolution
+                .Select(s => s.IngredientIndex)
+                .Distinct()
+                .OrderBy(i => i)
+                .ToList();
+
+            // Try to find cached substitutions - first try exact match with these indices
+            var cacheKey = cacheService.BuildCacheKey(recipeResourceId, ingredientIndices, null);
+            var cached = await cacheService.GetAsync<SubstitutionResponseDto>(cacheKey).ConfigureAwait(false);
+
+            // If not found, try with null indices (dietary constraint mode) as a fallback
+            if (cached == null) {
+                cacheKey = cacheService.BuildCacheKey(recipeResourceId, null, null);
+                cached = await cacheService.GetAsync<SubstitutionResponseDto>(cacheKey).ConfigureAwait(false);
+            }
+
+            if (cached == null) {
+                throw new InvalidOperationException(
+                    "Cannot resolve substitution options by index - substitution data not found in cache. " +
+                    "Please provide full SelectedOption data or ensure substitutions were recently fetched.");
+            }
+
+            // Resolve each selection
+            foreach (var selection in selectionsNeedingResolution) {
+                var substitution = cached.Substitutions.FirstOrDefault(s => s.OriginalIndex == selection.IngredientIndex);
+                
+                if (substitution == null) {
+                    throw new ArgumentException(
+                        $"No substitution found for ingredient index {selection.IngredientIndex}. " +
+                        "Ensure you're selecting from the current substitution suggestions.");
+                }
+
+                if (!selection.OptionIndex.HasValue || selection.OptionIndex.Value < 0 || selection.OptionIndex.Value >= substitution.Options.Count) {
+                    throw new ArgumentException(
+                        $"Invalid OptionIndex {selection.OptionIndex} for ingredient index {selection.IngredientIndex}. " +
+                        $"Valid range is 0-{substitution.Options.Count - 1}.");
+                }
+
+                // Set the SelectedOption from the cached data
+                selection.SelectedOption = substitution.Options[selection.OptionIndex.Value];
+            }
+
+            logger.LogInformation("Successfully resolved {Count} selections from cache", selectionsNeedingResolution.Count);
+        }
+
+        /// <summary>
         /// Apply selected substitutions and create a forked recipe
         /// </summary>
         public async Task<Recipe> ApplySubstitutionsAsync(
@@ -137,15 +200,18 @@ namespace RecipeVault.DomainService {
                 throw new ArgumentException("Must provide at least one substitution selection", nameof(selections));
             }
 
-            // Validate all selections have the required data
+            // Get the original recipe (needed for both validation and forking)
+            var original = await recipeService.GetRecipeAsync(recipeResourceId).ConfigureAwait(false);
+
+            // Resolve all selections to have full SelectedOption data
+            await ResolveSelectionsAsync(recipeResourceId, selections).ConfigureAwait(false);
+
+            // Validate all selections now have the required data
             foreach (var selection in selections) {
                 if (selection.SelectedOption == null || selection.SelectedOption.Ingredients == null || selection.SelectedOption.Ingredients.Count == 0) {
                     throw new ArgumentException($"Selection for ingredient index {selection.IngredientIndex} is missing substitution data");
                 }
             }
-
-            // Get the original recipe
-            var original = await recipeService.GetRecipeAsync(recipeResourceId).ConfigureAwait(false);
 
             logger.LogInformation("Applying {Count} substitutions to recipe {RecipeId}",
                 selections.Count, recipeResourceId);

@@ -71,7 +71,7 @@ namespace RecipeVault.Data.Repositories {
                 .FirstOrDefaultAsync(x => x.CircleId == circleId && x.RecipeId == recipeId);
         }
 
-        public Task<CircleMember> GetMemberAsync(int circleId, int subjectId) {
+        public Task<CircleMember> GetMemberAsync(int circleId, Guid subjectId) {
             return context.CircleMembers
                 .FirstOrDefaultAsync(x => x.CircleId == circleId && x.SubjectId == subjectId);
         }

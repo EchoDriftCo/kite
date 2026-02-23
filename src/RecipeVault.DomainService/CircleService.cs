@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
@@ -27,9 +26,10 @@ namespace RecipeVault.DomainService {
             this.subjectPrincipal = subjectPrincipal;
         }
 
+        private Guid CurrentSubjectId => Guid.Parse(subjectPrincipal.SubjectId);
+
         public async Task<Circle> CreateCircleAsync(UpdateCircleDto dto) {
-            var currentSubjectId = int.Parse(subjectPrincipal.SubjectId, CultureInfo.InvariantCulture);
-            var entity = new Circle(dto.Name, dto.Description, currentSubjectId);
+            var entity = new Circle(dto.Name, dto.Description, CurrentSubjectId);
 
             using (logger.PushProperty("CircleResourceId", entity.CircleResourceId)) {
                 await circleRepository.AddAsync(entity);
@@ -45,8 +45,7 @@ namespace RecipeVault.DomainService {
             }
 
             // Check if user is a member
-            var currentSubjectId = int.Parse(subjectPrincipal.SubjectId, CultureInfo.InvariantCulture);
-            if (!entity.Members.Any(m => m.SubjectId == currentSubjectId && m.Status == MemberStatus.Active)) {
+            if (!entity.Members.Any(m => m.SubjectId == CurrentSubjectId && m.Status == MemberStatus.Active)) {
                 throw new CircleNotFoundException($"Circle with id {circleResourceId} not found");
             }
 
@@ -55,8 +54,7 @@ namespace RecipeVault.DomainService {
 
         public Task<PagedList<Circle>> SearchCirclesAsync(CircleSearch search) {
             // Ensure users only see their own circles
-            var currentSubjectId = Guid.Parse(subjectPrincipal.SubjectId);
-            search.SubjectId = currentSubjectId;
+            search.SubjectId = CurrentSubjectId;
             return circleRepository.SearchAsync(search);
         }
 
@@ -64,8 +62,7 @@ namespace RecipeVault.DomainService {
             var entity = await GetCircleAsync(resourceId).ConfigureAwait(false);
             
             // Check if user is owner or admin
-            var currentSubjectId = int.Parse(subjectPrincipal.SubjectId, CultureInfo.InvariantCulture);
-            var member = entity.Members.FirstOrDefault(m => m.SubjectId == currentSubjectId);
+            var member = entity.Members.FirstOrDefault(m => m.SubjectId == CurrentSubjectId);
             if (member == null || (member.Role != CircleRole.Owner && member.Role != CircleRole.Admin)) {
                 throw new UnauthorizedAccessException("Only circle owners and admins can update circle details");
             }
@@ -81,8 +78,7 @@ namespace RecipeVault.DomainService {
             var entity = await GetCircleAsync(resourceId).ConfigureAwait(false);
             
             // Check if user is owner
-            var currentSubjectId = int.Parse(subjectPrincipal.SubjectId, CultureInfo.InvariantCulture);
-            if (entity.OwnerSubjectId != currentSubjectId) {
+            if (entity.OwnerSubjectId != CurrentSubjectId) {
                 throw new UnauthorizedAccessException("Only circle owner can delete the circle");
             }
 
@@ -96,8 +92,7 @@ namespace RecipeVault.DomainService {
             var circle = await GetCircleAsync(circleResourceId).ConfigureAwait(false);
             
             // Check if user can invite (owner or admin)
-            var currentSubjectId = int.Parse(subjectPrincipal.SubjectId, CultureInfo.InvariantCulture);
-            var member = circle.Members.FirstOrDefault(m => m.SubjectId == currentSubjectId);
+            var member = circle.Members.FirstOrDefault(m => m.SubjectId == CurrentSubjectId);
             if (member == null || member.Role == CircleRole.Member) {
                 throw new UnauthorizedAccessException("Only circle owners and admins can invite members");
             }
@@ -105,7 +100,7 @@ namespace RecipeVault.DomainService {
             // Set expiration (default 7 days)
             var expiresDate = dto.ExpiresDate ?? DateTime.UtcNow.AddDays(7);
             
-            var invite = circle.CreateInvite(dto.InviteeEmail, currentSubjectId, expiresDate);
+            var invite = circle.CreateInvite(dto.InviteeEmail, CurrentSubjectId, expiresDate);
             
             using (logger.PushProperty("CircleResourceId", circle.CircleResourceId)) {
                 using (logger.PushProperty("InviteToken", invite.InviteToken)) {
@@ -124,10 +119,8 @@ namespace RecipeVault.DomainService {
 
             invite.Accept();  // This will throw if expired or already used
 
-            var currentSubjectId = int.Parse(subjectPrincipal.SubjectId, CultureInfo.InvariantCulture);
-            
             // Check if already a member
-            var existingMember = await circleRepository.GetMemberAsync(invite.CircleId, currentSubjectId).ConfigureAwait(false);
+            var existingMember = await circleRepository.GetMemberAsync(invite.CircleId, CurrentSubjectId).ConfigureAwait(false);
             if (existingMember != null) {
                 if (existingMember.Status == MemberStatus.Active) {
                     throw new InvalidOperationException("You are already a member of this circle");
@@ -136,7 +129,7 @@ namespace RecipeVault.DomainService {
                 existingMember.Activate();
             } else {
                 // Add new member
-                invite.Circle.AddMember(currentSubjectId, CircleRole.Member, MemberStatus.Active);
+                invite.Circle.AddMember(CurrentSubjectId, CircleRole.Member, MemberStatus.Active);
             }
 
             using (logger.PushProperty("CircleResourceId", invite.Circle.CircleResourceId)) {
@@ -154,12 +147,11 @@ namespace RecipeVault.DomainService {
             return invite;
         }
 
-        public async Task RemoveMemberAsync(Guid circleResourceId, int subjectId) {
+        public async Task RemoveMemberAsync(Guid circleResourceId, Guid subjectId) {
             var circle = await GetCircleAsync(circleResourceId).ConfigureAwait(false);
             
             // Check if user can remove members (owner or admin)
-            var currentSubjectId = int.Parse(subjectPrincipal.SubjectId, CultureInfo.InvariantCulture);
-            var currentMember = circle.Members.FirstOrDefault(m => m.SubjectId == currentSubjectId);
+            var currentMember = circle.Members.FirstOrDefault(m => m.SubjectId == CurrentSubjectId);
             if (currentMember == null || currentMember.Role == CircleRole.Member) {
                 throw new UnauthorizedAccessException("Only circle owners and admins can remove members");
             }
@@ -184,8 +176,7 @@ namespace RecipeVault.DomainService {
         public async Task LeaveCircleAsync(Guid circleResourceId) {
             var circle = await GetCircleAsync(circleResourceId).ConfigureAwait(false);
             
-            var currentSubjectId = int.Parse(subjectPrincipal.SubjectId, CultureInfo.InvariantCulture);
-            var member = circle.Members.FirstOrDefault(m => m.SubjectId == currentSubjectId);
+            var member = circle.Members.FirstOrDefault(m => m.SubjectId == CurrentSubjectId);
             
             if (member == null) {
                 throw new CircleMemberNotFoundException("You are not a member of this circle");
@@ -212,13 +203,11 @@ namespace RecipeVault.DomainService {
             }
 
             // Check if user owns the recipe or it's public
-            var currentSubjectId = Guid.Parse(subjectPrincipal.SubjectId);
-            if (recipe.CreatedSubject?.SubjectId != currentSubjectId && !recipe.IsPublic) {
+            if (recipe.CreatedSubject?.SubjectId != CurrentSubjectId && !recipe.IsPublic) {
                 throw new UnauthorizedAccessException("You can only share your own recipes or public recipes");
             }
 
-            var currentSubjectIdInt = int.Parse(subjectPrincipal.SubjectId, CultureInfo.InvariantCulture);
-            circle.ShareRecipe(recipe.RecipeId, currentSubjectIdInt);
+            circle.ShareRecipe(recipe.RecipeId, CurrentSubjectId);
             
             using (logger.PushProperty("CircleResourceId", circle.CircleResourceId)) {
                 using (logger.PushProperty("RecipeResourceId", recipe.RecipeResourceId)) {
@@ -243,10 +232,9 @@ namespace RecipeVault.DomainService {
             }
 
             // Check if user shared it or is admin/owner
-            var currentSubjectId = int.Parse(subjectPrincipal.SubjectId, CultureInfo.InvariantCulture);
-            var member = circle.Members.FirstOrDefault(m => m.SubjectId == currentSubjectId);
+            var member = circle.Members.FirstOrDefault(m => m.SubjectId == CurrentSubjectId);
             
-            if (circleRecipe.SharedBySubjectId != currentSubjectId && 
+            if (circleRecipe.SharedBySubjectId != CurrentSubjectId && 
                 (member == null || member.Role == CircleRole.Member)) {
                 throw new UnauthorizedAccessException("You can only unshare recipes you shared, unless you're an admin or owner");
             }
