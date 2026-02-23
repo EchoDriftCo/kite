@@ -56,5 +56,23 @@ namespace RecipeVault.WebApi.Controllers {
                 return Ok(resultModel);
             }
         }
+
+        /// <summary>
+        /// Import a recipe from a URL
+        /// </summary>
+        /// <param name="request">The URL to import from</param>
+        [HttpPost("url")]
+        [ProducesResponseType(typeof(Dto.Output.RecipeDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ImportFromUrlAsync([FromBody] Dto.Input.ImportUrlRequestDto request) {
+            if (request == null || string.IsNullOrWhiteSpace(request.Url)) {
+                return BadRequest("URL is required");
+            }
+
+            using (LogContext.PushProperty("ImportUrl", request.Url)) {
+                var recipeDto = await facade.ImportFromUrlAsync(request.Url).ConfigureAwait(false);
+                return Ok(recipeDto);
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -12,8 +13,10 @@ using RecipeVault.Data.Repositories;
 using RecipeVault.Domain.Entities;
 using RecipeVault.Domain.Enums;
 using RecipeVault.DomainService.Models;
+using RecipeVault.DomainService.Utilities;
 using RecipeVault.Dto.Input;
 using RecipeVault.Dto.Output;
+using RecipeVault.Integrations.Gemini;
 
 namespace RecipeVault.DomainService {
     public class ImportService : IImportService {
@@ -21,16 +24,22 @@ namespace RecipeVault.DomainService {
         private readonly IRecipeRepository recipeRepository;
         private readonly ITagService tagService;
         private readonly IImageStorage imageStorage;
+        private readonly IHttpClientFactory httpClientFactory;
+        private readonly IGeminiClient geminiClient;
 
         public ImportService(
             IRecipeRepository recipeRepository,
             ITagService tagService,
             IImageStorage imageStorage,
+            IHttpClientFactory httpClientFactory,
+            IGeminiClient geminiClient,
             ILogger<ImportService> logger) {
             this.logger = logger;
             this.recipeRepository = recipeRepository;
             this.tagService = tagService;
             this.imageStorage = imageStorage;
+            this.httpClientFactory = httpClientFactory;
+            this.geminiClient = geminiClient;
         }
 
         public async Task<ImportResultDto> ImportFromPaprikaAsync(Stream fileStream) {
@@ -293,6 +302,258 @@ namespace RecipeVault.DomainService {
                     // Continue with other tags
                 }
             }
+        }
+
+        public async Task<Recipe> ImportFromUrlAsync(string url) {
+            using (logger.PushProperty("ImportUrl", url)) {
+                logger.LogInformation("Starting recipe import from URL: {Url}", url);
+
+                // Fetch HTML from URL
+                var html = await FetchHtmlAsync(url).ConfigureAwait(false);
+
+                // Try to extract schema.org/Recipe JSON-LD first
+                var schemaRecipe = ExtractSchemaOrgRecipe(html);
+
+                Recipe recipe;
+                if (schemaRecipe != null) {
+                    logger.LogInformation("Found schema.org/Recipe markup, parsing structured data");
+                    recipe = MapSchemaOrgToRecipe(schemaRecipe, url);
+                } else {
+                    logger.LogInformation("No schema.org markup found, falling back to Gemini AI parsing");
+                    recipe = await ParseWithGeminiAsync(html, url).ConfigureAwait(false);
+                }
+
+                // Save recipe
+                await recipeRepository.AddAsync(recipe).ConfigureAwait(false);
+
+                logger.LogInformation("Successfully imported recipe from URL: {Title}", recipe.Title);
+                return recipe;
+            }
+        }
+
+        private async Task<string> FetchHtmlAsync(string url) {
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) {
+                throw new ArgumentException("Invalid URL format", nameof(url));
+            }
+
+            if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) {
+                throw new ArgumentException("URL must use HTTP or HTTPS protocol", nameof(url));
+            }
+
+            using var httpClient = httpClientFactory.CreateClient();
+            httpClient.Timeout = TimeSpan.FromSeconds(30);
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "RecipeVault/1.0 (Recipe Importer)");
+
+            try {
+                var response = await httpClient.GetAsync(url).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+
+                var html = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                return html;
+            }
+            catch (HttpRequestException ex) {
+                logger.LogError(ex, "Failed to fetch URL: {Url}", url);
+                throw new InvalidOperationException($"Failed to fetch recipe from URL: {ex.Message}", ex);
+            }
+            catch (TaskCanceledException ex) {
+                logger.LogError(ex, "Request timeout for URL: {Url}", url);
+                throw new InvalidOperationException("Request timed out while fetching recipe", ex);
+            }
+        }
+
+        private SchemaOrgRecipe ExtractSchemaOrgRecipe(string html) {
+            // Look for JSON-LD script tags with @type Recipe
+            var jsonLdPattern = @"<script[^>]*type\s*=\s*[""']application/ld\+json[""'][^>]*>(.*?)</script>";
+            var matches = Regex.Matches(html, jsonLdPattern, RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+            foreach (Match match in matches) {
+                try {
+                    var jsonContent = match.Groups[1].Value.Trim();
+                    
+                    // Try to parse as single object
+                    using var doc = JsonDocument.Parse(jsonContent);
+                    var root = doc.RootElement;
+
+                    // Handle both single object and array of objects
+                    if (root.ValueKind == JsonValueKind.Array) {
+                        foreach (var element in root.EnumerateArray()) {
+                            var recipe = TryParseSchemaOrgRecipe(element);
+                            if (recipe != null) {
+                                return recipe;
+                            }
+                        }
+                    } else {
+                        var recipe = TryParseSchemaOrgRecipe(root);
+                        if (recipe != null) {
+                            return recipe;
+                        }
+                    }
+                }
+                catch (JsonException ex) {
+                    logger.LogDebug(ex, "Failed to parse JSON-LD block, trying next one");
+                    // Continue to next script tag
+                }
+            }
+
+            return null;
+        }
+
+        private SchemaOrgRecipe TryParseSchemaOrgRecipe(JsonElement element) {
+            // Check if this is a Recipe type
+            if (element.TryGetProperty("@type", out var typeProperty)) {
+                var type = typeProperty.GetString();
+                if (type != null && type.Equals("Recipe", StringComparison.OrdinalIgnoreCase)) {
+                    try {
+                        return JsonSerializer.Deserialize<SchemaOrgRecipe>(element.GetRawText());
+                    }
+                    catch (JsonException ex) {
+                        logger.LogWarning(ex, "Found Recipe type but failed to deserialize");
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static Recipe MapSchemaOrgToRecipe(SchemaOrgRecipe schemaRecipe, string sourceUrl) {
+            var title = schemaRecipe.Name ?? "Imported Recipe";
+            var yield = schemaRecipe.RecipeYield ?? 4;
+            var prepTime = Iso8601DurationParser.ParseToMinutes(schemaRecipe.PrepTime);
+            var cookTime = Iso8601DurationParser.ParseToMinutes(schemaRecipe.CookTime);
+
+            // If only totalTime is provided and not prep/cook, use it as cookTime
+            if (!prepTime.HasValue && !cookTime.HasValue && !string.IsNullOrWhiteSpace(schemaRecipe.TotalTime)) {
+                cookTime = Iso8601DurationParser.ParseToMinutes(schemaRecipe.TotalTime);
+            }
+
+            var description = schemaRecipe.Description;
+            var source = schemaRecipe.Author ?? sourceUrl;
+            var imageUrl = schemaRecipe.Image;
+
+            var recipe = new Recipe(
+                title: title,
+                yield: yield,
+                prepTimeMinutes: prepTime,
+                cookTimeMinutes: cookTime,
+                description: description,
+                source: source,
+                originalImageUrl: imageUrl,
+                isPublic: false
+            );
+
+            // Map ingredients
+            if (schemaRecipe.RecipeIngredient != null && schemaRecipe.RecipeIngredient.Length > 0) {
+                var ingredients = new List<RecipeIngredient>();
+                for (int i = 0; i < schemaRecipe.RecipeIngredient.Length; i++) {
+                    ingredients.Add(new RecipeIngredient(
+                        sortOrder: i + 1,
+                        quantity: null,
+                        unit: null,
+                        item: null,
+                        preparation: null,
+                        rawText: schemaRecipe.RecipeIngredient[i]
+                    ));
+                }
+                recipe.SetIngredients(ingredients);
+            }
+
+            // Map instructions
+            if (schemaRecipe.RecipeInstructions != null && schemaRecipe.RecipeInstructions.Length > 0) {
+                var instructions = new List<RecipeInstruction>();
+                for (int i = 0; i < schemaRecipe.RecipeInstructions.Length; i++) {
+                    instructions.Add(new RecipeInstruction(
+                        stepNumber: i + 1,
+                        instruction: schemaRecipe.RecipeInstructions[i],
+                        rawText: schemaRecipe.RecipeInstructions[i]
+                    ));
+                }
+                recipe.SetInstructions(instructions);
+            }
+
+            return recipe;
+        }
+
+        private async Task<Recipe> ParseWithGeminiAsync(string html, string sourceUrl) {
+            try {
+                // Strip HTML tags but preserve basic structure (newlines)
+                var textContent = StripHtmlTags(html);
+
+                var geminiResponse = await geminiClient.ParseRecipeTextAsync(textContent).ConfigureAwait(false);
+
+                var title = geminiResponse.Title ?? "Imported Recipe";
+                var yield = geminiResponse.Yield ?? 4;
+                var prepTime = geminiResponse.PrepTimeMinutes;
+                var cookTime = geminiResponse.CookTimeMinutes;
+
+                var recipe = new Recipe(
+                    title: title,
+                    yield: yield,
+                    prepTimeMinutes: prepTime,
+                    cookTimeMinutes: cookTime,
+                    description: null,
+                    source: sourceUrl,
+                    originalImageUrl: null,
+                    isPublic: false
+                );
+
+                // Map Gemini ingredients
+                if (geminiResponse.Ingredients != null && geminiResponse.Ingredients.Count > 0) {
+                    var ingredients = new List<RecipeIngredient>();
+                    for (int i = 0; i < geminiResponse.Ingredients.Count; i++) {
+                        var geminiIngredient = geminiResponse.Ingredients[i];
+                        ingredients.Add(new RecipeIngredient(
+                            sortOrder: i + 1,
+                            quantity: geminiIngredient.Quantity,
+                            unit: geminiIngredient.Unit,
+                            item: geminiIngredient.Item,
+                            preparation: geminiIngredient.Preparation,
+                            rawText: geminiIngredient.RawText ?? $"{geminiIngredient.Quantity} {geminiIngredient.Unit} {geminiIngredient.Item} {geminiIngredient.Preparation}".Trim()
+                        ));
+                    }
+                    recipe.SetIngredients(ingredients);
+                }
+
+                // Map Gemini instructions
+                if (geminiResponse.Instructions != null && geminiResponse.Instructions.Count > 0) {
+                    var instructions = new List<RecipeInstruction>();
+                    foreach (var geminiInstruction in geminiResponse.Instructions) {
+                        instructions.Add(new RecipeInstruction(
+                            stepNumber: geminiInstruction.StepNumber,
+                            instruction: geminiInstruction.Instruction,
+                            rawText: geminiInstruction.RawText ?? geminiInstruction.Instruction
+                        ));
+                    }
+                    recipe.SetInstructions(instructions);
+                }
+
+                logger.LogInformation("Gemini parsing completed with confidence: {Confidence}", geminiResponse.Confidence);
+                return recipe;
+            }
+            catch (Exception ex) {
+                logger.LogError(ex, "Gemini parsing failed for URL: {Url}", sourceUrl);
+                throw new InvalidOperationException("Failed to parse recipe with AI: " + ex.Message, ex);
+            }
+        }
+
+        private static string StripHtmlTags(string html) {
+            if (string.IsNullOrWhiteSpace(html)) {
+                return string.Empty;
+            }
+
+            // Replace block-level tags with newlines to preserve structure
+            var text = Regex.Replace(html, @"</?(div|p|br|li|h[1-6]|tr|td)[^>]*>", "\n", RegexOptions.IgnoreCase);
+            
+            // Remove all other HTML tags
+            text = Regex.Replace(text, @"<[^>]+>", string.Empty);
+            
+            // Decode HTML entities
+            text = System.Net.WebUtility.HtmlDecode(text);
+            
+            // Clean up excessive whitespace
+            text = Regex.Replace(text, @"\n\s*\n\s*\n", "\n\n"); // Max 2 newlines
+            text = Regex.Replace(text, @"[ \t]+", " "); // Collapse spaces
+            
+            return text.Trim();
         }
     }
 }

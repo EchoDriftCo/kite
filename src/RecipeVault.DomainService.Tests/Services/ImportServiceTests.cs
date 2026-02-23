@@ -22,11 +22,15 @@ namespace RecipeVault.DomainService.Tests.Services {
             Mock<IRecipeRepository> mockRecipeRepository,
             Mock<ITagService> mockTagService,
             Mock<IImageStorage> mockImageStorage) {
+            var mockHttpClientFactory = MockRepository.Create<System.Net.Http.IHttpClientFactory>();
+            var mockGeminiClient = MockRepository.Create<RecipeVault.Integrations.Gemini.IGeminiClient>();
             var mockLogger = CreateMockLogger<ImportService>();
             return new ImportService(
                 mockRecipeRepository.Object,
                 mockTagService.Object,
                 mockImageStorage.Object,
+                mockHttpClientFactory.Object,
+                mockGeminiClient.Object,
                 mockLogger.Object);
         }
 

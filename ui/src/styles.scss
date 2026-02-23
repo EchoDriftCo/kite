@@ -37,3 +37,18 @@ p, span, div {
 .mat-mdc-input-element {
   color: #f1f5f9 !important;
 }
+
+// iOS-specific fixes for textareas and inputs
+textarea, input {
+  // Prevent iOS zoom on focus for inputs/textareas
+  font-size: 16px; // iOS doesn't zoom if font-size is >= 16px
+  
+  // Improve touch behavior on iOS
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+// Smooth scrolling for iOS
+* {
+  -webkit-overflow-scrolling: touch;
+}

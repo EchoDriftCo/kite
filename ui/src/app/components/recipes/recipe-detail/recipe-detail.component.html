@@ -47,6 +47,10 @@
                     [matTooltip]="recipe.isPublic ? 'Make private' : 'Make public'">
               <mat-icon>{{ recipe.isPublic ? 'lock_open' : 'lock' }}</mat-icon>
             </button>
+            <button mat-raised-button color="accent" (click)="openSubstitutionDialog()">
+              <mat-icon>sync_alt</mat-icon>
+              Find Substitutions
+            </button>
             <button mat-raised-button color="primary" (click)="editRecipe()">
               <mat-icon>edit</mat-icon>
               Edit

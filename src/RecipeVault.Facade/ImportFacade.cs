@@ -4,16 +4,19 @@ using Cortside.AspNetCore.EntityFramework;
 using Microsoft.Extensions.Logging;
 using RecipeVault.DomainService;
 using RecipeVault.Dto.Output;
+using RecipeVault.Facade.Mappers;
 
 namespace RecipeVault.Facade {
     public class ImportFacade : IImportFacade {
         private readonly IUnitOfWork uow;
         private readonly IImportService importService;
+        private readonly RecipeMapper recipeMapper;
         private readonly ILogger<ImportFacade> logger;
 
-        public ImportFacade(ILogger<ImportFacade> logger, IUnitOfWork uow, IImportService importService) {
+        public ImportFacade(ILogger<ImportFacade> logger, IUnitOfWork uow, IImportService importService, RecipeMapper recipeMapper) {
             this.uow = uow;
             this.importService = importService;
+            this.recipeMapper = recipeMapper;
             this.logger = logger;
         }
 
@@ -29,6 +32,19 @@ namespace RecipeVault.Facade {
                 result.SuccessCount, result.FailureCount);
             
             return result;
+        }
+
+        public async Task<RecipeDto> ImportFromUrlAsync(string url) {
+            logger.LogInformation("Starting URL import from: {Url}", url);
+            
+            var recipe = await importService.ImportFromUrlAsync(url).ConfigureAwait(false);
+            
+            // Save the imported recipe
+            await uow.SaveChangesAsync().ConfigureAwait(false);
+            
+            logger.LogInformation("URL import completed: {Title}", recipe.Title);
+            
+            return recipeMapper.MapToDto(recipe);
         }
     }
 }

@@ -238,6 +238,11 @@ mat-divider {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    max-height: 500px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; // iOS momentum scrolling
+    touch-action: pan-y; // Allow vertical scrolling on touch devices
+    padding-right: 4px; // Prevent scrollbar overlap
   }
 
   .ingredient-item {
@@ -286,6 +291,11 @@ mat-divider {
     display: flex;
     flex-direction: column;
     gap: 24px;
+    max-height: 600px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; // iOS momentum scrolling
+    touch-action: pan-y; // Allow vertical scrolling on touch devices
+    padding-right: 4px; // Prevent scrollbar overlap
   }
 
   .instruction-item {

@@ -18,6 +18,11 @@ import { RecipeService } from '../../../services/recipe.service';
 import { Recipe } from '../../../models/recipe.model';
 import { FractionPipe } from '../../../pipes/fraction.pipe';
 import { TagSelectorComponent } from '../../shared/tag-selector/tag-selector.component';
+import {
+  SubstitutionDialogComponent,
+  SubstitutionDialogData,
+  SubstitutionDialogResult
+} from '../substitution-dialog/substitution-dialog.component';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -254,6 +259,28 @@ export class RecipeDetailComponent implements OnInit {
       this.snackBar.open('Share link copied to clipboard!', 'OK', { duration: 4000 });
     }).catch(() => {
       this.snackBar.open(`Share link: ${url}`, 'OK', { duration: 8000 });
+    });
+  }
+
+  openSubstitutionDialog() {
+    if (!this.recipe) return;
+
+    const dialogRef = this.dialog.open(SubstitutionDialogComponent, {
+      width: '800px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: {
+        recipe: this.recipe
+      } as SubstitutionDialogData,
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe((result: SubstitutionDialogResult | undefined) => {
+      if (result && result.forkedRecipeId) {
+        this.snackBar.open('Substitutions applied! Opening new recipe...', 'OK', { duration: 3000 });
+        // Navigate to the forked recipe
+        this.router.navigate(['/recipes', result.forkedRecipeId]);
+      }
     });
   }
 }

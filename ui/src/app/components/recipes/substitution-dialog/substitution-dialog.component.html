@@ -1,0 +1,207 @@
+<div class="substitution-dialog">
+  <h2 mat-dialog-title>Find Substitutions</h2>
+
+  <mat-dialog-content>
+    <!-- Step 1: Select ingredients and/or dietary constraints -->
+    <div class="step-content" *ngIf="currentStep === 0">
+      <h3>What would you like to substitute?</h3>
+      <p class="hint">Select specific ingredients to replace, or choose dietary constraints to evaluate the entire recipe.</p>
+
+      <!-- Ingredient selection -->
+      <div class="section">
+        <h4>Ingredients:</h4>
+        <div class="ingredient-list">
+          <mat-checkbox
+            *ngFor="let item of ingredientItems"
+            [(ngModel)]="item.selected"
+            class="ingredient-checkbox">
+            {{ getIngredientText(item.ingredient) }}
+          </mat-checkbox>
+        </div>
+      </div>
+
+      <!-- Dietary constraints -->
+      <div class="section">
+        <h4>Dietary Constraints:</h4>
+        <div class="constraint-chips">
+          <mat-chip-listbox>
+            <mat-chip-option
+              *ngFor="let constraint of availableConstraints"
+              [selected]="hasConstraint(constraint)"
+              (click)="toggleConstraint(constraint)">
+              {{ constraint }}
+            </mat-chip-option>
+          </mat-chip-listbox>
+        </div>
+      </div>
+
+      <!-- Selection summary -->
+      <div class="selection-summary" *ngIf="getSelectedIngredientCount() > 0 || getSelectedConstraintCount() > 0">
+        <mat-icon>info</mat-icon>
+        <span>
+          Selected: 
+          <strong *ngIf="getSelectedIngredientCount() > 0">{{ getSelectedIngredientCount() }} ingredient(s)</strong>
+          <span *ngIf="getSelectedIngredientCount() > 0 && getSelectedConstraintCount() > 0">, </span>
+          <strong *ngIf="getSelectedConstraintCount() > 0">{{ getSelectedConstraintCount() }} constraint(s)</strong>
+        </span>
+      </div>
+
+      <!-- Error message -->
+      <div class="error-message" *ngIf="error && !loading">
+        <mat-icon>error</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+    </div>
+
+    <!-- Step 2: View and select suggestions -->
+    <div class="step-content" *ngIf="currentStep === 1">
+      <h3>Substitution Suggestions</h3>
+      <p class="hint">Select one option for each ingredient (or choose "None of these").</p>
+
+      <!-- Loading spinner -->
+      <div class="loading-container" *ngIf="loading">
+        <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+        <p>Getting AI suggestions...</p>
+      </div>
+
+      <!-- Substitutions list -->
+      <div class="substitutions-list" *ngIf="!loading && substitutions.length > 0">
+        <mat-card *ngFor="let substitution of substitutions" class="substitution-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>restaurant</mat-icon>
+              {{ substitution.originalText }}
+            </mat-card-title>
+            <mat-card-subtitle *ngIf="substitution.reason">
+              {{ substitution.reason }}
+            </mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <mat-radio-group
+              [(ngModel)]="substitution.selectedOptionIndex"
+              class="options-group">
+              <!-- Each option -->
+              <div *ngFor="let option of substitution.options; let i = index" class="option-item">
+                <mat-radio-button [value]="i">
+                  <div class="option-content">
+                    <div class="option-name">{{ option.name }}</div>
+                    <div class="option-ingredients">
+                      <span *ngFor="let ing of option.ingredients; let last = last">
+                        <strong>{{ ing.quantity }}</strong>
+                        <span *ngIf="ing.unit">{{ ing.unit }}</span>
+                        {{ ing.item }}
+                        <span *ngIf="ing.preparation">({{ ing.preparation }})</span>
+                        <span *ngIf="!last"> + </span>
+                      </span>
+                    </div>
+                    <div class="option-notes" *ngIf="option.notes">
+                      <mat-icon>lightbulb</mat-icon>
+                      {{ option.notes }}
+                    </div>
+                    <div class="option-technique" *ngIf="option.techniqueAdjustments">
+                      <mat-icon>build</mat-icon>
+                      <strong>Technique:</strong> {{ option.techniqueAdjustments }}
+                    </div>
+                  </div>
+                </mat-radio-button>
+              </div>
+
+              <!-- "None of these" option -->
+              <div class="option-item">
+                <mat-radio-button [value]="-1">
+                  <div class="option-content">
+                    <div class="option-name">None of these</div>
+                    <div class="option-notes">Keep the original ingredient</div>
+                  </div>
+                </mat-radio-button>
+              </div>
+            </mat-radio-group>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- No substitutions message -->
+      <div class="no-results" *ngIf="!loading && substitutions.length === 0">
+        <mat-icon>check_circle</mat-icon>
+        <p>No substitutions needed! This recipe already meets your criteria.</p>
+      </div>
+
+      <!-- Error message -->
+      <div class="error-message" *ngIf="error && !loading">
+        <mat-icon>error</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+    </div>
+
+    <!-- Step 3: Confirm and apply -->
+    <div class="step-content" *ngIf="currentStep === 2">
+      <h3>Apply & Save</h3>
+      <p class="hint">This will create a new recipe with your selected substitutions.</p>
+
+      <div class="apply-summary">
+        <mat-icon>fork_right</mat-icon>
+        <div class="summary-text">
+          <p><strong>{{ getAppliedSubstitutionCount() }}</strong> substitution(s) will be applied to create a new recipe.</p>
+        </div>
+      </div>
+
+      <!-- Fork title input -->
+      <mat-form-field appearance="outline" class="fork-title-field">
+        <mat-label>New Recipe Title</mat-label>
+        <input matInput [(ngModel)]="forkTitle" placeholder="Enter a title for the modified recipe">
+        <mat-icon matPrefix>edit</mat-icon>
+      </mat-form-field>
+
+      <!-- Applying spinner -->
+      <div class="loading-container" *ngIf="applying">
+        <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+        <p>Creating your recipe...</p>
+      </div>
+
+      <!-- Error message -->
+      <div class="error-message" *ngIf="error && !applying">
+        <mat-icon>error</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <!-- Dialog actions -->
+  <mat-dialog-actions align="end">
+    <!-- Step 1 actions -->
+    <ng-container *ngIf="currentStep === 0">
+      <button mat-button (click)="cancel()">Cancel</button>
+      <button mat-raised-button color="primary" 
+              [disabled]="!canProceedToSuggestions() || loading"
+              (click)="fetchSuggestions()">
+        <mat-icon>search</mat-icon>
+        Find Substitutions
+      </button>
+    </ng-container>
+
+    <!-- Step 2 actions -->
+    <ng-container *ngIf="currentStep === 1">
+      <button mat-button (click)="goBack()" [disabled]="loading">Back</button>
+      <button mat-button (click)="cancel()">Cancel</button>
+      <button mat-raised-button color="primary"
+              [disabled]="!canProceedToApply() || loading"
+              (click)="proceedToApply()">
+        <mat-icon>arrow_forward</mat-icon>
+        Continue
+      </button>
+    </ng-container>
+
+    <!-- Step 3 actions -->
+    <ng-container *ngIf="currentStep === 2">
+      <button mat-button (click)="goBack()" [disabled]="applying">Back</button>
+      <button mat-button (click)="cancel()" [disabled]="applying">Cancel</button>
+      <button mat-raised-button color="primary"
+              [disabled]="applying"
+              (click)="applySubstitutions()">
+        <mat-icon>save</mat-icon>
+        Apply & Save
+      </button>
+    </ng-container>
+  </mat-dialog-actions>
+</div>

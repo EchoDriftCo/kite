@@ -98,6 +98,11 @@
   flex-direction: column;
   gap: 16px;
   margin-bottom: 16px;
+  max-height: 600px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; // iOS momentum scrolling
+  touch-action: pan-y; // Allow vertical scrolling on touch devices
+  padding-right: 4px; // Prevent scrollbar overlap
 }
 
 .ingredient-row {
@@ -188,6 +193,12 @@
   .instruction-field {
     flex: 1;
     margin-bottom: -1.25em; // Cancel Material field margin
+
+    // iOS textarea fix - ensure proper touch/edit behavior
+    textarea {
+      -webkit-appearance: none;
+      touch-action: manipulation; // Prevent zoom on double-tap while allowing input
+    }
   }
 
   > button[color="warn"] {
