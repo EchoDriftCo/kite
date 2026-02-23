@@ -1,0 +1,11 @@
+#pragma warning disable CS1591 // Missing XML comments
+
+using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace RecipeVault.WebApi.Models.Requests {
+    public class ShareRecipeToCircleModel {
+        [Required]
+        public Guid RecipeResourceId { get; set; }
+    }
+}

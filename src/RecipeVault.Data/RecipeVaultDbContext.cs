@@ -19,6 +19,10 @@ namespace RecipeVault.Data {
         public DbSet<MealPlanEntry> MealPlanEntries { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<RecipeTag> RecipeTags { get; set; }
+        public DbSet<Circle> Circles { get; set; }
+        public DbSet<CircleMember> CircleMembers { get; set; }
+        public DbSet<CircleRecipe> CircleRecipes { get; set; }
+        public DbSet<CircleInvite> CircleInvites { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.HasDefaultSchema("public");
@@ -55,6 +59,32 @@ namespace RecipeVault.Data {
                 .WithMany(mp => mp.Entries)
                 .HasForeignKey(me => me.MealPlanId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Circle cascade deletes
+            modelBuilder.Entity<CircleMember>()
+                .HasOne(cm => cm.Circle)
+                .WithMany(c => c.Members)
+                .HasForeignKey(cm => cm.CircleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CircleRecipe>()
+                .HasOne(cr => cr.Circle)
+                .WithMany(c => c.SharedRecipes)
+                .HasForeignKey(cr => cr.CircleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CircleInvite>()
+                .HasOne(ci => ci.Circle)
+                .WithMany(c => c.Invites)
+                .HasForeignKey(ci => ci.CircleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CircleRecipe → Recipe (restrict delete if recipe is shared in circles)
+            modelBuilder.Entity<CircleRecipe>()
+                .HasOne(cr => cr.Recipe)
+                .WithMany()
+                .HasForeignKey(cr => cr.RecipeId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
