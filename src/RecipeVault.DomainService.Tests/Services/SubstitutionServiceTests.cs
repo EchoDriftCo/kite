@@ -552,6 +552,12 @@ namespace RecipeVault.DomainService.Tests.Services {
             var mockRecipeService = MockRepository.Create<IRecipeService>();
             var mockCacheService = MockRepository.Create<ISubstitutionCacheService>();
 
+            // Mock GetRecipeAsync - needed before validation
+            var recipe = BuildTestRecipe();
+            mockRecipeService
+                .Setup(x => x.GetRecipeAsync(TestRecipeId))
+                .ReturnsAsync(recipe);
+
             var service = CreateService(mockGeminiClient, mockRecipeService, mockCacheService);
 
             // Act & Assert
@@ -714,6 +720,233 @@ namespace RecipeVault.DomainService.Tests.Services {
             result.Ingredients[0].Item.ShouldBe("gluten-free flour"); // Substituted
             result.Ingredients[1].Item.ShouldBe("milk"); // Preserved
             result.Ingredients[2].Item.ShouldBe("butter"); // Preserved
+        }
+
+        [Fact]
+        public async Task ApplySubstitutionsAsync_WithOptionIndex_ResolvesFromCache() {
+            // Arrange
+            var originalRecipe = BuildTestRecipe();
+            var forkedRecipe = new RecipeBuilder()
+                .WithTitle("Test Recipe (Copy)")
+                .WithIngredients(originalRecipe.Ingredients.ToList())
+                .Build();
+
+            // Selection using OptionIndex instead of SelectedOption
+            var selections = new List<SubstitutionSelectionDto> {
+                new SubstitutionSelectionDto {
+                    IngredientIndex = 0,
+                    OptionIndex = 0 // Reference the first option by index
+                }
+            };
+
+            // Build the cached substitution response
+            var cachedResponse = new SubstitutionResponseDto {
+                Substitutions = new List<IngredientSubstitutionDto> {
+                    new IngredientSubstitutionDto {
+                        OriginalIndex = 0,
+                        OriginalText = "2 cups all-purpose flour",
+                        Options = new List<SubstitutionOptionDto> {
+                            new SubstitutionOptionDto {
+                                Name = "Gluten-free flour blend",
+                                Ingredients = new List<SubstitutionIngredientDto> {
+                                    new SubstitutionIngredientDto {
+                                        Quantity = 2m,
+                                        Unit = "cups",
+                                        Item = "gluten-free flour blend"
+                                    }
+                                },
+                                Notes = "Works well as 1:1 substitute"
+                            }
+                        }
+                    }
+                }
+            };
+
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockRecipeService = MockRepository.Create<IRecipeService>();
+            var mockCacheService = MockRepository.Create<ISubstitutionCacheService>();
+
+            mockRecipeService
+                .Setup(x => x.GetRecipeAsync(TestRecipeId))
+                .ReturnsAsync(originalRecipe);
+
+            mockRecipeService
+                .Setup(x => x.ForkRecipeAsync(TestRecipeId, null))
+                .ReturnsAsync(forkedRecipe);
+
+            // Setup cache to return the substitutions
+            mockCacheService
+                .Setup(x => x.BuildCacheKey(TestRecipeId, It.IsAny<List<int>>(), null))
+                .Returns("substitution:cache-key");
+
+            mockCacheService
+                .Setup(x => x.GetAsync<SubstitutionResponseDto>("substitution:cache-key"))
+                .ReturnsAsync(cachedResponse);
+
+            var service = CreateService(mockGeminiClient, mockRecipeService, mockCacheService);
+
+            // Act
+            var result = await service.ApplySubstitutionsAsync(TestRecipeId, selections);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.Ingredients[0].Item.ShouldBe("gluten-free flour blend");
+            result.Description.ShouldContain("Substitutions Made:");
+            result.Description.ShouldContain("gluten-free flour blend");
+
+            // Verify that cache was checked
+            mockCacheService.Verify(x => x.GetAsync<SubstitutionResponseDto>(It.IsAny<string>()), Times.AtLeastOnce);
+        }
+
+        [Fact]
+        public async Task ApplySubstitutionsAsync_WithOptionIndexButNoCache_ThrowsInvalidOperationException() {
+            // Arrange
+            var originalRecipe = BuildTestRecipe();
+
+            var selections = new List<SubstitutionSelectionDto> {
+                new SubstitutionSelectionDto {
+                    IngredientIndex = 0,
+                    OptionIndex = 0 // Using index but no cache available
+                }
+            };
+
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockRecipeService = MockRepository.Create<IRecipeService>();
+            var mockCacheService = MockRepository.Create<ISubstitutionCacheService>();
+
+            mockRecipeService
+                .Setup(x => x.GetRecipeAsync(TestRecipeId))
+                .ReturnsAsync(originalRecipe);
+
+            // Setup cache to return null (not found)
+            mockCacheService
+                .Setup(x => x.BuildCacheKey(It.IsAny<Guid>(), It.IsAny<List<int>>(), It.IsAny<List<string>>()))
+                .Returns("substitution:missing-key");
+
+            mockCacheService
+                .Setup(x => x.GetAsync<SubstitutionResponseDto>(It.IsAny<string>()))
+                .ReturnsAsync((SubstitutionResponseDto)null);
+
+            var service = CreateService(mockGeminiClient, mockRecipeService, mockCacheService);
+
+            // Act & Assert
+            var ex = await Should.ThrowAsync<InvalidOperationException>(
+                () => service.ApplySubstitutionsAsync(TestRecipeId, selections)
+            );
+
+            ex.Message.ShouldContain("Cannot resolve substitution options by index");
+            ex.Message.ShouldContain("not found in cache");
+        }
+
+        [Fact]
+        public async Task ApplySubstitutionsAsync_WithInvalidOptionIndex_ThrowsArgumentException() {
+            // Arrange
+            var originalRecipe = BuildTestRecipe();
+
+            var selections = new List<SubstitutionSelectionDto> {
+                new SubstitutionSelectionDto {
+                    IngredientIndex = 0,
+                    OptionIndex = 99 // Invalid index
+                }
+            };
+
+            var cachedResponse = new SubstitutionResponseDto {
+                Substitutions = new List<IngredientSubstitutionDto> {
+                    new IngredientSubstitutionDto {
+                        OriginalIndex = 0,
+                        OriginalText = "2 cups all-purpose flour",
+                        Options = new List<SubstitutionOptionDto> {
+                            new SubstitutionOptionDto {
+                                Name = "Option 1",
+                                Ingredients = new List<SubstitutionIngredientDto> {
+                                    new SubstitutionIngredientDto { Item = "test" }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockRecipeService = MockRepository.Create<IRecipeService>();
+            var mockCacheService = MockRepository.Create<ISubstitutionCacheService>();
+
+            mockRecipeService
+                .Setup(x => x.GetRecipeAsync(TestRecipeId))
+                .ReturnsAsync(originalRecipe);
+
+            mockCacheService
+                .Setup(x => x.BuildCacheKey(It.IsAny<Guid>(), It.IsAny<List<int>>(), It.IsAny<List<string>>()))
+                .Returns("substitution:key");
+
+            mockCacheService
+                .Setup(x => x.GetAsync<SubstitutionResponseDto>("substitution:key"))
+                .ReturnsAsync(cachedResponse);
+
+            var service = CreateService(mockGeminiClient, mockRecipeService, mockCacheService);
+
+            // Act & Assert
+            var ex = await Should.ThrowAsync<ArgumentException>(
+                () => service.ApplySubstitutionsAsync(TestRecipeId, selections)
+            );
+
+            ex.Message.ShouldContain("Invalid OptionIndex 99");
+            ex.Message.ShouldContain("Valid range is 0-0");
+        }
+
+        [Fact]
+        public async Task ApplySubstitutionsAsync_WithOptionIndexForMissingIngredient_ThrowsArgumentException() {
+            // Arrange
+            var originalRecipe = BuildTestRecipe();
+
+            var selections = new List<SubstitutionSelectionDto> {
+                new SubstitutionSelectionDto {
+                    IngredientIndex = 5, // This ingredient doesn't have substitutions
+                    OptionIndex = 0
+                }
+            };
+
+            var cachedResponse = new SubstitutionResponseDto {
+                Substitutions = new List<IngredientSubstitutionDto> {
+                    new IngredientSubstitutionDto {
+                        OriginalIndex = 0, // Only ingredient 0 has substitutions
+                        OriginalText = "2 cups all-purpose flour",
+                        Options = new List<SubstitutionOptionDto> {
+                            new SubstitutionOptionDto {
+                                Name = "Option 1",
+                                Ingredients = new List<SubstitutionIngredientDto> {
+                                    new SubstitutionIngredientDto { Item = "test" }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockRecipeService = MockRepository.Create<IRecipeService>();
+            var mockCacheService = MockRepository.Create<ISubstitutionCacheService>();
+
+            mockRecipeService
+                .Setup(x => x.GetRecipeAsync(TestRecipeId))
+                .ReturnsAsync(originalRecipe);
+
+            mockCacheService
+                .Setup(x => x.BuildCacheKey(It.IsAny<Guid>(), It.IsAny<List<int>>(), It.IsAny<List<string>>()))
+                .Returns("substitution:key");
+
+            mockCacheService
+                .Setup(x => x.GetAsync<SubstitutionResponseDto>("substitution:key"))
+                .ReturnsAsync(cachedResponse);
+
+            var service = CreateService(mockGeminiClient, mockRecipeService, mockCacheService);
+
+            // Act & Assert
+            var ex = await Should.ThrowAsync<ArgumentException>(
+                () => service.ApplySubstitutionsAsync(TestRecipeId, selections)
+            );
+
+            ex.Message.ShouldContain("No substitution found for ingredient index 5");
         }
 
         #endregion

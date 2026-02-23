@@ -83,6 +83,7 @@
   background-color: #e3f2fd;
   border-radius: 4px;
   margin-top: 16px;
+  color: #0d47a1; // Explicit dark text for colored background
 
   mat-icon {
     color: #1976d2;
@@ -93,7 +94,7 @@
 
   span {
     font-size: 0.9rem;
-    color: rgba(0, 0, 0, 0.87);
+    color: #0d47a1; // Explicit dark text
   }
 }
 
