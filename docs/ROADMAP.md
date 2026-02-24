@@ -1014,7 +1014,111 @@ POST /api/export/all
 GET /api/export/{jobId}/download
 ```
 
-### Implementation Estimate
+### 5E. Multi-Image Import
+
+**Status:** Planned (user feedback from beta tester Tiana, Feb 2026)
+
+#### Problem
+
+Users want to import recipes from physical cookbooks or printed pages that span multiple pages. Currently, image import only supports a single photo, forcing users to either:
+- Manually combine images before uploading
+- Type out the second page
+
+#### Solution
+
+Allow uploading 2-3 images that get stitched/combined before OCR processing.
+
+#### User Flow
+
+```
+┌─────────────────────────────────────────────────┐
+│  Import Recipe from Images                      │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  Upload photos of your recipe:                  │
+│                                                 │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐         │
+│  │  📷 1   │  │  📷 2   │  │  + Add  │         │
+│  │ (drag   │  │         │  │         │         │
+│  │  to     │  │         │  │         │         │
+│  │ reorder)│  │         │  │         │         │
+│  └─────────┘  └─────────┘  └─────────┘         │
+│                                                 │
+│  ℹ️ Images will be processed in order shown    │
+│                                                 │
+│  [Cancel]              [Process Images]         │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+#### Technical Approach
+
+1. Accept 1-4 images via upload
+2. Allow drag-to-reorder for correct page sequence
+3. Options for processing:
+   - **Sequential OCR**: Process each image separately, concatenate results
+   - **Visual stitch**: Combine images vertically, send as single large image to Gemini
+4. Parse combined text as single recipe
+
+#### API Design
+
+```
+# Multi-image import
+POST /api/recipes/import/images
+  Body: multipart form with multiple images + order metadata
+  Returns: Parsed recipe for preview
+```
+
+#### Implementation Estimate
+
+- Backend: 4-6 hours
+- Frontend: 6-8 hours
+- Tests: 2-3 hours
+
+---
+
+### 5F. Video Import (Future Exploration)
+
+**Status:** Research / Future consideration
+
+#### Idea
+
+Import recipes from TikTok, Instagram Reels, and YouTube cooking videos. Extract recipe from:
+- Spoken narration (speech-to-text)
+- On-screen text/captions
+- Visual ingredient identification
+
+#### Synergy with Voice Features
+
+This shares infrastructure with [Section 6 - Voice & Cooking Mode](#6-voice--cooking-mode):
+- Speech-to-text (Whisper API or similar)
+- Audio processing
+- Natural language recipe extraction
+
+#### Challenges
+
+- Copyright/terms of service for scraping video platforms
+- Processing long-form video (YouTube) vs short-form (TikTok/Reels)
+- Accuracy of ingredient quantities from spoken word
+- Multiple speakers, background music, varying audio quality
+
+#### Potential Approach
+
+```
+Video URL → Download audio → Whisper transcription → 
+Gemini extraction → Structured recipe → User review
+```
+
+#### Implementation Estimate
+
+TBD — requires research into:
+- Video platform API access / scraping legality
+- Whisper API costs at scale
+- Accuracy testing with real cooking videos
+
+---
+
+### Implementation Estimate (Section 5 Total)
 
 **Browser Extension:**
 - Extension code: 16-24 hours
@@ -1032,6 +1136,11 @@ GET /api/export/{jobId}/download
 **Export:**
 - Backend: 6-8 hours
 - Frontend: 2-4 hours
+
+**Multi-Image Import:**
+- Backend: 4-6 hours
+- Frontend: 6-8 hours
+- Tests: 2-3 hours
 
 ---
 
