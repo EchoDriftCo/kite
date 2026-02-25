@@ -1,6 +1,9 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.EntityFramework;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RecipeVault.DomainService;
 using RecipeVault.Dto.Output;
@@ -45,6 +48,36 @@ namespace RecipeVault.Facade {
             logger.LogInformation("URL import completed: {Title}", recipe.Title);
             
             return recipeMapper.MapToDto(recipe);
+        }
+
+        public async Task<RecipeDto> ImportFromMultipleImagesAsync(List<IFormFile> images, string processingMode = "sequential") {
+            logger.LogInformation("Starting multi-image import with {ImageCount} images", images.Count);
+            
+            // Convert IFormFile streams to List<Stream>
+            var streams = new List<Stream>();
+            foreach (var image in images) {
+                var stream = new MemoryStream();
+                await image.CopyToAsync(stream).ConfigureAwait(false);
+                stream.Position = 0; // Reset stream position
+                streams.Add(stream);
+            }
+
+            try {
+                var recipe = await importService.ImportFromMultipleImagesAsync(streams, processingMode).ConfigureAwait(false);
+                
+                // Save the imported recipe
+                await uow.SaveChangesAsync().ConfigureAwait(false);
+                
+                logger.LogInformation("Multi-image import completed: {Title}", recipe.Title);
+                
+                return recipeMapper.MapToDto(recipe);
+            }
+            finally {
+                // Clean up streams
+                foreach (var stream in streams) {
+                    await stream.DisposeAsync().ConfigureAwait(false);
+                }
+            }
         }
     }
 }

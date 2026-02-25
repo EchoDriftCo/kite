@@ -173,4 +173,11 @@ export class RecipeService {
     
     return this.api.post<PaprikaImportResult>('import/paprika', formData);
   }
+
+  /**
+   * Import recipe from multiple images (1-4 images, processed sequentially)
+   */
+  importFromMultipleImages(formData: FormData): Observable<Recipe> {
+    return this.api.post<Recipe>('import/multi-image', formData);
+  }
 }
