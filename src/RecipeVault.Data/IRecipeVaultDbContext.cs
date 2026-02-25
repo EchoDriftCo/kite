@@ -16,6 +16,9 @@ namespace RecipeVault.Data {
         DbSet<CircleMember> CircleMembers { get; set; }
         DbSet<CircleRecipe> CircleRecipes { get; set; }
         DbSet<CircleInvite> CircleInvites { get; set; }
+        DbSet<DietaryProfile> DietaryProfiles { get; set; }
+        DbSet<DietaryRestriction> DietaryRestrictions { get; set; }
+        DbSet<AvoidedIngredient> AvoidedIngredients { get; set; }
 
         void RemoveRange(IEnumerable<object> entities);
         EntityEntry Remove(object entity);

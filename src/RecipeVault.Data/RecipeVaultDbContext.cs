@@ -23,6 +23,9 @@ namespace RecipeVault.Data {
         public DbSet<CircleMember> CircleMembers { get; set; }
         public DbSet<CircleRecipe> CircleRecipes { get; set; }
         public DbSet<CircleInvite> CircleInvites { get; set; }
+        public DbSet<DietaryProfile> DietaryProfiles { get; set; }
+        public DbSet<DietaryRestriction> DietaryRestrictions { get; set; }
+        public DbSet<AvoidedIngredient> AvoidedIngredients { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.HasDefaultSchema("public");
@@ -85,6 +88,19 @@ namespace RecipeVault.Data {
                 .WithMany()
                 .HasForeignKey(cr => cr.RecipeId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Dietary profiles cascade deletes
+            modelBuilder.Entity<DietaryRestriction>()
+                .HasOne(dr => dr.DietaryProfile)
+                .WithMany(dp => dp.Restrictions)
+                .HasForeignKey(dr => dr.DietaryProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<AvoidedIngredient>()
+                .HasOne(ai => ai.DietaryProfile)
+                .WithMany(dp => dp.AvoidedIngredients)
+                .HasForeignKey(ai => ai.DietaryProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

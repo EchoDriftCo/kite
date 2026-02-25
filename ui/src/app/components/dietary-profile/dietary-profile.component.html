@@ -1,0 +1,137 @@
+<div class="dietary-profiles-container">
+  <div class="profiles-sidebar">
+    <h2>Dietary Profiles</h2>
+    <button class="btn btn-primary" (click)="startCreateProfile()">
+      <i class="fas fa-plus"></i> New Profile
+    </button>
+
+    <div class="profiles-list">
+      <div
+        *ngFor="let profile of profiles"
+        class="profile-item"
+        [class.active]="selectedProfile?.dietaryProfileResourceId === profile.dietaryProfileResourceId"
+        (click)="selectProfile(profile)"
+      >
+        <div class="profile-info">
+          <strong>{{ profile.profileName }}</strong>
+          <span *ngIf="profile.isDefault" class="badge">Default</span>
+        </div>
+        <button class="btn-icon" (click)="deleteProfile(profile); $event.stopPropagation()" title="Delete">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-details">
+    <div *ngIf="isCreating" class="create-form">
+      <h2>Create New Profile</h2>
+      <div class="form-group">
+        <label for="profileName">Profile Name</label>
+        <input
+          type="text"
+          id="profileName"
+          [(ngModel)]="newProfile.profileName"
+          placeholder="e.g., Me, Kids, Partner"
+          class="form-control"
+        />
+      </div>
+      <div class="form-group">
+        <label>
+          <input type="checkbox" [(ngModel)]="newProfile.isDefault" />
+          Set as default profile
+        </label>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" (click)="createProfile()">Create</button>
+        <button class="btn btn-secondary" (click)="cancelCreate()">Cancel</button>
+      </div>
+    </div>
+
+    <div *ngIf="selectedProfile && !isCreating" class="profile-content">
+      <h2>{{ selectedProfile.profileName }}</h2>
+
+      <!-- Dietary Restrictions -->
+      <section class="restrictions-section">
+        <h3>Dietary Restrictions</h3>
+        <div class="common-restrictions">
+          <button
+            *ngFor="let restriction of commonRestrictions"
+            class="btn btn-tag"
+            (click)="setCommonRestriction(restriction)"
+            [disabled]="selectedProfile.restrictions.some(r => r.restrictionCode === restriction.code)"
+          >
+            {{ restriction.label }}
+          </button>
+        </div>
+
+        <div class="add-restriction-form">
+          <input
+            type="text"
+            [(ngModel)]="newRestriction.restrictionCode"
+            placeholder="Restriction code"
+            class="form-control"
+          />
+          <select [(ngModel)]="newRestriction.restrictionType" class="form-control">
+            <option value="Allergy">Allergy</option>
+            <option value="Intolerance">Intolerance</option>
+            <option value="DietaryChoice">Dietary Choice</option>
+          </select>
+          <select [(ngModel)]="newRestriction.severity" class="form-control">
+            <option value="Strict">Strict</option>
+            <option value="Flexible">Flexible</option>
+          </select>
+          <button class="btn btn-primary" (click)="addRestriction()">Add</button>
+        </div>
+
+        <div class="restrictions-list">
+          <div *ngFor="let restriction of selectedProfile.restrictions" class="restriction-item">
+            <span class="restriction-badge" [attr.data-type]="restriction.restrictionType.toLowerCase()">
+              {{ restriction.restrictionCode }}
+            </span>
+            <span class="restriction-meta">{{ restriction.restrictionType }} · {{ restriction.severity }}</span>
+            <button class="btn-icon" (click)="removeRestriction(restriction.restrictionCode)" title="Remove">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Avoided Ingredients -->
+      <section class="avoided-ingredients-section">
+        <h3>Avoided Ingredients</h3>
+        <div class="add-ingredient-form">
+          <input
+            type="text"
+            [(ngModel)]="newAvoidedIngredient.ingredientName"
+            placeholder="Ingredient name"
+            class="form-control"
+          />
+          <input
+            type="text"
+            [(ngModel)]="newAvoidedIngredient.reason"
+            placeholder="Reason (optional)"
+            class="form-control"
+          />
+          <button class="btn btn-primary" (click)="addAvoidedIngredient()">Add</button>
+        </div>
+
+        <div class="ingredients-list">
+          <div *ngFor="let ingredient of selectedProfile.avoidedIngredients" class="ingredient-item">
+            <div class="ingredient-info">
+              <strong>{{ ingredient.ingredientName }}</strong>
+              <span *ngIf="ingredient.reason" class="ingredient-reason">{{ ingredient.reason }}</span>
+            </div>
+            <button class="btn-icon" (click)="removeAvoidedIngredient(ingredient.avoidedIngredientId)" title="Remove">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div *ngIf="!selectedProfile && !isCreating" class="empty-state">
+      <p>No profile selected. Create a new profile to get started.</p>
+    </div>
+  </div>
+</div>

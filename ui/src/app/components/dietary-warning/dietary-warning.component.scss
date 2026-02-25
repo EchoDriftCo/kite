@@ -1,0 +1,180 @@
+.dietary-warning {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.warning-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  font-weight: 500;
+
+  i {
+    font-size: 1.25rem;
+  }
+
+  &.can-eat {
+    background: var(--success-container, #d4edda);
+    color: var(--on-success-container, #155724);
+    border: 1px solid var(--success, #28a745);
+  }
+
+  &.cannot-eat {
+    background: var(--error-container, #f8d7da);
+    color: var(--on-error-container, #721c24);
+    border: 1px solid var(--error, #dc3545);
+  }
+}
+
+.conflicts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--surface-variant);
+}
+
+.conflict-item {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid;
+  background: var(--surface);
+
+  &.severity-strict {
+    border-left-color: var(--error, #dc3545);
+  }
+
+  &.severity-flexible {
+    border-left-color: var(--warning, #ffc107);
+  }
+}
+
+.conflict-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+
+  .conflict-ingredient {
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .conflict-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+
+    &.type-allergy {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    &.type-intolerance {
+      background: #fff3e0;
+      color: #ef6c00;
+    }
+
+    &.type-dietarychoice {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    &.type-avoidedingredient {
+      background: #f3e5f5;
+      color: #6a1b9a;
+    }
+  }
+}
+
+.conflict-details {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+
+  .conflict-type {
+    color: var(--text-secondary);
+  }
+
+  .conflict-severity {
+    font-weight: 500;
+
+    &.severity-strict {
+      color: var(--error, #dc3545);
+    }
+
+    &.severity-flexible {
+      color: var(--warning, #ffc107);
+    }
+  }
+}
+
+.conflict-message {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: var(--surface-variant);
+  color: var(--text-secondary);
+}
+
+.error-state {
+  background: var(--error-container, #f8d7da);
+  color: var(--on-error-container, #721c24);
+  border: 1px solid var(--error, #dc3545);
+}
+
+// Dark mode support
+:host-context(.dark-mode) {
+  .warning-header.can-eat {
+    background: rgba(40, 167, 69, 0.2);
+    color: #4ade80;
+    border-color: #4ade80;
+  }
+
+  .warning-header.cannot-eat {
+    background: rgba(220, 53, 69, 0.2);
+    color: #f87171;
+    border-color: #f87171;
+  }
+
+  .conflict-badge {
+    &.type-allergy {
+      background: rgba(198, 40, 40, 0.3);
+      color: #f87171;
+    }
+
+    &.type-intolerance {
+      background: rgba(239, 108, 0, 0.3);
+      color: #fb923c;
+    }
+
+    &.type-dietarychoice {
+      background: rgba(21, 101, 192, 0.3);
+      color: #60a5fa;
+    }
+
+    &.type-avoidedingredient {
+      background: rgba(106, 27, 154, 0.3);
+      color: #c084fc;
+    }
+  }
+
+  .error-state {
+    background: rgba(220, 53, 69, 0.2);
+    color: #f87171;
+    border-color: #f87171;
+  }
+}

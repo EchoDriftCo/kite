@@ -1,0 +1,230 @@
+.dietary-profiles-container {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  height: 100%;
+}
+
+.profiles-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  h2 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+  }
+
+  .btn-primary {
+    width: 100%;
+  }
+}
+
+.profiles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.profile-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--surface-variant);
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: var(--surface-hover);
+  }
+
+  &.active {
+    background: var(--primary);
+    color: var(--on-primary);
+  }
+
+  .profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 1rem;
+    background: var(--primary-container);
+    color: var(--on-primary-container);
+    width: fit-content;
+  }
+}
+
+.profile-details {
+  overflow-y: auto;
+}
+
+.create-form,
+.profile-content {
+  h2 {
+    margin-top: 0;
+    color: var(--text-primary);
+  }
+}
+
+.form-group {
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--outline);
+    border-radius: 0.25rem;
+    background: var(--surface);
+    color: var(--text-primary);
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+section {
+  margin-bottom: 2rem;
+
+  h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+  }
+}
+
+.common-restrictions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+
+  .btn-tag {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--outline);
+    border-radius: 1rem;
+    background: var(--surface-variant);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.add-restriction-form,
+.add-ingredient-form {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+
+  .form-control {
+    padding: 0.5rem;
+    border: 1px solid var(--outline);
+    border-radius: 0.25rem;
+    background: var(--surface);
+    color: var(--text-primary);
+  }
+}
+
+.add-ingredient-form {
+  grid-template-columns: 1fr 1fr auto;
+}
+
+.restrictions-list,
+.ingredients-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.restriction-item,
+.ingredient-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--surface-variant);
+
+  .restriction-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+
+    &[data-type="allergy"] {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    &[data-type="intolerance"] {
+      background: #fff3e0;
+      color: #ef6c00;
+    }
+
+    &[data-type="dietarychoice"] {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+  }
+
+  .restriction-meta,
+  .ingredient-reason {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-left: 0.5rem;
+  }
+}
+
+.ingredient-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+
+  &:hover {
+    color: var(--error);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 3rem;
+}
+
+// Dark mode support (using CSS variables)
+:host-context(.dark-mode) {
+  // Variables are managed globally, component just uses them
+}
