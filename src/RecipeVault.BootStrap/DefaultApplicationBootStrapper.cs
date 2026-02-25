@@ -7,9 +7,11 @@ namespace RecipeVault.BootStrap {
             installers = [
                 new RepositoryInstaller(),
                 new DomainServiceInstaller(),
+                new NutritionInstaller(),
                 new DistributedLockInstaller(),
                 new GeminiInstaller(),
                 new SupabaseInstaller(),
+                new UsdaInstaller(),
                 new FacadeInstaller()
             ];
         }

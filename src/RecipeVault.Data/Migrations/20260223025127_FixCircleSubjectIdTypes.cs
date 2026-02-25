@@ -11,41 +11,64 @@ namespace RecipeVault.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<Guid>(
+            // PostgreSQL cannot ALTER int to uuid automatically
+            // Drop and recreate columns with correct types
+            
+            // CircleRecipe.SharedBySubjectId
+            migrationBuilder.DropColumn(
+                name: "SharedBySubjectId",
+                schema: "public",
+                table: "CircleRecipe");
+            
+            migrationBuilder.AddColumn<Guid>(
                 name: "SharedBySubjectId",
                 schema: "public",
                 table: "CircleRecipe",
                 type: "uuid",
                 nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
-
-            migrationBuilder.AlterColumn<Guid>(
+                defaultValue: Guid.Parse("00000000-0000-0000-0000-000000000001"));
+            
+            // CircleMember.SubjectId
+            migrationBuilder.DropColumn(
+                name: "SubjectId",
+                schema: "public",
+                table: "CircleMember");
+            
+            migrationBuilder.AddColumn<Guid>(
                 name: "SubjectId",
                 schema: "public",
                 table: "CircleMember",
                 type: "uuid",
                 nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
-
-            migrationBuilder.AlterColumn<Guid>(
+                defaultValue: Guid.Parse("00000000-0000-0000-0000-000000000001"));
+            
+            // CircleInvite.InvitedBySubjectId
+            migrationBuilder.DropColumn(
+                name: "InvitedBySubjectId",
+                schema: "public",
+                table: "CircleInvite");
+            
+            migrationBuilder.AddColumn<Guid>(
                 name: "InvitedBySubjectId",
                 schema: "public",
                 table: "CircleInvite",
                 type: "uuid",
                 nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
-
-            migrationBuilder.AlterColumn<Guid>(
+                defaultValue: Guid.Parse("00000000-0000-0000-0000-000000000001"));
+            
+            // Circle.OwnerSubjectId
+            migrationBuilder.DropColumn(
+                name: "OwnerSubjectId",
+                schema: "public",
+                table: "Circle");
+            
+            migrationBuilder.AddColumn<Guid>(
                 name: "OwnerSubjectId",
                 schema: "public",
                 table: "Circle",
                 type: "uuid",
                 nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
+                defaultValue: Guid.Parse("00000000-0000-0000-0000-000000000001"));
 
             migrationBuilder.CreateIndex(
                 name: "IX_CircleMember_SubjectId",
