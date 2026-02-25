@@ -1,0 +1,37 @@
+<div class="dietary-warning" *ngIf="!loading && conflictCheck">
+  <div class="warning-header" [class.can-eat]="conflictCheck.canEat" [class.cannot-eat]="!conflictCheck.canEat">
+    <i class="fas" [class.fa-check-circle]="conflictCheck.canEat" [class.fa-exclamation-triangle]="!conflictCheck.canEat"></i>
+    <span *ngIf="conflictCheck.canEat">This recipe is safe based on your dietary profile</span>
+    <span *ngIf="!conflictCheck.canEat">⚠️ Warning: This recipe contains {{ conflictCheck.conflicts.length }} dietary conflict(s)</span>
+  </div>
+
+  <div class="conflicts-list" *ngIf="conflictCheck.conflicts.length > 0">
+    <div
+      *ngFor="let conflict of conflictCheck.conflicts"
+      class="conflict-item"
+      [ngClass]="[getSeverityClass(conflict.severity), getTypeClass(conflict.restrictionType)]"
+    >
+      <div class="conflict-header">
+        <span class="conflict-ingredient">{{ conflict.ingredientText }}</span>
+        <span class="conflict-badge" [ngClass]="getTypeClass(conflict.restrictionType)">
+          {{ conflict.restrictionCode }}
+        </span>
+      </div>
+      <div class="conflict-details">
+        <span class="conflict-type">{{ conflict.restrictionType }}</span>
+        <span class="conflict-severity" [ngClass]="getSeverityClass(conflict.severity)">
+          {{ conflict.severity }}
+        </span>
+      </div>
+      <div class="conflict-message">{{ conflict.message }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="loading-state" *ngIf="loading">
+  <i class="fas fa-spinner fa-spin"></i> Checking dietary restrictions...
+</div>
+
+<div class="error-state" *ngIf="error">
+  <i class="fas fa-exclamation-circle"></i> {{ error }}
+</div>
