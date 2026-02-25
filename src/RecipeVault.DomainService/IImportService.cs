@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using RecipeVault.Domain.Entities;
@@ -13,5 +14,13 @@ namespace RecipeVault.DomainService {
         /// <param name="url">The URL of the recipe page</param>
         /// <returns>The imported recipe</returns>
         Task<Recipe> ImportFromUrlAsync(string url);
+
+        /// <summary>
+        /// Import a recipe from multiple images (e.g., multi-page cookbook photos)
+        /// </summary>
+        /// <param name="imageStreams">List of image streams to process</param>
+        /// <param name="processingMode">Processing mode: "sequential" or "stitch"</param>
+        /// <returns>The imported recipe</returns>
+        Task<Recipe> ImportFromMultipleImagesAsync(List<Stream> imageStreams, string processingMode = "sequential");
     }
 }

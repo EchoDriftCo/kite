@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Asp.Versioning;
@@ -71,6 +72,30 @@ namespace RecipeVault.WebApi.Controllers {
 
             using (LogContext.PushProperty("ImportUrl", request.Url)) {
                 var recipeDto = await facade.ImportFromUrlAsync(request.Url).ConfigureAwait(false);
+                return Ok(recipeDto);
+            }
+        }
+
+        /// <summary>
+        /// Import a recipe from multiple images (e.g., multi-page cookbook photos)
+        /// </summary>
+        /// <param name="images">List of image files (1-4 images)</param>
+        /// <param name="processingMode">Processing mode: "sequential" (default) or "stitch"</param>
+        [HttpPost("multi-image")]
+        [ProducesResponseType(typeof(Dto.Output.RecipeDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ImportFromMultipleImagesAsync([FromForm] List<IFormFile> images, [FromForm] string processingMode = "sequential") {
+            if (images == null || images.Count == 0) {
+                return BadRequest("At least one image is required");
+            }
+
+            if (images.Count > 4) {
+                return BadRequest("Maximum 4 images allowed");
+            }
+
+            using (LogContext.PushProperty("ImageCount", images.Count))
+            using (LogContext.PushProperty("ProcessingMode", processingMode)) {
+                var recipeDto = await facade.ImportFromMultipleImagesAsync(images, processingMode).ConfigureAwait(false);
                 return Ok(recipeDto);
             }
         }

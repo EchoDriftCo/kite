@@ -23,6 +23,7 @@ namespace RecipeVault.Data {
         public DbSet<CircleMember> CircleMembers { get; set; }
         public DbSet<CircleRecipe> CircleRecipes { get; set; }
         public DbSet<CircleInvite> CircleInvites { get; set; }
+        public DbSet<ImportJob> ImportJobs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.HasDefaultSchema("public");

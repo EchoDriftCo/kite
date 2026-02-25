@@ -535,6 +535,161 @@ namespace RecipeVault.DomainService {
             }
         }
 
+        public async Task<Recipe> ImportFromMultipleImagesAsync(List<Stream> imageStreams, string processingMode = "sequential") {
+            using (logger.PushProperty("ImageCount", imageStreams.Count))
+            using (logger.PushProperty("ProcessingMode", processingMode)) {
+                logger.LogInformation("Starting multi-image recipe import with {ImageCount} images", imageStreams.Count);
+
+                if (imageStreams == null || imageStreams.Count == 0) {
+                    throw new ArgumentException("At least one image is required", nameof(imageStreams));
+                }
+
+                if (imageStreams.Count > 4) {
+                    throw new ArgumentException("Maximum 4 images allowed", nameof(imageStreams));
+                }
+
+                // Sequential processing: parse each image and combine results
+                if (processingMode == "sequential") {
+                    return await ProcessImagesSequentiallyAsync(imageStreams).ConfigureAwait(false);
+                } else {
+                    throw new NotImplementedException("Only 'sequential' processing mode is currently supported");
+                }
+            }
+        }
+
+        private async Task<Recipe> ProcessImagesSequentiallyAsync(List<Stream> imageStreams) {
+            var allIngredients = new List<GeminiIngredient>();
+            var allInstructions = new List<GeminiInstruction>();
+            string title = null;
+            int? yield = null;
+            int? prepTime = null;
+            int? cookTime = null;
+
+            int imageIndex = 1;
+            foreach (var stream in imageStreams) {
+                logger.LogInformation("Processing image {Index} of {Total}", imageIndex, imageStreams.Count);
+                
+                // Convert stream to base64
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+                var imageBytes = memoryStream.ToArray();
+                var base64Image = Convert.ToBase64String(imageBytes);
+
+                // Detect MIME type (simple detection based on magic bytes)
+                var mimeType = DetectImageMimeType(imageBytes);
+
+                // Parse image with Gemini
+                var geminiResponse = await geminiClient.ParseRecipeAsync(base64Image, mimeType).ConfigureAwait(false);
+
+                // Use title from first image, or first non-null title
+                if (title == null && !string.IsNullOrWhiteSpace(geminiResponse.Title)) {
+                    title = geminiResponse.Title;
+                }
+
+                // Use yield from first image that has it
+                if (!yield.HasValue && geminiResponse.Yield.HasValue) {
+                    yield = geminiResponse.Yield;
+                }
+
+                // Accumulate times (use maximum if multiple images have times)
+                if (geminiResponse.PrepTimeMinutes.HasValue) {
+                    prepTime = Math.Max(prepTime ?? 0, geminiResponse.PrepTimeMinutes.Value);
+                }
+                if (geminiResponse.CookTimeMinutes.HasValue) {
+                    cookTime = Math.Max(cookTime ?? 0, geminiResponse.CookTimeMinutes.Value);
+                }
+
+                // Collect ingredients
+                if (geminiResponse.Ingredients != null && geminiResponse.Ingredients.Count > 0) {
+                    allIngredients.AddRange(geminiResponse.Ingredients);
+                }
+
+                // Collect instructions, adjusting step numbers for continuation
+                if (geminiResponse.Instructions != null && geminiResponse.Instructions.Count > 0) {
+                    var stepOffset = allInstructions.Count;
+                    foreach (var instruction in geminiResponse.Instructions) {
+                        allInstructions.Add(new GeminiInstruction {
+                            StepNumber = stepOffset + instruction.StepNumber,
+                            Instruction = instruction.Instruction,
+                            RawText = instruction.RawText
+                        });
+                    }
+                }
+
+                imageIndex++;
+            }
+
+            // Create recipe from combined results
+            var recipe = new Recipe(
+                title: title ?? "Multi-Image Recipe Import",
+                yield: yield ?? 4,
+                prepTimeMinutes: prepTime,
+                cookTimeMinutes: cookTime,
+                description: $"Imported from {imageStreams.Count} image(s)",
+                source: "Multi-Image Import",
+                originalImageUrl: null,
+                isPublic: false
+            );
+
+            // Set combined ingredients
+            var ingredients = new List<RecipeIngredient>();
+            for (int i = 0; i < allIngredients.Count; i++) {
+                var geminiIng = allIngredients[i];
+                ingredients.Add(new RecipeIngredient(
+                    sortOrder: i + 1,
+                    quantity: geminiIng.Quantity,
+                    unit: geminiIng.Unit,
+                    item: geminiIng.Item,
+                    preparation: geminiIng.Preparation,
+                    rawText: geminiIng.RawText
+                ));
+            }
+            recipe.SetIngredients(ingredients);
+
+            // Set combined instructions
+            var instructions = new List<RecipeInstruction>();
+            for (int i = 0; i < allInstructions.Count; i++) {
+                var geminiInst = allInstructions[i];
+                instructions.Add(new RecipeInstruction(
+                    stepNumber: i + 1,
+                    instruction: geminiInst.Instruction,
+                    rawText: geminiInst.RawText ?? geminiInst.Instruction
+                ));
+            }
+            recipe.SetInstructions(instructions);
+
+            // Save recipe
+            await recipeRepository.AddAsync(recipe).ConfigureAwait(false);
+
+            logger.LogInformation("Successfully imported multi-image recipe: {Title} ({IngredientCount} ingredients, {InstructionCount} steps)",
+                recipe.Title, ingredients.Count, instructions.Count);
+
+            return recipe;
+        }
+
+        private static string DetectImageMimeType(byte[] imageBytes) {
+            if (imageBytes.Length < 4) {
+                return "image/jpeg"; // Default
+            }
+
+            // PNG signature
+            if (imageBytes[0] == 0x89 && imageBytes[1] == 0x50 && imageBytes[2] == 0x4E && imageBytes[3] == 0x47) {
+                return "image/png";
+            }
+
+            // JPEG signature
+            if (imageBytes[0] == 0xFF && imageBytes[1] == 0xD8 && imageBytes[2] == 0xFF) {
+                return "image/jpeg";
+            }
+
+            // WebP signature
+            if (imageBytes[0] == 0x52 && imageBytes[1] == 0x49 && imageBytes[2] == 0x46 && imageBytes[3] == 0x46) {
+                return "image/webp";
+            }
+
+            return "image/jpeg"; // Default fallback
+        }
+
         private static string StripHtmlTags(string html) {
             if (string.IsNullOrWhiteSpace(html)) {
                 return string.Empty;
