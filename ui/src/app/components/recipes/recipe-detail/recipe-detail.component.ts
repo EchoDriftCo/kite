@@ -302,4 +302,31 @@ export class RecipeDetailComponent implements OnInit {
       }
     });
   }
+
+  forkRecipe() {
+    if (!this.recipeId || !this.recipe) return;
+
+    const newTitle = `${this.recipe.title} (Copy)`;
+    
+    this.recipeService.forkRecipe(this.recipeId, newTitle).subscribe({
+      next: (forkedRecipe) => {
+        this.snackBar.open('Recipe forked successfully!', 'View', { duration: 5000 }).onAction().subscribe(() => {
+          this.router.navigate(['/recipes', forkedRecipe.recipeResourceId]);
+        });
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to fork recipe';
+        this.snackBar.open('Failed to fork recipe', 'Close', { duration: 3000 });
+        console.error('Error forking recipe:', err);
+      }
+    });
+  }
+
+  canForkRecipe(): boolean {
+    // Can fork if:
+    // 1. Recipe exists
+    // 2. User is not the owner
+    // 3. Recipe is public or shared to user via circle
+    return this.recipe != null && this.recipe.isOwner === false;
+  }
 }
