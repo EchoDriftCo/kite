@@ -55,6 +55,10 @@
               <mat-icon>group</mat-icon>
               Share to Circle
             </button>
+            <button mat-raised-button color="accent" [routerLink]="['/recipes', recipe.recipeResourceId, 'cook']">
+              <mat-icon>restaurant</mat-icon>
+              Start Cooking
+            </button>
             <button mat-raised-button color="primary" (click)="editRecipe()">
               <mat-icon>edit</mat-icon>
               Edit

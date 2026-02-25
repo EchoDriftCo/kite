@@ -335,5 +335,19 @@ namespace RecipeVault.WebApi.Controllers {
                 return CreatedAtAction(nameof(GetRecipeAsync), new { id = dto.RecipeResourceId }, recipeMapper.Map(dto));
             }
         }
+
+        /// <summary>
+        /// Get cooking mode data (parsed steps, timers, temperatures)
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        [HttpPost("{id}/cooking-data")]
+        [ProducesResponseType(typeof(CookingDataModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetCookingDataAsync(Guid id) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var dto = await facade.GetCookingDataAsync(id).ConfigureAwait(false);
+                var model = recipeMapper.Map(dto);
+                return Ok(model);
+            }
+        }
     }
 }

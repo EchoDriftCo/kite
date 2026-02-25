@@ -41,7 +41,8 @@ namespace RecipeVault.DomainService.Tests.Services {
             var mockLogger = CreateMockLogger<RecipeService>();
             var mockHttpClientFactory = MockRepository.Create<IHttpClientFactory>();
             var mockImageStorage = MockRepository.Create<IImageStorage>();
-            return new RecipeService(mockRepository.Object, mockTagRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object, mockHttpClientFactory.Object, mockImageStorage.Object);
+            var mockCookingModeService = MockRepository.Create<ICookingModeService>();
+            return new RecipeService(mockRepository.Object, mockTagRepository.Object, mockGeminiClient.Object, mockLogger.Object, mockSubjectPrincipal.Object, mockHttpClientFactory.Object, mockImageStorage.Object, mockCookingModeService.Object);
         }
 
         [Fact]

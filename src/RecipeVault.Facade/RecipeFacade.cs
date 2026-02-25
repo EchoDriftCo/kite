@@ -270,5 +270,9 @@ namespace RecipeVault.Facade {
             await uow.SaveChangesAsync().ConfigureAwait(false);
             return mapper.MapToDto(fork, CurrentSubjectId);
         }
+
+        public Task<CookingDataDto> GetCookingDataAsync(Guid recipeResourceId) {
+            return recipeService.GetCookingDataAsync(recipeResourceId);
+        }
     }
 }
