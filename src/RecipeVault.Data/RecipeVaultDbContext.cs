@@ -23,6 +23,8 @@ namespace RecipeVault.Data {
         public DbSet<CircleMember> CircleMembers { get; set; }
         public DbSet<CircleRecipe> CircleRecipes { get; set; }
         public DbSet<CircleInvite> CircleInvites { get; set; }
+        public DbSet<Collection> Collections { get; set; }
+        public DbSet<CollectionRecipe> CollectionRecipes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.HasDefaultSchema("public");
@@ -81,6 +83,20 @@ namespace RecipeVault.Data {
 
             // CircleRecipe → Recipe (restrict delete if recipe is shared in circles)
             modelBuilder.Entity<CircleRecipe>()
+                .HasOne(cr => cr.Recipe)
+                .WithMany()
+                .HasForeignKey(cr => cr.RecipeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Collection cascade deletes
+            modelBuilder.Entity<CollectionRecipe>()
+                .HasOne(cr => cr.Collection)
+                .WithMany(c => c.CollectionRecipes)
+                .HasForeignKey(cr => cr.CollectionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CollectionRecipe → Recipe (restrict delete if recipe is in collections)
+            modelBuilder.Entity<CollectionRecipe>()
                 .HasOne(cr => cr.Recipe)
                 .WithMany()
                 .HasForeignKey(cr => cr.RecipeId)
