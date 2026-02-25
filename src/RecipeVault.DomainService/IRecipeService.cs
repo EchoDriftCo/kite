@@ -26,5 +26,6 @@ namespace RecipeVault.DomainService {
         Task<Recipe> GetRecipeByShareTokenAsync(string shareToken);
         Task<Recipe> ForkRecipeAsync(Guid recipeResourceId, string newTitle = null);
         Task<PagedList<Recipe>> GetRecipeForksAsync(Guid recipeResourceId, int pageNumber = 1, int pageSize = 20);
+        Task<CookingDataDto> GetCookingDataAsync(Guid recipeResourceId);
     }
 }

@@ -27,5 +27,6 @@ namespace RecipeVault.Facade {
         Task<PagedList<RecipeDto>> GetRecipeForksAsync(Guid recipeResourceId, int pageNumber = 1, int pageSize = 20);
         Task<SubstitutionResponseDto> GetSubstitutionsAsync(Guid recipeResourceId, SubstitutionRequestDto request);
         Task<RecipeDto> ApplySubstitutionsAsync(Guid recipeResourceId, ApplySubstitutionsDto request);
+        Task<CookingDataDto> GetCookingDataAsync(Guid recipeResourceId);
     }
 }

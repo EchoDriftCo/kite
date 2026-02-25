@@ -27,10 +27,11 @@ namespace RecipeVault.DomainService {
         private readonly ISubjectPrincipal subjectPrincipal;
         private readonly IHttpClientFactory httpClientFactory;
         private readonly IImageStorage imageStorage;
+        private readonly ICookingModeService cookingModeService;
 
         private static readonly Guid SystemSubjectId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
-        public RecipeService(IRecipeRepository recipeRepository, ITagRepository tagRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger, ISubjectPrincipal subjectPrincipal, IHttpClientFactory httpClientFactory, IImageStorage imageStorage) {
+        public RecipeService(IRecipeRepository recipeRepository, ITagRepository tagRepository, IGeminiClient geminiClient, ILogger<RecipeService> logger, ISubjectPrincipal subjectPrincipal, IHttpClientFactory httpClientFactory, IImageStorage imageStorage, ICookingModeService cookingModeService) {
             this.logger = logger;
             this.recipeRepository = recipeRepository;
             this.tagRepository = tagRepository;
@@ -38,6 +39,7 @@ namespace RecipeVault.DomainService {
             this.subjectPrincipal = subjectPrincipal;
             this.httpClientFactory = httpClientFactory;
             this.imageStorage = imageStorage;
+            this.cookingModeService = cookingModeService;
         }
 
         public async Task<Recipe> CreateRecipeAsync(UpdateRecipeDto dto) {
@@ -498,6 +500,11 @@ namespace RecipeVault.DomainService {
             };
 
             return await recipeRepository.SearchAsync(search).ConfigureAwait(false);
+        }
+
+        public async Task<CookingDataDto> GetCookingDataAsync(Guid recipeResourceId) {
+            var recipe = await GetRecipeAsync(recipeResourceId).ConfigureAwait(false);
+            return await cookingModeService.GetCookingDataAsync(recipe).ConfigureAwait(false);
         }
     }
 }

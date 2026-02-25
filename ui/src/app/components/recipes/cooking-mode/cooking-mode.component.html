@@ -1,0 +1,126 @@
+<div class="cooking-mode-container">
+  <div class="cooking-mode-header">
+    <h1 class="recipe-title">{{ recipe?.title }}</h1>
+    <div class="header-actions">
+      <button mat-icon-button (click)="toggleVoiceControl()" [class.active]="isVoiceEnabled" matTooltip="Voice Control">
+        <mat-icon>{{ isVoiceEnabled ? 'mic' : 'mic_off' }}</mat-icon>
+      </button>
+      <button mat-icon-button (click)="exitCookingMode()" matTooltip="Exit Cooking Mode">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Preparing cooking mode...</p>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <mat-icon>error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button (click)="exitCookingMode()">Go Back</button>
+  </div>
+
+  <div *ngIf="!isLoading && !error && cookingData" class="cooking-content">
+    <!-- Step Progress -->
+    <div class="step-progress">
+      <span class="current-step">Step {{ currentStepIndex + 1 }}</span>
+      <span class="total-steps">of {{ totalSteps }}</span>
+    </div>
+
+    <!-- Current Step -->
+    <div class="step-card">
+      <div class="step-instruction">
+        {{ currentStep?.instruction }}
+      </div>
+
+      <!-- Step Timers -->
+      <div class="step-timers" *ngIf="stepTimers.length > 0">
+        <div class="timer-chips">
+          <button 
+            *ngFor="let timer of stepTimers"
+            mat-raised-button 
+            color="primary"
+            (click)="startTimer(timer)"
+            class="timer-chip">
+            <mat-icon>timer</mat-icon>
+            {{ timer.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Read Aloud Button -->
+      <button mat-button (click)="readStep()" class="read-button">
+        <mat-icon>volume_up</mat-icon>
+        Read Step Aloud
+      </button>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation-controls">
+      <button 
+        mat-fab 
+        extended
+        [disabled]="currentStepIndex === 0"
+        (click)="previousStep()"
+        class="nav-button prev-button">
+        <mat-icon>navigate_before</mat-icon>
+        Previous
+      </button>
+
+      <button 
+        mat-fab 
+        extended
+        color="primary"
+        [disabled]="currentStepIndex === totalSteps - 1"
+        (click)="nextStep()"
+        class="nav-button next-button">
+        Next
+        <mat-icon>navigate_next</mat-icon>
+      </button>
+    </div>
+
+    <!-- Active Timers Panel -->
+    <div class="active-timers-panel" *ngIf="activeTimers.length > 0">
+      <h3>Active Timers</h3>
+      <div class="active-timer" *ngFor="let activeTimer of activeTimers">
+        <div class="timer-info">
+          <span class="timer-label">{{ activeTimer.timer.label }}</span>
+          <span class="timer-time" [class.warning]="activeTimer.remainingSeconds <= 60">
+            {{ formatTime(activeTimer.remainingSeconds) }}
+          </span>
+        </div>
+        <div class="timer-controls">
+          <button mat-icon-button *ngIf="activeTimer.isRunning" (click)="pauseTimer(activeTimer)">
+            <mat-icon>pause</mat-icon>
+          </button>
+          <button mat-icon-button *ngIf="activeTimer.isPaused" (click)="resumeTimer(activeTimer)">
+            <mat-icon>play_arrow</mat-icon>
+          </button>
+          <button mat-icon-button (click)="resetTimer(activeTimer)">
+            <mat-icon>refresh</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ingredients Checklist -->
+    <div class="ingredients-panel">
+      <h3>Ingredients</h3>
+      <div class="ingredient-list">
+        <div class="ingredient-item" *ngFor="let ingredient of recipe?.ingredients; let i = index">
+          <mat-checkbox [(ngModel)]="ingredientChecklist[i]">
+            {{ ingredient.rawText }}
+          </mat-checkbox>
+        </div>
+      </div>
+    </div>
+
+    <!-- Voice Status Indicator -->
+    <div class="voice-status" *ngIf="isVoiceEnabled">
+      <mat-icon [class.listening]="isListening">{{ isListening ? 'mic' : 'mic_off' }}</mat-icon>
+      <span>{{ isListening ? 'Listening...' : 'Voice Inactive' }}</span>
+    </div>
+  </div>
+</div>

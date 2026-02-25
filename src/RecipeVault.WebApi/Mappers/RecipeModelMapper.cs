@@ -233,5 +233,32 @@ namespace RecipeVault.WebApi.Mappers {
                 }).ToList()
             };
         }
+
+        public CookingDataModel Map(CookingDataDto dto) {
+            if (dto == null) {
+                return null;
+            }
+
+            return new CookingDataModel {
+                RecipeResourceId = dto.RecipeResourceId,
+                Steps = dto.Steps?.Select(s => new CookingStepModel {
+                    StepNumber = s.StepNumber,
+                    Instruction = s.Instruction,
+                    TimerIndexes = s.TimerIndexes
+                }).ToList(),
+                Timers = dto.Timers?.Select(t => new TimerModel {
+                    Index = t.Index,
+                    Label = t.Label,
+                    Seconds = t.Seconds,
+                    StepNumber = t.StepNumber
+                }).ToList(),
+                Temperatures = dto.Temperatures?.Select(t => new TemperatureModel {
+                    StepNumber = t.StepNumber,
+                    Value = t.Value,
+                    Unit = t.Unit,
+                    Context = t.Context
+                }).ToList()
+            };
+        }
     }
 }

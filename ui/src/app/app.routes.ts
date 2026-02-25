@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { RecipeListComponent } from './components/recipes/recipe-list/recipe-list.component';
 import { RecipeDetailComponent } from './components/recipes/recipe-detail/recipe-detail.component';
 import { RecipeFormComponent } from './components/recipes/recipe-form/recipe-form.component';
+import { CookingModeComponent } from './components/recipes/cooking-mode/cooking-mode.component';
 import { MealPlanListComponent } from './components/meal-plans/meal-plan-list/meal-plan-list.component';
 import { MealPlanFormComponent } from './components/meal-plans/meal-plan-form/meal-plan-form.component';
 import { MealPlanDetailComponent } from './components/meal-plans/meal-plan-detail/meal-plan-detail.component';
@@ -22,6 +23,7 @@ export const routes: Routes = [
   { path: 'recipes/new', component: RecipeFormComponent, canActivate: [authGuard] },
   { path: 'recipes/:id', component: RecipeDetailComponent, canActivate: [authGuard] },
   { path: 'recipes/:id/edit', component: RecipeFormComponent, canActivate: [authGuard] },
+  { path: 'recipes/:id/cook', component: CookingModeComponent, canActivate: [authGuard] },
   { path: 'circles', component: CircleListComponent, canActivate: [authGuard] },
   { path: 'circles/:id', component: CircleDetailComponent, canActivate: [authGuard] },
   { path: 'meal-plans', component: MealPlanListComponent, canActivate: [authGuard] },
