@@ -157,6 +157,14 @@ export class RecipeService {
   }
 
   /**
+   * Fork a recipe to create a personal copy
+   */
+  forkRecipe(id: string, title?: string): Observable<Recipe> {
+    const body = title ? { title } : {};
+    return this.api.post<Recipe>(`${this.endpoint}/${id}/fork`, body);
+  }
+
+  /**
    * Import recipes from Paprika (.paprikarecipes file)
    */
   importFromPaprika(file: File): Observable<PaprikaImportResult> {

@@ -63,6 +63,12 @@
               <mat-icon>delete</mat-icon>
               Delete
             </button>
+          } @else {
+            <!-- Actions for recipes user doesn't own -->
+            <button mat-raised-button color="primary" (click)="forkRecipe()" *ngIf="canForkRecipe()">
+              <mat-icon>content_copy</mat-icon>
+              Fork Recipe
+            </button>
           }
         </div>
       </div>
