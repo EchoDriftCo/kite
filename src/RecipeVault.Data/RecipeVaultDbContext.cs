@@ -13,6 +13,7 @@ namespace RecipeVault.Data {
         }
 
         public DbSet<Recipe> Recipes { get; set; }
+        public DbSet<RecipeIngredient> RecipeIngredients { get; set; }
         public DbSet<Unit> Units { get; set; }
         public DbSet<UnitAlias> UnitAliases { get; set; }
         public DbSet<MealPlan> MealPlans { get; set; }
@@ -23,6 +24,8 @@ namespace RecipeVault.Data {
         public DbSet<CircleMember> CircleMembers { get; set; }
         public DbSet<CircleRecipe> CircleRecipes { get; set; }
         public DbSet<CircleInvite> CircleInvites { get; set; }
+        public DbSet<IngredientNutrition> IngredientNutritions { get; set; }
+        public DbSet<RecipeNutrition> RecipeNutritions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.HasDefaultSchema("public");
@@ -85,6 +88,19 @@ namespace RecipeVault.Data {
                 .WithMany()
                 .HasForeignKey(cr => cr.RecipeId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Nutrition cascade deletes
+            modelBuilder.Entity<IngredientNutrition>()
+                .HasOne(i_n => i_n.RecipeIngredient)
+                .WithMany()
+                .HasForeignKey(i_n => i_n.RecipeIngredientId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RecipeNutrition>()
+                .HasOne(rn => rn.Recipe)
+                .WithMany()
+                .HasForeignKey(rn => rn.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

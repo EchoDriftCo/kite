@@ -19,6 +19,7 @@ export interface RecipeInstruction {
 }
 
 export interface Recipe {
+  recipeId?: number;
   recipeResourceId: string;
   title: string;
   description?: string;

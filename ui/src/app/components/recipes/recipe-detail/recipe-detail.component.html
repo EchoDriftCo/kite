@@ -156,6 +156,14 @@
       }
     </div>
 
+    <!-- Nutrition Panel -->
+    @if (recipe.recipeResourceId) {
+      <app-nutrition-panel 
+        [recipeResourceId]="recipe.recipeResourceId" 
+        [recipeYield]="recipe.yield">
+      </app-nutrition-panel>
+    }
+
     <mat-divider></mat-divider>
 
     <div class="scaling-controls">

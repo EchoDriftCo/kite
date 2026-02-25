@@ -1,0 +1,166 @@
+<mat-card class="nutrition-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>restaurant</mat-icon>
+      Nutrition Facts
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (loading) {
+      <div class="loading-state">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading nutrition data...</p>
+      </div>
+    }
+
+    @if (error) {
+      <div class="error-state">
+        <mat-icon color="warn">error</mat-icon>
+        <p>{{ error }}</p>
+        <button mat-button color="primary" (click)="loadNutrition()">
+          Try Again
+        </button>
+      </div>
+    }
+
+    @if (!loading && !error && !nutrition) {
+      <div class="no-data-state">
+        <mat-icon>analytics</mat-icon>
+        <p>Nutrition data not available</p>
+        <p class="hint">Click below to analyze ingredients and calculate nutrition.</p>
+        <button mat-raised-button color="primary" (click)="analyzeNutrition()" [disabled]="analyzing">
+          @if (analyzing) {
+            <mat-spinner diameter="20"></mat-spinner>
+            Analyzing...
+          } @else {
+            <mat-icon>play_arrow</mat-icon>
+            Analyze Nutrition
+          }
+        </button>
+      </div>
+    }
+
+    @if (!loading && !error && nutrition) {
+      <div class="nutrition-content">
+        <div class="serving-info">
+          <strong>Per Serving</strong>
+          <span class="yield-label">({{ recipeYield }} {{ recipeYield === 1 ? 'serving' : 'servings' }})</span>
+        </div>
+
+        @if (nutrition.isStale) {
+          <div class="stale-warning">
+            <mat-icon>warning</mat-icon>
+            Recipe changed since calculation
+            <button mat-stroked-button size="small" (click)="analyzeNutrition()" [disabled]="analyzing">
+              Recalculate
+            </button>
+          </div>
+        }
+
+        <div class="nutrition-stats">
+          <div class="calories-highlight">
+            <span class="label">Calories</span>
+            <span class="value">{{ nutrition.caloriesPerServing || 0 | number:'1.0-0' }}</span>
+          </div>
+
+          <div class="macros-grid">
+            <div class="macro-item">
+              <div class="macro-header">
+                <span class="label">Protein</span>
+                <span class="value">{{ nutrition.proteinPerServing || 0 | number:'1.0-1' }}g</span>
+              </div>
+              <mat-progress-bar
+                mode="determinate"
+                [value]="getPercentDV('protein', nutrition.proteinPerServing)"
+                color="primary">
+              </mat-progress-bar>
+              <span class="dv-label">{{ getPercentDV('protein', nutrition.proteinPerServing) }}% DV</span>
+            </div>
+
+            <div class="macro-item">
+              <div class="macro-header">
+                <span class="label">Carbs</span>
+                <span class="value">{{ nutrition.carbsPerServing || 0 | number:'1.0-1' }}g</span>
+              </div>
+              <mat-progress-bar
+                mode="determinate"
+                [value]="getPercentDV('carbs', nutrition.carbsPerServing)"
+                color="accent">
+              </mat-progress-bar>
+              <span class="dv-label">{{ getPercentDV('carbs', nutrition.carbsPerServing) }}% DV</span>
+            </div>
+
+            <div class="macro-item">
+              <div class="macro-header">
+                <span class="label">Fat</span>
+                <span class="value">{{ nutrition.fatPerServing || 0 | number:'1.0-1' }}g</span>
+              </div>
+              <mat-progress-bar
+                mode="determinate"
+                [value]="getPercentDV('fat', nutrition.fatPerServing)"
+                color="warn">
+              </mat-progress-bar>
+              <span class="dv-label">{{ getPercentDV('fat', nutrition.fatPerServing) }}% DV</span>
+            </div>
+
+            @if (nutrition.fiberPerServing) {
+              <div class="macro-item">
+                <div class="macro-header">
+                  <span class="label">Fiber</span>
+                  <span class="value">{{ nutrition.fiberPerServing | number:'1.0-1' }}g</span>
+                </div>
+                <mat-progress-bar
+                  mode="determinate"
+                  [value]="getPercentDV('fiber', nutrition.fiberPerServing)">
+                </mat-progress-bar>
+                <span class="dv-label">{{ getPercentDV('fiber', nutrition.fiberPerServing) }}% DV</span>
+              </div>
+            }
+
+            @if (nutrition.sugarPerServing) {
+              <div class="macro-item">
+                <div class="macro-header">
+                  <span class="label">Sugar</span>
+                  <span class="value">{{ nutrition.sugarPerServing | number:'1.0-1' }}g</span>
+                </div>
+              </div>
+            }
+
+            @if (nutrition.sodiumPerServing) {
+              <div class="macro-item">
+                <div class="macro-header">
+                  <span class="label">Sodium</span>
+                  <span class="value">{{ nutrition.sodiumPerServing | number:'1.0-0' }}mg</span>
+                </div>
+                <mat-progress-bar
+                  mode="determinate"
+                  [value]="getPercentDV('sodium', nutrition.sodiumPerServing)">
+                </mat-progress-bar>
+                <span class="dv-label">{{ getPercentDV('sodium', nutrition.sodiumPerServing) }}% DV</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="coverage-info" 
+             [class.good]="coverageGood"
+             [class.okay]="coverageOkay"
+             [class.poor]="coveragePoor">
+          <mat-icon>info</mat-icon>
+          <span>
+            {{ nutrition.ingredientsMatched }} of {{ nutrition.ingredientsTotal }} ingredients matched
+            ({{ nutrition.coveragePercent | number:'1.0-0' }}% coverage)
+          </span>
+        </div>
+
+        <div class="actions">
+          <button mat-stroked-button (click)="analyzeNutrition()" [disabled]="analyzing">
+            <mat-icon>refresh</mat-icon>
+            Recalculate
+          </button>
+        </div>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

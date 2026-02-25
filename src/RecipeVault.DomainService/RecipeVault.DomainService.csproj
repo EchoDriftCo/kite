@@ -17,5 +17,6 @@
     <ProjectReference Include="..\RecipeVault.Dto\RecipeVault.Dto.csproj" />
     <ProjectReference Include="..\RecipeVault.Exceptions\RecipeVault.Exceptions.csproj" />
     <ProjectReference Include="..\RecipeVault.Integrations.Gemini\RecipeVault.Integrations.Gemini.csproj" />
+    <ProjectReference Include="..\RecipeVault.Integrations.Usda\RecipeVault.Integrations.Usda.csproj" />
   </ItemGroup>
 </Project>
