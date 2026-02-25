@@ -1,80 +1,91 @@
 using System;
-using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RecipeVault.Dto.Input;
 using RecipeVault.Dto.Output;
 using RecipeVault.Facade;
+using Serilog.Context;
 
 namespace RecipeVault.WebApi.Controllers {
     /// <summary>
-    /// Nutrition calculation and food search endpoints
+    /// Nutrition analysis and USDA food search
     /// </summary>
     [ApiVersion("1")]
     [Produces("application/json")]
     [ApiController]
-    [Route("api/v{version:apiVersion}/nutrition")]
+    [Route("api/v{version:apiVersion}")]
     [Authorize]
     public class NutritionController : ControllerBase {
-        private readonly INutritionFacade facade;
+        private readonly INutritionFacade _facade;
 
         public NutritionController(INutritionFacade facade) {
-            this.facade = facade;
+            _facade = facade;
         }
 
         /// <summary>
-        /// Calculate nutrition for a recipe
+        /// Analyze nutrition for a recipe
         /// </summary>
-        [HttpPost("recipes/{recipeId}/calculate")]
+        /// <param name="id">Recipe Resource ID</param>
+        [HttpPost("recipes/{id}/nutrition/analyze")]
         [ProducesResponseType(typeof(RecipeNutritionDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
-        public async Task<IActionResult> CalculateRecipeNutritionAsync(Guid recipeId) {
-            if (!facade.IsAvailable()) {
-                return StatusCode(503, new { message = "Nutrition service is not available" });
+        public async Task<IActionResult> AnalyzeRecipeNutritionAsync(Guid id) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var dto = await _facade.AnalyzeRecipeNutritionAsync(id).ConfigureAwait(false);
+                return Ok(dto);
             }
-
-            var nutrition = await facade.CalculateRecipeNutritionAsync(recipeId);
-            return Ok(nutrition);
         }
 
         /// <summary>
-        /// Get nutrition data for a recipe
+        /// Get cached nutrition for a recipe
         /// </summary>
-        [HttpGet("recipes/{recipeId}")]
+        /// <param name="id">Recipe Resource ID</param>
+        [HttpGet("recipes/{id}/nutrition")]
         [ProducesResponseType(typeof(RecipeNutritionDto), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetRecipeNutritionAsync(Guid recipeId) {
-            var nutrition = await facade.GetRecipeNutritionAsync(recipeId);
-            return Ok(nutrition);
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetRecipeNutritionAsync(Guid id) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var dto = await _facade.GetRecipeNutritionAsync(id).ConfigureAwait(false);
+                if (dto == null) {
+                    return NotFound();
+                }
+                return Ok(dto);
+            }
         }
 
         /// <summary>
-        /// Search USDA foods
+        /// Update ingredient nutrition (manual override)
         /// </summary>
-        [HttpGet("foods/search")]
-        [ProducesResponseType(typeof(List<FoodSearchDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        /// <param name="id">Recipe Resource ID</param>
+        /// <param name="ingredientIndex">Ingredient index</param>
+        /// <param name="input">Updated nutrition data</param>
+        [HttpPut("recipes/{id}/ingredients/{ingredientIndex}/nutrition")]
+        [ProducesResponseType(typeof(IngredientNutritionDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateIngredientNutritionAsync(Guid id, int ingredientIndex, [FromBody] UpdateIngredientNutritionDto input) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                using (LogContext.PushProperty("IngredientIndex", ingredientIndex)) {
+                    var dto = await _facade.UpdateIngredientNutritionAsync(id, ingredientIndex, input).ConfigureAwait(false);
+                    return Ok(dto);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Search USDA FoodData Central
+        /// </summary>
+        /// <param name="query">Search query</param>
+        [HttpGet("nutrition/search")]
+        [ProducesResponseType(typeof(FoodSearchDto[]), StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchFoodsAsync([FromQuery] string query) {
-            if (!facade.IsAvailable()) {
-                return StatusCode(503, new { message = "Nutrition service is not available" });
-            }
-
             if (string.IsNullOrWhiteSpace(query)) {
-                return BadRequest(new { message = "Query parameter is required" });
+                return BadRequest("Query parameter is required");
             }
 
-            var results = await facade.SearchFoodsAsync(query);
+            var results = await _facade.SearchFoodsAsync(query).ConfigureAwait(false);
             return Ok(results);
-        }
-
-        /// <summary>
-        /// Check if nutrition service is available
-        /// </summary>
-        [HttpGet("status")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetStatus() {
-            return Ok(new { available = facade.IsAvailable() });
         }
     }
 }

@@ -24,6 +24,7 @@ import {
   SubstitutionDialogResult
 } from '../substitution-dialog/substitution-dialog.component';
 import { ShareRecipeDialogComponent } from '../../circles/share-recipe-dialog/share-recipe-dialog.component';
+import { NutritionPanelComponent } from '../nutrition-panel/nutrition-panel.component';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -38,6 +39,7 @@ import { ShareRecipeDialogComponent } from '../../circles/share-recipe-dialog/sh
     MatDividerModule,
     MatDialogModule,
     MatSnackBarModule,
+    NutritionPanelComponent,
     MatTooltipModule,
     MatExpansionModule,
     MatFormFieldModule,

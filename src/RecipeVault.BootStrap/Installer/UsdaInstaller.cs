@@ -7,7 +7,10 @@ namespace RecipeVault.BootStrap.Installer {
     public class UsdaInstaller : IInstaller {
         public void Install(IServiceCollection services, IConfiguration configuration) {
             services.Configure<UsdaConfiguration>(configuration.GetSection("Usda"));
-            services.AddHttpClient<IUsdaClient, UsdaClient>();
+            services.AddHttpClient<IUsdaFoodDataService>();
+            services.AddScoped<IUsdaFoodDataService, UsdaFoodDataService>();
+            services.AddScoped<IIngredientParser, IngredientParser>();
+            services.AddScoped<IUnitConverter, UnitConverter>();
         }
     }
 }

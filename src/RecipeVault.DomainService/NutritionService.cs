@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -56,15 +57,15 @@ namespace RecipeVault.DomainService {
 
             foreach (var ingredient in recipe.Ingredients) {
                 try {
-                    var parsed = _ingredientParser.Parse(ingredient.Text);
+                    var parsed = _ingredientParser.Parse(ingredient.RawText);
                     if (string.IsNullOrWhiteSpace(parsed.Item)) {
-                        _logger.LogWarning("Could not parse ingredient: {Text}", ingredient.Text);
+                        _logger.LogWarning("Could not parse ingredient: {Text}", ingredient.RawText);
                         continue;
                     }
 
                     // Search USDA for the ingredient
                     var searchResults = await _usdaService.SearchWithBestMatchAsync(parsed.Item, 3);
-                    if (!searchResults.Any()) {
+                    if (searchResults.Count == 0) {
                         _logger.LogWarning("No USDA match found for: {Item}", parsed.Item);
                         continue;
                     }
@@ -116,12 +117,12 @@ namespace RecipeVault.DomainService {
 
                     matched++;
                 } catch (Exception ex) {
-                    _logger.LogError(ex, "Error analyzing ingredient: {Text}", ingredient.Text);
+                    _logger.LogError(ex, "Error analyzing ingredient: {Text}", ingredient.RawText);
                 }
             }
 
             // Calculate per-serving values
-            var servings = recipe.Servings > 0 ? recipe.Servings : 1;
+            var servings = recipe.Yield > 0 ? recipe.Yield : 1;
 
             // Create or update recipe nutrition
             var recipeNutrition = await _context.RecipeNutritions
@@ -169,7 +170,7 @@ namespace RecipeVault.DomainService {
                 .FirstOrDefaultAsync(i_n => i_n.RecipeIngredientId == recipeIngredientId);
 
             if (ingredientNutrition == null) {
-                var parsed = _ingredientParser.Parse(ingredient.Text);
+                var parsed = _ingredientParser.Parse(ingredient.RawText);
                 var quantity = parsed.Quantity ?? 1m;
                 var grams = await _unitConverter.ConvertToGramsAsync(quantity, parsed.Unit, parsed.Item, fdcId);
 
@@ -186,7 +187,7 @@ namespace RecipeVault.DomainService {
             // Fetch nutrition data from USDA if FdcId provided
             if (fdcId.HasValue) {
                 var searchResults = await _usdaService.SearchFoodsAsync(matchedFoodName, 1);
-                if (searchResults.Foods.Any()) {
+                if (searchResults.Foods.Count > 0) {
                     var food = searchResults.Foods.First();
                     var nutrients = ExtractNutrients(food);
                     var scaleFactor = ingredientNutrition.GramsUsed / 100m;
@@ -221,13 +222,13 @@ namespace RecipeVault.DomainService {
             return await _usdaService.SearchFoodsAsync(query);
         }
 
-        private decimal CalculateMatchConfidence(string searchTerm, string matchedName) {
+        private static decimal CalculateMatchConfidence(string searchTerm, string matchedName) {
             if (string.IsNullOrWhiteSpace(searchTerm) || string.IsNullOrWhiteSpace(matchedName)) {
                 return 0m;
             }
 
-            var searchLower = searchTerm.ToLower();
-            var matchLower = matchedName.ToLower();
+            var searchLower = searchTerm.ToLower(CultureInfo.InvariantCulture);
+            var matchLower = matchedName.ToLower(CultureInfo.InvariantCulture);
 
             // Exact match
             if (searchLower == matchLower) return 1.0m;
@@ -246,7 +247,7 @@ namespace RecipeVault.DomainService {
             return Math.Max(0.5m, (decimal)overlap / maxWords);
         }
 
-        private (decimal Calories, decimal Protein, decimal Carbs, decimal Fat, decimal Fiber, decimal Sugar, decimal Sodium) ExtractNutrients(FoodSearchResult food) {
+        private static (decimal Calories, decimal Protein, decimal Carbs, decimal Fat, decimal Fiber, decimal Sugar, decimal Sodium) ExtractNutrients(FoodSearchResult food) {
             decimal GetNutrientValue(string nutrientNumber) {
                 var nutrient = food.FoodNutrients?.FirstOrDefault(n => n.NutrientNumber == nutrientNumber);
                 return nutrient?.Value ?? 0m;
