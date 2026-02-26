@@ -25,6 +25,8 @@ namespace RecipeVault.Data {
         DbSet<AvoidedIngredient> AvoidedIngredients { get; set; }
         DbSet<Collection> Collections { get; set; }
         DbSet<CollectionRecipe> CollectionRecipes { get; set; }
+        DbSet<CookingLog> CookingLogs { get; set; }
+        DbSet<CookingLogPhoto> CookingLogPhotos { get; set; }
 
         void RemoveRange(IEnumerable<object> entities);
         EntityEntry Remove(object entity);

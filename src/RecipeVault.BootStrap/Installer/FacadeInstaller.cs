@@ -9,6 +9,8 @@ namespace RecipeVault.BootStrap.Installer {
         public void Install(IServiceCollection services, IConfiguration configuration) {
             services.AddScopedInterfacesBySuffix<RecipeFacade>("Facade");
             services.AddSingletonClassesBySuffix<RecipeMapper>("Mapper");
+            services.AddScoped<ICookingLogFacade, CookingLogFacade>();
+            services.AddSingleton<CookingLogMapper>();
         }
     }
 }

@@ -9,6 +9,7 @@ namespace RecipeVault.WebApi.Installers {
     public class ModelMapperInstaller : IInstaller {
         public void Install(IServiceCollection services, IConfiguration configuration) {
             services.AddSingletonClassesBySuffix<RecipeModelMapper>("Mapper");
+            services.AddSingleton<CookingLogModelMapper>();
         }
     }
 }
