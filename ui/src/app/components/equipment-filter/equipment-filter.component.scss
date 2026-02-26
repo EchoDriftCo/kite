@@ -1,0 +1,19 @@
+.equipment-filter {
+  display: inline-block;
+
+  mat-chip-option {
+    cursor: pointer;
+    
+    mat-icon {
+      font-size: 1.2rem;
+      width: 1.2rem;
+      height: 1.2rem;
+      margin-right: 0.25rem;
+    }
+
+    &.mat-mdc-chip-selected {
+      background-color: var(--primary-color);
+      color: white;
+    }
+  }
+}

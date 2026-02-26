@@ -170,6 +170,76 @@
 
     <mat-divider></mat-divider>
 
+    <!-- Equipment Section -->
+    <div class="equipment-section">
+      <div class="section-header">
+        <h2>
+          <mat-icon>kitchen</mat-icon>
+          Equipment Needed
+        </h2>
+        @if (recipe.isOwner !== false) {
+          <button 
+            mat-stroked-button 
+            color="accent"
+            (click)="detectEquipment()"
+            [disabled]="detectingEquipment">
+            @if (detectingEquipment) {
+              <mat-spinner diameter="20"></mat-spinner>
+              Detecting...
+            } @else {
+              <mat-icon>auto_fix_high</mat-icon>
+              Auto-detect
+            }
+          </button>
+        }
+      </div>
+
+      @if (loadingEquipment) {
+        <div class="equipment-loading">
+          <mat-spinner diameter="30"></mat-spinner>
+        </div>
+      }
+
+      @if (!loadingEquipment && equipmentCheck) {
+        @if (equipmentCheck.requiredEquipment.length === 0) {
+          <p class="no-equipment">No equipment specified for this recipe.</p>
+        } @else {
+          <div class="equipment-list">
+            @for (item of equipmentCheck.requiredEquipment; track item.equipmentCode) {
+              <div class="equipment-item" 
+                   [class.owned]="isEquipmentOwned(item.equipmentCode)">
+                <mat-icon class="status-icon">
+                  {{ getEquipmentStatusIcon(item.equipmentCode) }}
+                </mat-icon>
+                <span class="equipment-name">{{ item.equipment.name }}</span>
+                @if (item.equipment.description) {
+                  <span class="equipment-description">— {{ item.equipment.description }}</span>
+                }
+              </div>
+            }
+          </div>
+
+          @if (!equipmentCheck.hasAllEquipment) {
+            <div class="missing-equipment-notice">
+              <mat-icon>info</mat-icon>
+              <span>
+                You're missing {{ equipmentCheck.missingEquipment.length }} 
+                item{{ equipmentCheck.missingEquipment.length > 1 ? 's' : '' }}.
+                <a routerLink="/equipment">Update your equipment</a> to see more matching recipes.
+              </span>
+            </div>
+          } @else {
+            <div class="all-equipment-notice">
+              <mat-icon>check_circle</mat-icon>
+              <span>You have all the equipment needed for this recipe!</span>
+            </div>
+          }
+        }
+      }
+    </div>
+
+    <mat-divider></mat-divider>
+
     <div class="scaling-controls">
       <div class="scaling-label">
         <mat-icon>straighten</mat-icon>

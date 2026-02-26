@@ -16,6 +16,7 @@ import { RecipeService } from '../../../services/recipe.service';
 import { TagService } from '../../../services/tag.service';
 import { Recipe, RecipeSearchRequest } from '../../../models/recipe.model';
 import { Tag, getCategoryName } from '../../../models/tag.model';
+import { EquipmentFilterComponent } from '../../equipment-filter/equipment-filter.component';
 
 @Component({
   selector: 'app-recipe-list',
@@ -32,7 +33,8 @@ import { Tag, getCategoryName } from '../../../models/tag.model';
     MatFormFieldModule,
     MatInputModule,
     MatButtonToggleModule,
-    MatTooltipModule
+    MatTooltipModule,
+    EquipmentFilterComponent
   ],
   templateUrl: './recipe-list.component.html',
   styleUrl: './recipe-list.component.scss'
@@ -47,6 +49,7 @@ export class RecipeListComponent implements OnInit {
   showTagFilters = false;
   availableTags: Tag[] = [];
   selectedTagIds: string[] = [];
+  equipmentFilterEnabled = false;
 
   // Pagination
   pageNumber = 1;
@@ -85,6 +88,10 @@ export class RecipeListComponent implements OnInit {
 
     if (this.selectedTagIds.length > 0) {
       request.tagResourceIds = this.selectedTagIds;
+    }
+
+    if (this.equipmentFilterEnabled) {
+      request.hasRequiredEquipment = true;
     }
 
     this.recipeService.searchRecipes(request).subscribe({
@@ -158,6 +165,12 @@ export class RecipeListComponent implements OnInit {
 
   toggleFavoritesFilter() {
     this.favoritesOnly = !this.favoritesOnly;
+    this.pageNumber = 1;
+    this.loadRecipes();
+  }
+
+  onEquipmentFilterChange(enabled: boolean) {
+    this.equipmentFilterEnabled = enabled;
     this.pageNumber = 1;
     this.loadRecipes();
   }

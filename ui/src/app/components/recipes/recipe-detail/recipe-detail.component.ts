@@ -25,6 +25,8 @@ import {
 } from '../substitution-dialog/substitution-dialog.component';
 import { ShareRecipeDialogComponent } from '../../circles/share-recipe-dialog/share-recipe-dialog.component';
 import { NutritionPanelComponent } from '../nutrition-panel/nutrition-panel.component';
+import { EquipmentService } from '../../../services/equipment.service';
+import { EquipmentCheckResult } from '../../../models/equipment.model';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -62,12 +64,18 @@ export class RecipeDetailComponent implements OnInit {
   scaledServings = 0;
   scaleFactor = 1;
 
+  // Equipment
+  equipmentCheck: EquipmentCheckResult | null = null;
+  loadingEquipment = false;
+  detectingEquipment = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private recipeService: RecipeService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private equipmentService: EquipmentService
   ) {}
 
   ngOnInit() {
@@ -90,6 +98,7 @@ export class RecipeDetailComponent implements OnInit {
         this.scaledServings = recipe.yield;
         this.scaleFactor = 1;
         this.loading = false;
+        this.loadRecipeEquipment();
       },
       error: (err) => {
         this.error = err.message || 'Failed to load recipe';
@@ -97,6 +106,49 @@ export class RecipeDetailComponent implements OnInit {
         console.error('Error loading recipe:', err);
       }
     });
+  }
+
+  loadRecipeEquipment() {
+    if (!this.recipeId) return;
+
+    this.loadingEquipment = true;
+    this.equipmentService.checkRecipeEquipment(this.recipeId).subscribe({
+      next: (result) => {
+        this.equipmentCheck = result;
+        this.loadingEquipment = false;
+      },
+      error: (err) => {
+        console.error('Error loading equipment:', err);
+        this.loadingEquipment = false;
+      }
+    });
+  }
+
+  detectEquipment() {
+    if (!this.recipeId) return;
+
+    this.detectingEquipment = true;
+    this.equipmentService.detectRecipeEquipment(this.recipeId).subscribe({
+      next: () => {
+        this.snackBar.open('Equipment detected!', 'Close', { duration: 3000 });
+        this.loadRecipeEquipment();
+        this.detectingEquipment = false;
+      },
+      error: (err) => {
+        this.snackBar.open('Failed to detect equipment', 'Close', { duration: 3000 });
+        console.error('Error detecting equipment:', err);
+        this.detectingEquipment = false;
+      }
+    });
+  }
+
+  isEquipmentOwned(equipmentCode: string): boolean {
+    if (!this.equipmentCheck) return false;
+    return !this.equipmentCheck.missingEquipment.some(e => e.code === equipmentCode);
+  }
+
+  getEquipmentStatusIcon(equipmentCode: string): string {
+    return this.isEquipmentOwned(equipmentCode) ? 'check_circle' : 'cancel';
   }
 
   goBack() {
