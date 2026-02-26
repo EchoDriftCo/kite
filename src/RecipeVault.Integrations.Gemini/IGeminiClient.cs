@@ -70,6 +70,14 @@ namespace RecipeVault.Integrations.Gemini {
             List<int> targetIngredientIndices,
             List<string> dietaryConstraints,
             CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Send a text prompt to Gemini and get raw text response (for recipe generation, etc.)
+        /// </summary>
+        /// <param name="prompt">Text prompt to send</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Raw text response from Gemini</returns>
+        Task<string> GenerateTextAsync(string prompt, CancellationToken cancellationToken = default);
     }
 
     /// <summary>

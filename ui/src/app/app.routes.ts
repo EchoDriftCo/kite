@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { RecipeListComponent } from './components/recipes/recipe-list/recipe-list.component';
 import { RecipeDetailComponent } from './components/recipes/recipe-detail/recipe-detail.component';
 import { RecipeFormComponent } from './components/recipes/recipe-form/recipe-form.component';
+import { RecipeGeneratorComponent } from './components/recipes/recipe-generator/recipe-generator.component';
 import { CookingModeComponent } from './components/recipes/cooking-mode/cooking-mode.component';
 import { MealPlanListComponent } from './components/meal-plans/meal-plan-list/meal-plan-list.component';
 import { MealPlanFormComponent } from './components/meal-plans/meal-plan-form/meal-plan-form.component';
@@ -22,6 +23,7 @@ export const routes: Routes = [
   { path: 'join/:token', component: AcceptInviteComponent, canActivate: [authGuard] },
   { path: 'recipes', component: RecipeListComponent, canActivate: [authGuard] },
   { path: 'recipes/new', component: RecipeFormComponent, canActivate: [authGuard] },
+  { path: 'recipes/generate', component: RecipeGeneratorComponent, canActivate: [authGuard] },
   { path: 'recipes/:id', component: RecipeDetailComponent, canActivate: [authGuard] },
   { path: 'recipes/:id/edit', component: RecipeFormComponent, canActivate: [authGuard] },
   { path: 'recipes/:id/cook', component: CookingModeComponent, canActivate: [authGuard] },

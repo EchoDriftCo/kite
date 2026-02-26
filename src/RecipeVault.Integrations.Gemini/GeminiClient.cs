@@ -555,6 +555,13 @@ Rules:
         }
 
         /// <summary>
+        /// Send a text prompt to Gemini and get raw text response (for recipe generation, etc.)
+        /// </summary>
+        public async Task<string> GenerateTextAsync(string prompt, CancellationToken cancellationToken = default) {
+            return await SendTextPromptAsync(prompt, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Send a text-only prompt to Gemini and return the text response
         /// </summary>
         private async Task<string> SendTextPromptAsync(string prompt, CancellationToken cancellationToken) {
