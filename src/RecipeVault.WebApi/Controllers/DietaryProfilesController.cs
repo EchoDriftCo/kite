@@ -1,11 +1,11 @@
 using System;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using RecipeVault.Facade;
 using RecipeVault.WebApi.Mappers;
 using RecipeVault.WebApi.Models.Requests;
@@ -24,13 +24,15 @@ namespace RecipeVault.WebApi.Controllers {
     public class DietaryProfilesController : ControllerBase {
         private readonly IDietaryProfileFacade facade;
         private readonly DietaryProfileModelMapper mapper;
+        private readonly ILogger<DietaryProfilesController> logger;
 
         /// <summary>
         /// Initializes a new instance of the DietaryProfilesController
         /// </summary>
-        public DietaryProfilesController(IDietaryProfileFacade facade, DietaryProfileModelMapper mapper) {
+        public DietaryProfilesController(IDietaryProfileFacade facade, DietaryProfileModelMapper mapper, ILogger<DietaryProfilesController> logger) {
             this.facade = facade;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -39,9 +41,14 @@ namespace RecipeVault.WebApi.Controllers {
         [HttpGet("")]
         [ProducesResponseType(typeof(System.Collections.Generic.List<DietaryProfileModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetDietaryProfilesAsync() {
-            var results = await facade.GetProfilesBySubjectAsync().ConfigureAwait(false);
-            var models = results.Select(x => mapper.Map(x)).ToList();
-            return Ok(models);
+            try {
+                var results = await facade.GetProfilesBySubjectAsync().ConfigureAwait(false);
+                var models = results.Select(x => mapper.Map(x)).ToList();
+                return Ok(models);
+            } catch (Exception ex) {
+                logger.LogError(ex, "Error getting dietary profiles");
+                throw;
+            }
         }
 
         /// <summary>
@@ -53,8 +60,13 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(typeof(DietaryProfileModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetDietaryProfileAsync(Guid id) {
             using (LogContext.PushProperty("DietaryProfileResourceId", id)) {
-                var dto = await facade.GetProfileAsync(id).ConfigureAwait(false);
-                return Ok(mapper.Map(dto));
+                try {
+                    var dto = await facade.GetProfileAsync(id).ConfigureAwait(false);
+                    return Ok(mapper.Map(dto));
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error getting dietary profile {ProfileId}", id);
+                    throw;
+                }
             }
         }
 
@@ -65,9 +77,14 @@ namespace RecipeVault.WebApi.Controllers {
         [HttpPost("")]
         [ProducesResponseType(typeof(DietaryProfileModel), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateDietaryProfileAsync([FromBody] UpdateDietaryProfileModel input) {
-            var inputDto = mapper.MapToDto(input);
-            var dto = await facade.CreateProfileAsync(inputDto).ConfigureAwait(false);
-            return CreatedAtAction(nameof(GetDietaryProfileAsync), new { id = dto.DietaryProfileResourceId }, mapper.Map(dto));
+            try {
+                var inputDto = mapper.MapToDto(input);
+                var dto = await facade.CreateProfileAsync(inputDto).ConfigureAwait(false);
+                return CreatedAtAction(nameof(GetDietaryProfileAsync), new { id = dto.DietaryProfileResourceId }, mapper.Map(dto));
+            } catch (Exception ex) {
+                logger.LogError(ex, "Error creating dietary profile");
+                throw;
+            }
         }
 
         /// <summary>
@@ -79,9 +96,14 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(typeof(DietaryProfileModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateDietaryProfileAsync(Guid id, [FromBody] UpdateDietaryProfileModel input) {
             using (LogContext.PushProperty("DietaryProfileResourceId", id)) {
-                var inputDto = mapper.MapToDto(input);
-                var dto = await facade.UpdateProfileAsync(id, inputDto).ConfigureAwait(false);
-                return Ok(mapper.Map(dto));
+                try {
+                    var inputDto = mapper.MapToDto(input);
+                    var dto = await facade.UpdateProfileAsync(id, inputDto).ConfigureAwait(false);
+                    return Ok(mapper.Map(dto));
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error updating dietary profile {ProfileId}", id);
+                    throw;
+                }
             }
         }
 
@@ -93,8 +115,13 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteDietaryProfileAsync(Guid id) {
             using (LogContext.PushProperty("DietaryProfileResourceId", id)) {
-                await facade.DeleteProfileAsync(id).ConfigureAwait(false);
-                return StatusCode((int)HttpStatusCode.NoContent);
+                try {
+                    await facade.DeleteProfileAsync(id).ConfigureAwait(false);
+                    return NoContent();
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error deleting dietary profile {ProfileId}", id);
+                    throw;
+                }
             }
         }
 
@@ -107,9 +134,14 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(typeof(DietaryProfileModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> AddRestrictionAsync(Guid id, [FromBody] AddDietaryRestrictionModel input) {
             using (LogContext.PushProperty("DietaryProfileResourceId", id)) {
-                var inputDto = mapper.MapToDto(input);
-                var dto = await facade.AddRestrictionAsync(id, inputDto).ConfigureAwait(false);
-                return Ok(mapper.Map(dto));
+                try {
+                    var inputDto = mapper.MapToDto(input);
+                    var dto = await facade.AddRestrictionAsync(id, inputDto).ConfigureAwait(false);
+                    return Ok(mapper.Map(dto));
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error adding restriction to dietary profile {ProfileId}", id);
+                    throw;
+                }
             }
         }
 
@@ -122,8 +154,13 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> RemoveRestrictionAsync(Guid id, string restrictionCode) {
             using (LogContext.PushProperty("DietaryProfileResourceId", id)) {
-                await facade.RemoveRestrictionAsync(id, restrictionCode).ConfigureAwait(false);
-                return StatusCode((int)HttpStatusCode.NoContent);
+                try {
+                    await facade.RemoveRestrictionAsync(id, restrictionCode).ConfigureAwait(false);
+                    return NoContent();
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error removing restriction {RestrictionCode} from dietary profile {ProfileId}", restrictionCode, id);
+                    throw;
+                }
             }
         }
 
@@ -136,9 +173,14 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(typeof(DietaryProfileModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> AddAvoidedIngredientAsync(Guid id, [FromBody] AddAvoidedIngredientModel input) {
             using (LogContext.PushProperty("DietaryProfileResourceId", id)) {
-                var inputDto = mapper.MapToDto(input);
-                var dto = await facade.AddAvoidedIngredientAsync(id, inputDto).ConfigureAwait(false);
-                return Ok(mapper.Map(dto));
+                try {
+                    var inputDto = mapper.MapToDto(input);
+                    var dto = await facade.AddAvoidedIngredientAsync(id, inputDto).ConfigureAwait(false);
+                    return Ok(mapper.Map(dto));
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error adding avoided ingredient to dietary profile {ProfileId}", id);
+                    throw;
+                }
             }
         }
 
@@ -151,8 +193,13 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> RemoveAvoidedIngredientAsync(Guid id, int avoidedIngredientId) {
             using (LogContext.PushProperty("DietaryProfileResourceId", id)) {
-                await facade.RemoveAvoidedIngredientAsync(id, avoidedIngredientId).ConfigureAwait(false);
-                return StatusCode((int)HttpStatusCode.NoContent);
+                try {
+                    await facade.RemoveAvoidedIngredientAsync(id, avoidedIngredientId).ConfigureAwait(false);
+                    return NoContent();
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error removing avoided ingredient {IngredientId} from dietary profile {ProfileId}", avoidedIngredientId, id);
+                    throw;
+                }
             }
         }
 
@@ -165,8 +212,13 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(typeof(DietaryConflictCheckModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> CheckRecipeAsync(Guid recipeId, [FromQuery] Guid? profileId = null) {
             using (LogContext.PushProperty("RecipeResourceId", recipeId)) {
-                var dto = await facade.CheckRecipeAsync(recipeId, profileId).ConfigureAwait(false);
-                return Ok(mapper.Map(dto));
+                try {
+                    var dto = await facade.CheckRecipeAsync(recipeId, profileId).ConfigureAwait(false);
+                    return Ok(mapper.Map(dto));
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error checking recipe {RecipeId} for dietary conflicts", recipeId);
+                    throw;
+                }
             }
         }
     }
