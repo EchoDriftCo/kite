@@ -85,6 +85,12 @@ namespace RecipeVault.Domain.Entities {
         private readonly List<RecipeTag> recipeTags = new();
         public virtual IReadOnlyList<RecipeTag> RecipeTags => recipeTags;
 
+        private readonly List<RecipeLink> linkedRecipes = new();
+        public virtual IReadOnlyList<RecipeLink> LinkedRecipes => linkedRecipes;
+
+        private readonly List<RecipeLink> usedInRecipes = new();
+        public virtual IReadOnlyList<RecipeLink> UsedInRecipes => usedInRecipes;
+
         public void Update(string title, int yield, int? prepTimeMinutes, int? cookTimeMinutes, string description, string source, string originalImageUrl) {
             var messages = new MessageList();
             messages.Aggregate(() => string.IsNullOrWhiteSpace(title), () => new InvalidValueError(nameof(title), title));
