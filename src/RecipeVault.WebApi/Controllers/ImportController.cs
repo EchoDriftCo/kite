@@ -6,6 +6,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using RecipeVault.Facade;
 using RecipeVault.WebApi.Mappers;
 using RecipeVault.WebApi.Models.Responses;
@@ -20,6 +21,7 @@ namespace RecipeVault.WebApi.Controllers {
     [ApiController]
     [Route("api/v{version:apiVersion}/import")]
     [Authorize]
+    [EnableRateLimiting("upload")]
     public class ImportController : ControllerBase {
         private readonly IImportFacade facade;
         private readonly ImportModelMapper mapper;
@@ -42,6 +44,11 @@ namespace RecipeVault.WebApi.Controllers {
         public async Task<IActionResult> ImportFromPaprikaAsync(IFormFile file) {
             if (file == null || file.Length == 0) {
                 return BadRequest("No file provided");
+            }
+
+            const long maxFileSize = 50 * 1024 * 1024; // 50MB
+            if (file.Length > maxFileSize) {
+                return BadRequest("File size exceeds 50MB limit");
             }
 
             if (!file.FileName.EndsWith(".paprikarecipes", StringComparison.OrdinalIgnoreCase)) {
@@ -91,6 +98,13 @@ namespace RecipeVault.WebApi.Controllers {
 
             if (images.Count > 4) {
                 return BadRequest("Maximum 4 images allowed");
+            }
+
+            const long maxFileSize = 50 * 1024 * 1024; // 50MB
+            foreach (var image in images) {
+                if (image.Length > maxFileSize) {
+                    return BadRequest($"File '{image.FileName}' exceeds 50MB limit");
+                }
             }
 
             using (LogContext.PushProperty("ImageCount", images.Count))

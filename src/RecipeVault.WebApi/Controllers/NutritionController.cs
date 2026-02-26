@@ -84,6 +84,14 @@ namespace RecipeVault.WebApi.Controllers {
                 return BadRequest("Query parameter is required");
             }
 
+            if (query.Length < 2) {
+                return BadRequest("Query must be at least 2 characters");
+            }
+
+            if (query.Length > 200) {
+                return BadRequest("Query must not exceed 200 characters");
+            }
+
             var results = await _facade.SearchFoodsAsync(query).ConfigureAwait(false);
             return Ok(results);
         }
