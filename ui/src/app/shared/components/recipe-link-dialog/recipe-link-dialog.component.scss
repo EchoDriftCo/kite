@@ -1,0 +1,44 @@
+.recipe-link-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 400px;
+  padding: 1rem 0;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.selected-recipe {
+  padding: 0.5rem;
+  background: var(--surface-variant, #f5f5f5);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.error-message {
+  color: var(--error, #d32f2f);
+  padding: 0.5rem;
+  background: var(--error-container, #ffebee);
+  border-radius: 4px;
+  margin-top: 0.5rem;
+}
+
+mat-dialog-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+mat-dialog-actions {
+  padding: 1rem 0;
+
+  button {
+    margin-left: 0.5rem;
+  }
+
+  mat-spinner {
+    display: inline-block;
+    margin-right: 0.5rem;
+  }
+}

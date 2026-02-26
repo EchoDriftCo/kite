@@ -1,0 +1,86 @@
+<!-- Linked Recipes (Components) -->
+<mat-card *ngIf="canEdit || linkedRecipes.length > 0" class="recipe-links-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>link</mat-icon>
+      Component Recipes
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <p *ngIf="linkedRecipes.length === 0" class="no-links">
+      No component recipes linked yet.
+    </p>
+
+    <div class="linked-recipes-list">
+      <div *ngFor="let link of linkedRecipes" class="linked-recipe-item">
+        <div class="recipe-info">
+          <img
+            *ngIf="link.originalImageUrl"
+            [src]="link.originalImageUrl"
+            [alt]="link.title"
+            class="recipe-thumbnail"
+          />
+          <div class="recipe-details">
+            <h4>
+              <a [href]="'/recipes/' + link.recipeResourceId">{{ link.displayText || link.title }}</a>
+            </h4>
+            <div class="recipe-meta">
+              <span *ngIf="link.yield">{{ link.yield }} servings</span>
+              <span *ngIf="link.totalTimeMinutes">{{ formatTime(link.totalTimeMinutes) }}</span>
+              <span *ngIf="link.portionUsed">{{ link.portionUsed }}x portion</span>
+            </div>
+            <mat-chip-set *ngIf="link.tags && link.tags.length > 0">
+              <mat-chip *ngFor="let tag of link.tags.slice(0, 3)">
+                {{ tag.displayName || tag.globalName }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+        </div>
+
+        <div *ngIf="canEdit" class="recipe-actions">
+          <button mat-icon-button (click)="openEditLinkDialog(link)" matTooltip="Edit link">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button (click)="deleteLink(link)" matTooltip="Remove link">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </mat-card-content>
+
+  <mat-card-actions *ngIf="canEdit">
+    <button mat-raised-button color="primary" (click)="openAddLinkDialog()">
+      <mat-icon>add_link</mat-icon>
+      Link Recipe
+    </button>
+  </mat-card-actions>
+</mat-card>
+
+<!-- Used In Recipes -->
+<mat-card *ngIf="usedInRecipes.length > 0" class="used-in-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>call_made</mat-icon>
+      Used In {{ usedInRecipes.length }} {{ usedInRecipes.length === 1 ? 'Recipe' : 'Recipes' }}
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <div class="used-in-list">
+      <div *ngFor="let usage of usedInRecipes" class="used-in-item">
+        <img
+          *ngIf="usage.originalImageUrl"
+          [src]="usage.originalImageUrl"
+          [alt]="usage.title"
+          class="recipe-thumbnail-small"
+        />
+        <div class="used-in-details">
+          <a [href]="'/recipes/' + usage.recipeResourceId">{{ usage.title }}</a>
+          <span class="owner-name">by {{ usage.ownerName }}</span>
+        </div>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>
