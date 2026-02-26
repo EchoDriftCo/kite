@@ -565,7 +565,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 () => service.ApplySubstitutionsAsync(TestRecipeId, selections)
             );
 
-            ex.Message.ShouldContain("Selection for ingredient index 0 is missing substitution data");
+            ex.Message.ShouldContain("Selection for ingredient index 0 has no substitute ingredients defined");
         }
 
         [Fact]
