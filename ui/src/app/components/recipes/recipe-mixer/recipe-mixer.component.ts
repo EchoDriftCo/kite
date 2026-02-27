@@ -98,7 +98,13 @@ export class RecipeMixerComponent implements OnInit {
       return new Observable(observer => observer.next([]));
     }
 
-    return this.recipeService.searchRecipes(value, 1, 10);
+    return this.recipeService.searchRecipes({ 
+      title: value, 
+      pageNumber: 1, 
+      pageSize: 10 
+    }).pipe(
+      map(result => result.items || [])
+    );
   }
 
   displayRecipe(recipe: Recipe): string {

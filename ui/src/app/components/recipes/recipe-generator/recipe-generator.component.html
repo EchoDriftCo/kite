@@ -63,10 +63,9 @@
               <div class="checkbox-list">
                 <mat-checkbox
                   *ngFor="let option of dietaryOptions"
-                  [(ngModel)]="selectedDietary"
-                  [value]="option"
+                  [checked]="selectedDietary.includes(option)"
                   [disabled]="loading"
-                  (change)="$event.checked ? selectedDietary.push(option) : selectedDietary = selectedDietary.filter(d => d !== option)"
+                  (change)="onDietaryChange(option, $event.checked)"
                 >
                   {{option}}
                 </mat-checkbox>

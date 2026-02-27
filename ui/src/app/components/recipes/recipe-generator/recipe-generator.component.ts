@@ -290,6 +290,19 @@ export class RecipeGeneratorComponent implements OnInit {
   }
 
   /**
+   * Handle dietary checkbox changes
+   */
+  onDietaryChange(option: string, checked: boolean) {
+    if (checked) {
+      if (!this.selectedDietary.includes(option)) {
+        this.selectedDietary.push(option);
+      }
+    } else {
+      this.selectedDietary = this.selectedDietary.filter(d => d !== option);
+    }
+  }
+
+  /**
    * Format ingredient text
    */
   formatIngredient(ingredient: any): string {

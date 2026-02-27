@@ -13,7 +13,6 @@ import {
   providedIn: 'root'
 })
 export class NutritionService {
-  private readonly apiUrl = environment.apiUrl;
   private readonly apiUrl = `${environment.apiUrl}/api/v1`;
 
   constructor(private http: HttpClient) {}

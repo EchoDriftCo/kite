@@ -56,7 +56,7 @@ export class DietaryProfileService {
 
   checkRecipe(recipeId: string, profileId?: string): Observable<DietaryConflictCheck> {
     const url = `${environment.apiUrl}/api/v1/recipes/${recipeId}/dietary-check`;
-    const params = profileId ? { profileId } : {};
-    return this.http.get<DietaryConflictCheck>(url, { params });
+    const options = profileId ? { params: { profileId } } : {};
+    return this.http.get<DietaryConflictCheck>(url, options);
   }
 }
