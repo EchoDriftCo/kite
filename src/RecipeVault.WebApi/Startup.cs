@@ -152,6 +152,7 @@ namespace RecipeVault.WebApi {
                 o.UseConfiguration(Configuration);
                 o.AddCustomCheck("postgres", typeof(PostgresHealthCheck));
                 o.AddCustomCheck("gemini", typeof(GeminiHealthCheck));
+                o.AddCustomCheck("usda", typeof(UsdaHealthCheck));
             });
 
             // add controllers and all of the api defaults

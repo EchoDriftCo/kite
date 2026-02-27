@@ -7,6 +7,7 @@ using Cortside.AspNetCore.Common.Paging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using RecipeVault.Facade;
 using RecipeVault.WebApi.Mappers;
 using RecipeVault.WebApi.Models.Requests;
@@ -25,13 +26,15 @@ namespace RecipeVault.WebApi.Controllers {
     public class CollectionsController : ControllerBase {
         private readonly ICollectionFacade facade;
         private readonly CollectionModelMapper mapper;
+        private readonly ILogger<CollectionsController> logger;
 
         /// <summary>
         /// Initializes a new instance of the CollectionsController
         /// </summary>
-        public CollectionsController(ICollectionFacade facade, CollectionModelMapper mapper) {
+        public CollectionsController(ICollectionFacade facade, CollectionModelMapper mapper, ILogger<CollectionsController> logger) {
             this.facade = facade;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -40,10 +43,15 @@ namespace RecipeVault.WebApi.Controllers {
         [HttpGet("")]
         [ProducesResponseType(typeof(PagedList<CollectionModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCollectionsAsync([FromQuery] CollectionSearchModel search) {
-            var searchDto = mapper.MapToDto(search);
-            var results = await facade.SearchCollectionsAsync(searchDto).ConfigureAwait(false);
-            var models = results.Convert(x => mapper.Map(x));
-            return Ok(models);
+            try {
+                var searchDto = mapper.MapToDto(search);
+                var results = await facade.SearchCollectionsAsync(searchDto).ConfigureAwait(false);
+                var models = results.Convert(x => mapper.Map(x));
+                return Ok(models);
+            } catch (Exception ex) {
+                logger.LogError(ex, "Error searching collections");
+                throw;
+            }
         }
 
         /// <summary>
@@ -52,9 +60,14 @@ namespace RecipeVault.WebApi.Controllers {
         [HttpGet("my")]
         [ProducesResponseType(typeof(List<CollectionModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetMyCollectionsAsync() {
-            var results = await facade.GetUserCollectionsAsync().ConfigureAwait(false);
-            var models = results.Select(x => mapper.Map(x)).ToList();
-            return Ok(models);
+            try {
+                var results = await facade.GetUserCollectionsAsync().ConfigureAwait(false);
+                var models = results.Select(x => mapper.Map(x)).ToList();
+                return Ok(models);
+            } catch (Exception ex) {
+                logger.LogError(ex, "Error getting user collections");
+                throw;
+            }
         }
 
         /// <summary>
@@ -64,9 +77,14 @@ namespace RecipeVault.WebApi.Controllers {
         [AllowAnonymous]
         [ProducesResponseType(typeof(PagedList<CollectionModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetFeaturedCollectionsAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20) {
-            var results = await facade.GetFeaturedCollectionsAsync(pageNumber, pageSize).ConfigureAwait(false);
-            var models = results.Convert(x => mapper.Map(x));
-            return Ok(models);
+            try {
+                var results = await facade.GetFeaturedCollectionsAsync(pageNumber, pageSize).ConfigureAwait(false);
+                var models = results.Convert(x => mapper.Map(x));
+                return Ok(models);
+            } catch (Exception ex) {
+                logger.LogError(ex, "Error getting featured collections");
+                throw;
+            }
         }
 
         /// <summary>
@@ -76,9 +94,14 @@ namespace RecipeVault.WebApi.Controllers {
         [AllowAnonymous]
         [ProducesResponseType(typeof(PagedList<CollectionModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetPublicCollectionsAsync([FromQuery] string search, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20) {
-            var results = await facade.GetPublicCollectionsAsync(search, pageNumber, pageSize).ConfigureAwait(false);
-            var models = results.Convert(x => mapper.Map(x));
-            return Ok(models);
+            try {
+                var results = await facade.GetPublicCollectionsAsync(search, pageNumber, pageSize).ConfigureAwait(false);
+                var models = results.Convert(x => mapper.Map(x));
+                return Ok(models);
+            } catch (Exception ex) {
+                logger.LogError(ex, "Error getting public collections with search: {Search}", search);
+                throw;
+            }
         }
 
         /// <summary>
@@ -90,8 +113,13 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(typeof(CollectionModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCollectionAsync(Guid id) {
             using (LogContext.PushProperty("CollectionResourceId", id)) {
-                var dto = await facade.GetCollectionAsync(id).ConfigureAwait(false);
-                return Ok(mapper.Map(dto));
+                try {
+                    var dto = await facade.GetCollectionAsync(id).ConfigureAwait(false);
+                    return Ok(mapper.Map(dto));
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error getting collection {CollectionId}", id);
+                    throw;
+                }
             }
         }
 
@@ -102,9 +130,14 @@ namespace RecipeVault.WebApi.Controllers {
         [HttpPost("")]
         [ProducesResponseType(typeof(CollectionModel), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateCollectionAsync([FromBody] UpdateCollectionModel input) {
-            var inputDto = mapper.MapToDto(input);
-            var dto = await facade.CreateCollectionAsync(inputDto).ConfigureAwait(false);
-            return CreatedAtAction(nameof(GetCollectionAsync), new { id = dto.CollectionResourceId }, mapper.Map(dto));
+            try {
+                var inputDto = mapper.MapToDto(input);
+                var dto = await facade.CreateCollectionAsync(inputDto).ConfigureAwait(false);
+                return CreatedAtAction(nameof(GetCollectionAsync), new { id = dto.CollectionResourceId }, mapper.Map(dto));
+            } catch (Exception ex) {
+                logger.LogError(ex, "Error creating collection");
+                throw;
+            }
         }
 
         /// <summary>
@@ -116,9 +149,14 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(typeof(CollectionModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateCollectionAsync(Guid id, [FromBody] UpdateCollectionModel input) {
             using (LogContext.PushProperty("CollectionResourceId", id)) {
-                var inputDto = mapper.MapToDto(input);
-                var dto = await facade.UpdateCollectionAsync(id, inputDto).ConfigureAwait(false);
-                return Ok(mapper.Map(dto));
+                try {
+                    var inputDto = mapper.MapToDto(input);
+                    var dto = await facade.UpdateCollectionAsync(id, inputDto).ConfigureAwait(false);
+                    return Ok(mapper.Map(dto));
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error updating collection {CollectionId}", id);
+                    throw;
+                }
             }
         }
 
@@ -130,8 +168,13 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteCollectionAsync(Guid id) {
             using (LogContext.PushProperty("CollectionResourceId", id)) {
-                await facade.DeleteCollectionAsync(id).ConfigureAwait(false);
-                return NoContent();
+                try {
+                    await facade.DeleteCollectionAsync(id).ConfigureAwait(false);
+                    return NoContent();
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error deleting collection {CollectionId}", id);
+                    throw;
+                }
             }
         }
 
@@ -144,9 +187,14 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(typeof(CollectionModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> AddRecipeToCollectionAsync(Guid id, [FromBody] AddRecipeToCollectionModel input) {
             using (LogContext.PushProperty("CollectionResourceId", id)) {
-                var inputDto = mapper.MapToDto(input);
-                var dto = await facade.AddRecipeToCollectionAsync(id, inputDto).ConfigureAwait(false);
-                return Ok(mapper.Map(dto));
+                try {
+                    var inputDto = mapper.MapToDto(input);
+                    var dto = await facade.AddRecipeToCollectionAsync(id, inputDto).ConfigureAwait(false);
+                    return Ok(mapper.Map(dto));
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error adding recipe to collection {CollectionId}", id);
+                    throw;
+                }
             }
         }
 
@@ -160,8 +208,13 @@ namespace RecipeVault.WebApi.Controllers {
         public async Task<IActionResult> RemoveRecipeFromCollectionAsync(Guid id, Guid recipeId) {
             using (LogContext.PushProperty("CollectionResourceId", id)) {
                 using (LogContext.PushProperty("RecipeResourceId", recipeId)) {
-                    var dto = await facade.RemoveRecipeFromCollectionAsync(id, recipeId).ConfigureAwait(false);
-                    return Ok(mapper.Map(dto));
+                    try {
+                        var dto = await facade.RemoveRecipeFromCollectionAsync(id, recipeId).ConfigureAwait(false);
+                        return Ok(mapper.Map(dto));
+                    } catch (Exception ex) {
+                        logger.LogError(ex, "Error removing recipe {RecipeId} from collection {CollectionId}", recipeId, id);
+                        throw;
+                    }
                 }
             }
         }
@@ -175,9 +228,14 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(typeof(CollectionModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> ReorderCollectionRecipesAsync(Guid id, [FromBody] ReorderCollectionRecipesModel input) {
             using (LogContext.PushProperty("CollectionResourceId", id)) {
-                var inputDto = mapper.MapToDto(input);
-                var dto = await facade.ReorderCollectionRecipesAsync(id, inputDto).ConfigureAwait(false);
-                return Ok(mapper.Map(dto));
+                try {
+                    var inputDto = mapper.MapToDto(input);
+                    var dto = await facade.ReorderCollectionRecipesAsync(id, inputDto).ConfigureAwait(false);
+                    return Ok(mapper.Map(dto));
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error reordering recipes in collection {CollectionId}", id);
+                    throw;
+                }
             }
         }
 
@@ -188,9 +246,14 @@ namespace RecipeVault.WebApi.Controllers {
         [HttpPut("reorder")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> ReorderCollectionsAsync([FromBody] ReorderCollectionsModel input) {
-            var inputDto = mapper.MapToDto(input);
-            await facade.ReorderCollectionsAsync(inputDto).ConfigureAwait(false);
-            return NoContent();
+            try {
+                var inputDto = mapper.MapToDto(input);
+                await facade.ReorderCollectionsAsync(inputDto).ConfigureAwait(false);
+                return NoContent();
+            } catch (Exception ex) {
+                logger.LogError(ex, "Error reordering collections");
+                throw;
+            }
         }
     }
 }

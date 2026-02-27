@@ -4,6 +4,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using RecipeVault.Facade;
 using Serilog.Context;
 
@@ -18,12 +19,14 @@ namespace RecipeVault.WebApi.Controllers {
     [Authorize]
     public class ExportController : ControllerBase {
         private readonly IExportFacade facade;
+        private readonly ILogger<ExportController> logger;
 
         /// <summary>
         /// Initializes a new instance of the ExportController
         /// </summary>
-        public ExportController(IExportFacade facade) {
+        public ExportController(IExportFacade facade, ILogger<ExportController> logger) {
             this.facade = facade;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -36,8 +39,13 @@ namespace RecipeVault.WebApi.Controllers {
         [Produces("application/json")]
         public async Task<IActionResult> ExportRecipeAsJsonAsync(Guid id) {
             using (LogContext.PushProperty("RecipeResourceId", id)) {
-                var json = await facade.ExportRecipeAsJsonAsync(id).ConfigureAwait(false);
-                return Content(json, "application/json");
+                try {
+                    var json = await facade.ExportRecipeAsJsonAsync(id).ConfigureAwait(false);
+                    return Content(json, "application/json");
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error exporting recipe {RecipeId} as JSON", id);
+                    throw;
+                }
             }
         }
 
@@ -51,8 +59,13 @@ namespace RecipeVault.WebApi.Controllers {
         [Produces("text/plain")]
         public async Task<IActionResult> ExportRecipeAsTextAsync(Guid id) {
             using (LogContext.PushProperty("RecipeResourceId", id)) {
-                var text = await facade.ExportRecipeAsTextAsync(id).ConfigureAwait(false);
-                return Content(text, "text/plain");
+                try {
+                    var text = await facade.ExportRecipeAsTextAsync(id).ConfigureAwait(false);
+                    return Content(text, "text/plain");
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error exporting recipe {RecipeId} as text", id);
+                    throw;
+                }
             }
         }
 
@@ -66,8 +79,13 @@ namespace RecipeVault.WebApi.Controllers {
         [Produces("application/octet-stream")]
         public async Task<IActionResult> ExportRecipeAsPaprikaAsync(Guid id) {
             using (LogContext.PushProperty("RecipeResourceId", id)) {
-                var data = await facade.ExportRecipeAsPaprikaAsync(id).ConfigureAwait(false);
-                return File(data, "application/octet-stream", $"recipe-{id}.paprikarecipes");
+                try {
+                    var data = await facade.ExportRecipeAsPaprikaAsync(id).ConfigureAwait(false);
+                    return File(data, "application/octet-stream", $"recipe-{id}.paprikarecipes");
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error exporting recipe {RecipeId} as Paprika format", id);
+                    throw;
+                }
             }
         }
 
@@ -78,9 +96,14 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(typeof(byte[]), StatusCodes.Status200OK)]
         [Produces("application/octet-stream")]
         public async Task<IActionResult> ExportAllRecipesAsPaprikaAsync() {
-            var data = await facade.ExportAllAsPaprikaAsync().ConfigureAwait(false);
-            var fileName = $"recipes-{DateTime.UtcNow:yyyy-MM-dd}.paprikarecipes";
-            return File(data, "application/octet-stream", fileName);
+            try {
+                var data = await facade.ExportAllAsPaprikaAsync().ConfigureAwait(false);
+                var fileName = $"recipes-{DateTime.UtcNow:yyyy-MM-dd}.paprikarecipes";
+                return File(data, "application/octet-stream", fileName);
+            } catch (Exception ex) {
+                logger.LogError(ex, "Error exporting all recipes as Paprika format");
+                throw;
+            }
         }
     }
 }

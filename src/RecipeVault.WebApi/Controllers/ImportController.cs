@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
+using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Logging;
 using RecipeVault.Facade;
 using RecipeVault.WebApi.Mappers;
 using RecipeVault.WebApi.Models.Responses;
@@ -25,13 +27,15 @@ namespace RecipeVault.WebApi.Controllers {
     public class ImportController : ControllerBase {
         private readonly IImportFacade facade;
         private readonly ImportModelMapper mapper;
+        private readonly ILogger<ImportController> logger;
 
         /// <summary>
         /// Initializes a new instance of the ImportController
         /// </summary>
-        public ImportController(IImportFacade facade, ImportModelMapper mapper) {
+        public ImportController(IImportFacade facade, ImportModelMapper mapper, ILogger<ImportController> logger) {
             this.facade = facade;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -41,6 +45,7 @@ namespace RecipeVault.WebApi.Controllers {
         [HttpPost("paprika")]
         [ProducesResponseType(typeof(ImportResultModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<IActionResult> ImportFromPaprikaAsync(IFormFile file) {
             if (file == null || file.Length == 0) {
                 return BadRequest("No file provided");
@@ -57,11 +62,19 @@ namespace RecipeVault.WebApi.Controllers {
 
             using (LogContext.PushProperty("FileName", file.FileName))
             using (LogContext.PushProperty("FileSize", file.Length)) {
-                await using var stream = file.OpenReadStream();
-                var resultDto = await facade.ImportFromPaprikaAsync(stream).ConfigureAwait(false);
-                var resultModel = mapper.Map(resultDto);
-                
-                return Ok(resultModel);
+                try {
+                    await using var stream = file.OpenReadStream();
+                    var resultDto = await facade.ImportFromPaprikaAsync(stream).ConfigureAwait(false);
+                    var resultModel = mapper.Map(resultDto);
+                    
+                    return Ok(resultModel);
+                } catch (InvalidDataException ex) {
+                    logger.LogError(ex, "Invalid Paprika file format: {FileName}", file.FileName);
+                    return UnprocessableEntity($"Invalid Paprika file format: {ex.Message}");
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error importing Paprika file: {FileName}", file.FileName);
+                    throw;
+                }
             }
         }
 
@@ -72,14 +85,27 @@ namespace RecipeVault.WebApi.Controllers {
         [HttpPost("url")]
         [ProducesResponseType(typeof(Dto.Output.RecipeDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> ImportFromUrlAsync([FromBody] Dto.Input.ImportUrlRequestDto request) {
             if (request == null || string.IsNullOrWhiteSpace(request.Url)) {
                 return BadRequest("URL is required");
             }
 
             using (LogContext.PushProperty("ImportUrl", request.Url)) {
-                var recipeDto = await facade.ImportFromUrlAsync(request.Url).ConfigureAwait(false);
-                return Ok(recipeDto);
+                try {
+                    var recipeDto = await facade.ImportFromUrlAsync(request.Url).ConfigureAwait(false);
+                    return Ok(recipeDto);
+                } catch (HttpRequestException ex) {
+                    logger.LogError(ex, "Unable to fetch URL for import: {Url}", request.Url);
+                    return StatusCode(StatusCodes.Status422UnprocessableEntity, $"Unable to fetch recipe from URL: {ex.Message}");
+                } catch (InvalidOperationException ex) {
+                    logger.LogError(ex, "No recipe found at URL: {Url}", request.Url);
+                    return UnprocessableEntity($"No recipe found at URL: {ex.Message}");
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error importing from URL: {Url}", request.Url);
+                    throw;
+                }
             }
         }
 
@@ -91,6 +117,8 @@ namespace RecipeVault.WebApi.Controllers {
         [HttpPost("multi-image")]
         [ProducesResponseType(typeof(Dto.Output.RecipeDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> ImportFromMultipleImagesAsync([FromForm] List<IFormFile> images, [FromForm] string processingMode = "sequential") {
             if (images == null || images.Count == 0) {
                 return BadRequest("At least one image is required");
@@ -109,8 +137,19 @@ namespace RecipeVault.WebApi.Controllers {
 
             using (LogContext.PushProperty("ImageCount", images.Count))
             using (LogContext.PushProperty("ProcessingMode", processingMode)) {
-                var recipeDto = await facade.ImportFromMultipleImagesAsync(images, processingMode).ConfigureAwait(false);
-                return Ok(recipeDto);
+                try {
+                    var recipeDto = await facade.ImportFromMultipleImagesAsync(images, processingMode).ConfigureAwait(false);
+                    return Ok(recipeDto);
+                } catch (HttpRequestException ex) {
+                    logger.LogError(ex, "External image processing API unavailable");
+                    return StatusCode(StatusCodes.Status503ServiceUnavailable, "Image processing service temporarily unavailable");
+                } catch (InvalidOperationException ex) {
+                    logger.LogError(ex, "Unable to parse recipe from images");
+                    return UnprocessableEntity($"Unable to parse recipe from images: {ex.Message}");
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error importing from multiple images");
+                    throw;
+                }
             }
         }
     }
