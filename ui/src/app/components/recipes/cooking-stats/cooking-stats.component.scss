@@ -1,0 +1,223 @@
+.cooking-stats-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  h1 {
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+  }
+
+  .loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+
+    p {
+      margin-top: 1rem;
+      color: var(--text-secondary);
+    }
+  }
+
+  .error-message {
+    background-color: var(--error-light);
+    color: var(--error-dark);
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+
+    mat-icon {
+      font-size: 4rem;
+      width: 4rem;
+      height: 4rem;
+      color: var(--text-disabled);
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin-top: 1rem;
+    }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+
+    .stat-card {
+      text-align: center;
+
+      mat-card-content {
+        padding: 1.5rem;
+
+        .stat-icon {
+          margin-bottom: 1rem;
+
+          mat-icon {
+            font-size: 3rem;
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary);
+          }
+
+          .streak-emoji {
+            font-size: 3rem;
+            line-height: 3rem;
+          }
+        }
+
+        .stat-value {
+          font-size: 2.5rem;
+          font-weight: 600;
+          color: var(--text-primary);
+          margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+          font-size: 0.875rem;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+      }
+
+      &.streak-card {
+        background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 87, 34, 0.1) 100%);
+      }
+    }
+  }
+
+  .most-cooked-section {
+    h2 {
+      margin-bottom: 1.5rem;
+      color: var(--text-primary);
+    }
+
+    .most-cooked-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+
+      .most-cooked-card {
+        mat-card-content {
+          display: flex;
+          align-items: center;
+          gap: 1.5rem;
+          padding: 1rem;
+
+          .rank-badge {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+          }
+
+          .recipe-info {
+            flex: 1;
+
+            h3 {
+              margin: 0 0 0.5rem 0;
+              font-size: 1.25rem;
+
+              a {
+                color: var(--primary);
+                text-decoration: none;
+
+                &:hover {
+                  text-decoration: underline;
+                }
+              }
+            }
+
+            mat-chip-set {
+              mat-chip {
+                mat-icon {
+                  margin-right: 0.25rem;
+                  font-size: 1rem;
+                  width: 1rem;
+                  height: 1rem;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .cooking-stats-container {
+    padding: 1rem;
+
+    .stats-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+
+      .stat-card {
+        mat-card-content {
+          padding: 1rem;
+
+          .stat-icon {
+            mat-icon {
+              font-size: 2rem;
+              width: 2rem;
+              height: 2rem;
+            }
+
+            .streak-emoji {
+              font-size: 2rem;
+            }
+          }
+
+          .stat-value {
+            font-size: 2rem;
+          }
+
+          .stat-label {
+            font-size: 0.75rem;
+          }
+        }
+      }
+    }
+
+    .most-cooked-section {
+      .most-cooked-list {
+        .most-cooked-card {
+          mat-card-content {
+            .rank-badge {
+              width: 36px;
+              height: 36px;
+              font-size: 1.25rem;
+            }
+
+            .recipe-info {
+              h3 {
+                font-size: 1rem;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,123 @@
+<div class="cooking-stats-container">
+  <h1>Cooking Stats</h1>
+
+  @if (loading) {
+    <div class="loading-spinner">
+      <mat-spinner></mat-spinner>
+      <p>Loading your stats...</p>
+    </div>
+  } @else if (error) {
+    <div class="error-message">{{ error }}</div>
+  } @else if (!stats) {
+    <div class="empty-state">
+      <mat-icon>query_stats</mat-icon>
+      <p>No stats available yet</p>
+    </div>
+  } @else {
+    <div class="stats-grid">
+      <!-- Total Cooks -->
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>restaurant</mat-icon>
+          </div>
+          <div class="stat-value">{{ stats.totalCooks }}</div>
+          <div class="stat-label">Total Cooks</div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Unique Recipes -->
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>menu_book</mat-icon>
+          </div>
+          <div class="stat-value">{{ stats.uniqueRecipes }}</div>
+          <div class="stat-label">Unique Recipes</div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Current Streak -->
+      <mat-card class="stat-card streak-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <span class="streak-emoji">{{ getStreakEmoji(stats.currentStreak) }}</span>
+          </div>
+          <div class="stat-value">{{ stats.currentStreak }}</div>
+          <div class="stat-label">Current Streak (days)</div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Longest Streak -->
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>emoji_events</mat-icon>
+          </div>
+          <div class="stat-value">{{ stats.longestStreak }}</div>
+          <div class="stat-label">Longest Streak (days)</div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- This Month -->
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>calendar_today</mat-icon>
+          </div>
+          <div class="stat-value">{{ stats.cooksThisMonth }}</div>
+          <div class="stat-label">Cooks This Month</div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Average Per Week -->
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>trending_up</mat-icon>
+          </div>
+          <div class="stat-value">{{ stats.averageCooksPerWeek | number:'1.1-1' }}</div>
+          <div class="stat-label">Avg Per Week</div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Most Active Day -->
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>wb_sunny</mat-icon>
+          </div>
+          <div class="stat-value">{{ getDayAbbreviation(stats.mostActiveDayOfWeek) }}</div>
+          <div class="stat-label">Most Active Day</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Most Cooked Recipes -->
+    @if (stats.mostCooked && stats.mostCooked.length > 0) {
+      <div class="most-cooked-section">
+        <h2>Most Cooked Recipes</h2>
+        <div class="most-cooked-list">
+          @for (recipe of stats.mostCooked; track recipe.recipeResourceId; let idx = $index) {
+            <mat-card class="most-cooked-card">
+              <mat-card-content>
+                <div class="rank-badge">{{ idx + 1 }}</div>
+                <div class="recipe-info">
+                  <a [routerLink]="['/recipes', recipe.recipeResourceId]">
+                    <h3>{{ recipe.recipeTitle }}</h3>
+                  </a>
+                  <mat-chip-set>
+                    <mat-chip>
+                      <mat-icon>restaurant</mat-icon>
+                      {{ recipe.cookCount }} {{ recipe.cookCount === 1 ? 'time' : 'times' }}
+                    </mat-chip>
+                  </mat-chip-set>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      </div>
+    }
+  }
+</div>

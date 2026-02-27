@@ -1,0 +1,167 @@
+<div class="cooking-history-container">
+  <h1>Cooking History</h1>
+
+  <mat-tab-group>
+    <!-- List View Tab -->
+    <mat-tab label="List">
+      <div class="tab-content">
+        @if (loading) {
+          <div class="loading-spinner">
+            <mat-spinner></mat-spinner>
+            <p>Loading cooking history...</p>
+          </div>
+        } @else if (error) {
+          <div class="error-message">{{ error }}</div>
+        } @else if (entries.length === 0) {
+          <div class="empty-state">
+            <mat-icon>restaurant</mat-icon>
+            <h2>No cooking history yet</h2>
+            <p>Start logging your cooking sessions to track what you make!</p>
+            <button mat-raised-button color="primary" routerLink="/recipes">
+              Browse Recipes
+            </button>
+          </div>
+        } @else {
+          <div class="entries-list">
+            @for (entry of entries; track entry.cookingLogId) {
+              <mat-card class="entry-card">
+                <mat-card-content>
+                  <div class="entry-header">
+                    <div class="entry-title">
+                      <a [routerLink]="['/recipes', entry.recipeResourceId]">
+                        <h3>{{ entry.recipeTitle }}</h3>
+                      </a>
+                      <span class="entry-date">{{ formatDate(entry.cookedDate) }}</span>
+                    </div>
+                    <div class="entry-actions">
+                      <button mat-icon-button color="warn" (click)="deleteEntry(entry)" matTooltip="Delete">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="entry-details">
+                    @if (entry.rating) {
+                      <mat-chip-set>
+                        <mat-chip>
+                          @for (star of [1, 2, 3, 4, 5]; track star) {
+                            <mat-icon class="star-icon" [class.filled]="star <= entry.rating!">
+                              {{ star <= entry.rating! ? 'star' : 'star_border' }}
+                            </mat-icon>
+                          }
+                        </mat-chip>
+                      </mat-chip-set>
+                    }
+
+                    @if (entry.servingsMade) {
+                      <mat-chip-set>
+                        <mat-chip>
+                          <mat-icon>restaurant</mat-icon>
+                          {{ entry.servingsMade }} servings
+                        </mat-chip>
+                      </mat-chip-set>
+                    }
+
+                    @if (entry.scaleFactor && entry.scaleFactor !== 1) {
+                      <mat-chip-set>
+                        <mat-chip>
+                          <mat-icon>height</mat-icon>
+                          {{ entry.scaleFactor }}x scaled
+                        </mat-chip>
+                      </mat-chip-set>
+                    }
+                  </div>
+
+                  @if (entry.notes) {
+                    <div class="entry-notes">
+                      <p>{{ entry.notes }}</p>
+                    </div>
+                  }
+
+                  @if (entry.photoUrls && entry.photoUrls.length > 0) {
+                    <div class="entry-photos">
+                      @for (photoUrl of entry.photoUrls; track photoUrl) {
+                        <img [src]="photoUrl" alt="Cooking photo">
+                      }
+                    </div>
+                  }
+                </mat-card-content>
+              </mat-card>
+            }
+          </div>
+
+          <mat-paginator
+            [length]="totalCount"
+            [pageSize]="pageSize"
+            [pageIndex]="pageNumber - 1"
+            [pageSizeOptions]="[10, 20, 50]"
+            (page)="onPageChange($event)">
+          </mat-paginator>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- Calendar View Tab -->
+    <mat-tab label="Calendar">
+      <div class="tab-content">
+        @if (calendarLoading) {
+          <div class="loading-spinner">
+            <mat-spinner></mat-spinner>
+            <p>Loading calendar...</p>
+          </div>
+        } @else if (calendarError) {
+          <div class="error-message">{{ calendarError }}</div>
+        } @else {
+          <div class="calendar-container">
+            <div class="calendar-header">
+              <button mat-icon-button (click)="previousMonth()">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              <h2>{{ getMonthName() }}</h2>
+              <button mat-icon-button (click)="nextMonth()">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+
+            <div class="calendar-grid">
+              <div class="day-header">Sun</div>
+              <div class="day-header">Mon</div>
+              <div class="day-header">Tue</div>
+              <div class="day-header">Wed</div>
+              <div class="day-header">Thu</div>
+              <div class="day-header">Fri</div>
+              <div class="day-header">Sat</div>
+
+              @for (week of getCalendarGrid(); track week) {
+                @for (day of week; track day?.date || 'empty') {
+                  @if (day) {
+                    <div 
+                      class="calendar-day" 
+                      [class]="getHeatmapClass(day.cookCount)"
+                      [matTooltip]="day.cookCount > 0 ? day.cookCount + ' cook(s)' : ''">
+                      <span class="day-number">{{ getDayNumber(day) }}</span>
+                      @if (day.cookCount > 0) {
+                        <span class="cook-count">{{ day.cookCount }}</span>
+                      }
+                    </div>
+                  } @else {
+                    <div class="calendar-day empty"></div>
+                  }
+                }
+              }
+            </div>
+
+            <div class="calendar-legend">
+              <span>Less</span>
+              <div class="legend-item heat-0"></div>
+              <div class="legend-item heat-1"></div>
+              <div class="legend-item heat-2"></div>
+              <div class="legend-item heat-3"></div>
+              <span>More</span>
+            </div>
+          </div>
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

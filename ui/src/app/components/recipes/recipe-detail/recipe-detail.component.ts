@@ -25,6 +25,9 @@ import {
 } from '../substitution-dialog/substitution-dialog.component';
 import { ShareRecipeDialogComponent } from '../../circles/share-recipe-dialog/share-recipe-dialog.component';
 import { NutritionPanelComponent } from '../nutrition-panel/nutrition-panel.component';
+import { CookingLogDialogComponent, CookingLogDialogData, CookingLogDialogResult } from '../cooking-log-dialog/cooking-log-dialog.component';
+import { CookingLogService } from '../../../services/cooking-log.service';
+import { RecipePersonalStats } from '../../../models/cooking-log.model';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -62,10 +65,15 @@ export class RecipeDetailComponent implements OnInit {
   scaledServings = 0;
   scaleFactor = 1;
 
+  // Personal stats
+  personalStats: RecipePersonalStats | null = null;
+  loadingStats = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private recipeService: RecipeService,
+    private cookingLogService: CookingLogService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) {}
@@ -75,6 +83,7 @@ export class RecipeDetailComponent implements OnInit {
     
     if (this.recipeId) {
       this.loadRecipe();
+      this.loadPersonalStats();
     }
   }
 
@@ -96,6 +105,54 @@ export class RecipeDetailComponent implements OnInit {
         this.loading = false;
         console.error('Error loading recipe:', err);
       }
+    });
+  }
+
+  loadPersonalStats() {
+    if (!this.recipeId) return;
+
+    this.loadingStats = true;
+    this.cookingLogService.getRecipeStats(this.recipeId).subscribe({
+      next: (stats) => {
+        this.personalStats = stats;
+        this.loadingStats = false;
+      },
+      error: (err) => {
+        // Personal stats are optional, so just log the error
+        console.log('No personal stats available for this recipe');
+        this.loadingStats = false;
+      }
+    });
+  }
+
+  openCookingLogDialog() {
+    if (!this.recipe) return;
+
+    const dialogRef = this.dialog.open(CookingLogDialogComponent, {
+      width: '600px',
+      maxWidth: '95vw',
+      data: {
+        recipeId: this.recipe.recipeResourceId,
+        recipeTitle: this.recipe.title,
+        recipeYield: this.recipe.yield
+      } as CookingLogDialogData
+    });
+
+    dialogRef.afterClosed().subscribe((result: CookingLogDialogResult | undefined) => {
+      if (result && result.success) {
+        this.snackBar.open('Cooking session logged! 🍳', 'OK', { duration: 3000 });
+        // Reload personal stats to show updated data
+        this.loadPersonalStats();
+      }
+    });
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
     });
   }
 
