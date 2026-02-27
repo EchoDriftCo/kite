@@ -25,5 +25,6 @@ namespace RecipeVault.Dto.Output {
         public List<RecipeTagDto> Tags { get; set; }
         public ForkedFromDto ForkedFrom { get; set; }
         public int ForkCount { get; set; }
+        public MixedFromDto MixedFrom { get; set; }
     }
 }

@@ -3,6 +3,7 @@ import { RecipeListComponent } from './components/recipes/recipe-list/recipe-lis
 import { RecipeDetailComponent } from './components/recipes/recipe-detail/recipe-detail.component';
 import { RecipeFormComponent } from './components/recipes/recipe-form/recipe-form.component';
 import { RecipeGeneratorComponent } from './components/recipes/recipe-generator/recipe-generator.component';
+import { RecipeMixerComponent } from './components/recipes/recipe-mixer/recipe-mixer.component';
 import { CookingModeComponent } from './components/recipes/cooking-mode/cooking-mode.component';
 import { CookingHistoryComponent } from './components/recipes/cooking-history/cooking-history.component';
 import { CookingStatsComponent } from './components/recipes/cooking-stats/cooking-stats.component';
@@ -28,6 +29,7 @@ export const routes: Routes = [
   { path: 'recipes', component: RecipeListComponent, canActivate: [authGuard] },
   { path: 'recipes/new', component: RecipeFormComponent, canActivate: [authGuard] },
   { path: 'recipes/generate', component: RecipeGeneratorComponent, canActivate: [authGuard] },
+  { path: 'recipes/mix', component: RecipeMixerComponent, canActivate: [authGuard] },
   { path: 'recipes/:id', component: RecipeDetailComponent, canActivate: [authGuard] },
   { path: 'recipes/:id/edit', component: RecipeFormComponent, canActivate: [authGuard] },
   { path: 'recipes/:id/cook', component: CookingModeComponent, canActivate: [authGuard] },

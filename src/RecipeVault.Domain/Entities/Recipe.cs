@@ -77,6 +77,16 @@ namespace RecipeVault.Domain.Entities {
         private readonly List<Recipe> forks = new();
         public virtual IReadOnlyList<Recipe> Forks => forks;
 
+        // Recipe mixing (AI Fusion) fields
+        public int? MixedFromRecipeAId { get; private set; }
+        public int? MixedFromRecipeBId { get; private set; }
+        
+        [StringLength(500)]
+        public string MixIntent { get; private set; }
+        
+        public virtual Recipe MixedFromRecipeA { get; private set; }
+        public virtual Recipe MixedFromRecipeB { get; private set; }
+
         private readonly List<RecipeIngredient> ingredients = new();
         public virtual IReadOnlyList<RecipeIngredient> Ingredients => ingredients;
 
@@ -176,6 +186,10 @@ namespace RecipeVault.Domain.Entities {
 
         public void ClearEquipment() {
             recipeEquipment.Clear();
+        public void SetMixedFrom(int recipeAId, int recipeBId, string mixIntent) {
+            MixedFromRecipeAId = recipeAId;
+            MixedFromRecipeBId = recipeBId;
+            MixIntent = mixIntent;
         }
 
         public Recipe Fork(string newTitle = null) {

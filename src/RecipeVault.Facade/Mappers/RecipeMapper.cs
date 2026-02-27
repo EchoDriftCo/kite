@@ -83,6 +83,15 @@ namespace RecipeVault.Facade.Mappers {
                         }
                         : null),
                 ForkCount = entity.Forks?.Count(f => f.IsPublic) ?? 0,
+                MixedFrom = (entity.MixedFromRecipeA != null && entity.MixedFromRecipeB != null)
+                    ? new MixedFromDto {
+                        RecipeAResourceId = entity.MixedFromRecipeA.RecipeResourceId,
+                        RecipeATitle = entity.MixedFromRecipeA.Title,
+                        RecipeBResourceId = entity.MixedFromRecipeB.RecipeResourceId,
+                        RecipeBTitle = entity.MixedFromRecipeB.Title,
+                        MixIntent = entity.MixIntent
+                    }
+                    : null,
                 CreatedDate = entity.CreatedDate,
                 LastModifiedDate = entity.LastModifiedDate,
                 CreatedSubject = subjectMapper.MapToDto(entity.CreatedSubject),
