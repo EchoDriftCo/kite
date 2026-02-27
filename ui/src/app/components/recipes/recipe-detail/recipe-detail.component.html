@@ -59,6 +59,10 @@
               <mat-icon>restaurant</mat-icon>
               Start Cooking
             </button>
+            <button mat-stroked-button color="accent" [routerLink]="['/recipes/mix']" [queryParams]="{recipeId: recipe.recipeResourceId}">
+              <mat-icon>blender</mat-icon>
+              Mix with...
+            </button>
             <button mat-raised-button color="primary" (click)="editRecipe()">
               <mat-icon>edit</mat-icon>
               Edit

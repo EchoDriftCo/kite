@@ -1,0 +1,182 @@
+<div class="recipe-mixer-container">
+  <mat-card class="mixer-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>blender</mat-icon>
+        Recipe Mixer (AI Fusion)
+      </mat-card-title>
+      <mat-card-subtitle>Combine two recipes into something new!</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Recipe Selection -->
+      <div class="recipe-selection" *ngIf="!preview">
+        <div class="selection-row">
+          <mat-form-field appearance="outline" class="recipe-field">
+            <mat-label>First Recipe</mat-label>
+            <input type="text"
+                   matInput
+                   [formControl]="recipeAControl"
+                   [matAutocomplete]="autoA"
+                   placeholder="Search for a recipe...">
+            <mat-icon matSuffix>search</mat-icon>
+            <mat-autocomplete #autoA="matAutocomplete" 
+                              [displayWith]="displayRecipe"
+                              (optionSelected)="selectRecipeA($event.option.value)">
+              <mat-option *ngFor="let recipe of filteredRecipesA | async" [value]="recipe">
+                {{recipe.title}}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-icon class="plus-icon">add</mat-icon>
+
+          <mat-form-field appearance="outline" class="recipe-field">
+            <mat-label>Second Recipe</mat-label>
+            <input type="text"
+                   matInput
+                   [formControl]="recipeBControl"
+                   [matAutocomplete]="autoB"
+                   placeholder="Search for a recipe...">
+            <mat-icon matSuffix>search</mat-icon>
+            <mat-autocomplete #autoB="matAutocomplete"
+                              [displayWith]="displayRecipe"
+                              (optionSelected)="selectRecipeB($event.option.value)">
+              <mat-option *ngFor="let recipe of filteredRecipesB | async" [value]="recipe">
+                {{recipe.title}}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Mode Selection -->
+        <div class="mode-selection">
+          <mat-form-field appearance="outline" class="mode-field">
+            <mat-label>Mixing Mode</mat-label>
+            <mat-select [(ngModel)]="mode">
+              <mat-option value="bestOfBoth">Best of Both</mat-option>
+              <mat-option value="guided">Guided (with intent)</mat-option>
+              <mat-option value="surprise">Surprise Me!</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="intent-field" *ngIf="mode === 'guided'">
+            <mat-label>Your Intent</mat-label>
+            <input matInput [(ngModel)]="intent" placeholder="e.g., Make it spicier and healthier">
+          </mat-form-field>
+        </div>
+
+        <button mat-raised-button 
+                color="primary" 
+                class="mix-button"
+                [disabled]="!canMix() || isLoading"
+                (click)="mixRecipes()">
+          <mat-icon>blender</mat-icon>
+          {{ isLoading ? 'Mixing...' : 'Mix Recipes' }}
+        </button>
+      </div>
+
+      <!-- Preview -->
+      <div class="preview-section" *ngIf="preview && !isLoading">
+        <div class="preview-header">
+          <h2>{{ preview.title }}</h2>
+          <p class="source" *ngIf="preview.source">{{ preview.source }}</p>
+          <p *ngIf="preview.description" class="description">{{ preview.description }}</p>
+          
+          <div class="recipe-meta">
+            <span *ngIf="preview.yield"><mat-icon>people</mat-icon> {{ preview.yield }} servings</span>
+            <span *ngIf="preview.prepTimeMinutes"><mat-icon>schedule</mat-icon> Prep: {{ preview.prepTimeMinutes }} min</span>
+            <span *ngIf="preview.cookTimeMinutes"><mat-icon>timer</mat-icon> Cook: {{ preview.cookTimeMinutes }} min</span>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Ingredients -->
+        <div class="ingredients-section">
+          <h3>Ingredients</h3>
+          <ul class="ingredient-list">
+            <li *ngFor="let ing of preview.ingredients" [class.from-a]="ing.attribution === 'from A'" 
+                                                         [class.from-b]="ing.attribution === 'from B'"
+                                                         [class.combined]="ing.attribution === 'combined'">
+              <span class="ingredient-text">
+                {{ ing.quantity }} {{ ing.unit }} {{ ing.item }} <span *ngIf="ing.preparation">, {{ ing.preparation }}</span>
+              </span>
+              <span class="attribution" *ngIf="ing.attribution">{{ ing.attribution }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Instructions -->
+        <div class="instructions-section">
+          <h3>Instructions</h3>
+          <ol class="instruction-list">
+            <li *ngFor="let inst of preview.instructions" [class.from-a]="inst.attribution === 'from A'"
+                                                          [class.from-b]="inst.attribution === 'from B'"
+                                                          [class.combined]="inst.attribution === 'combined'">
+              <span class="instruction-text">{{ inst.instruction }}</span>
+              <span class="attribution" *ngIf="inst.attribution">{{ inst.attribution }}</span>
+            </li>
+          </ol>
+        </div>
+
+        <mat-divider *ngIf="preview.mixNotes"></mat-divider>
+
+        <!-- Mix Notes -->
+        <div class="mix-notes" *ngIf="preview.mixNotes">
+          <h3>AI Mix Notes</h3>
+          <p>{{ preview.mixNotes }}</p>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Refinement -->
+        <div class="refinement-section">
+          <mat-form-field appearance="outline" class="refinement-field">
+            <mat-label>Refine this recipe</mat-label>
+            <textarea matInput 
+                      [(ngModel)]="refinementNotes"
+                      rows="3"
+                      placeholder="e.g., Make it less spicy, add more vegetables..."></textarea>
+          </mat-form-field>
+          <button mat-raised-button 
+                  color="accent"
+                  [disabled]="!refinementNotes.trim() || isLoading"
+                  (click)="refine()">
+            <mat-icon>tune</mat-icon>
+            Refine
+          </button>
+        </div>
+
+        <!-- Actions -->
+        <div class="preview-actions">
+          <button mat-button (click)="reset()">
+            <mat-icon>restart_alt</mat-icon>
+            Start Over
+          </button>
+          <button mat-raised-button (click)="regenerate()" [disabled]="isLoading">
+            <mat-icon>refresh</mat-icon>
+            Regenerate
+          </button>
+          <button mat-raised-button 
+                  color="primary"
+                  (click)="save()"
+                  [disabled]="isSaving">
+            <mat-icon>save</mat-icon>
+            {{ isSaving ? 'Saving...' : 'Save Recipe' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isLoading">
+        <mat-spinner></mat-spinner>
+        <p>Mixing your recipes with AI magic...</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

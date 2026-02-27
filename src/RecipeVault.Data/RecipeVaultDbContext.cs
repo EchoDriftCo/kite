@@ -133,6 +133,19 @@ namespace RecipeVault.Data {
                 .WithMany()
                 .HasForeignKey(cr => cr.RecipeId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Recipe mixing relationships (AI Fusion)
+            modelBuilder.Entity<Recipe>()
+                .HasOne(r => r.MixedFromRecipeA)
+                .WithMany()
+                .HasForeignKey(r => r.MixedFromRecipeAId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Recipe>()
+                .HasOne(r => r.MixedFromRecipeB)
+                .WithMany()
+                .HasForeignKey(r => r.MixedFromRecipeBId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

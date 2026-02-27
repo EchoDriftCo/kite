@@ -70,6 +70,15 @@ namespace RecipeVault.Integrations.Gemini {
             List<int> targetIngredientIndices,
             List<string> dietaryConstraints,
             CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Generate text using Gemini AI with a custom prompt
+        /// </summary>
+        /// <param name="prompt">The prompt to send to Gemini</param>
+        /// <param name="responseMimeType">Expected response MIME type (default: application/json)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Generated text response from Gemini</returns>
+        Task<string> GenerateTextAsync(string prompt, string responseMimeType = "application/json", CancellationToken cancellationToken = default);
     }
 
     /// <summary>
