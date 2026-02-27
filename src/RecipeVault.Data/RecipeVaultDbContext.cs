@@ -170,6 +170,8 @@ namespace RecipeVault.Data {
                 .HasOne(ue => ue.Equipment)
                 .WithMany()
                 .HasForeignKey(ue => ue.EquipmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Recipe links cascade deletes
             modelBuilder.Entity<RecipeLink>()
                 .HasOne(rl => rl.ParentRecipe)
@@ -181,6 +183,8 @@ namespace RecipeVault.Data {
                 .HasOne(rl => rl.LinkedRecipe)
                 .WithMany(r => r.UsedInRecipes)
                 .HasForeignKey(rl => rl.LinkedRecipeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Recipe mixing relationships (AI Fusion)
             modelBuilder.Entity<Recipe>()
                 .HasOne(r => r.MixedFromRecipeA)

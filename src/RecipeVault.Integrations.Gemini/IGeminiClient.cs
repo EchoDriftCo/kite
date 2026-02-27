@@ -78,13 +78,15 @@ namespace RecipeVault.Integrations.Gemini {
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Raw text response from Gemini</returns>
         Task<string> GenerateTextAsync(string prompt, CancellationToken cancellationToken = default);
-        /// Generate text using Gemini AI with a custom prompt
+
+        /// <summary>
+        /// Generate text using Gemini AI with a custom prompt and response MIME type
         /// </summary>
         /// <param name="prompt">The prompt to send to Gemini</param>
         /// <param name="responseMimeType">Expected response MIME type (default: application/json)</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Generated text response from Gemini</returns>
-        Task<string> GenerateTextAsync(string prompt, string responseMimeType = "application/json", CancellationToken cancellationToken = default);
+        Task<string> GenerateTextAsync(string prompt, string responseMimeType, CancellationToken cancellationToken = default);
     }
 
     /// <summary>

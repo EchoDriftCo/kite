@@ -186,6 +186,8 @@ namespace RecipeVault.Domain.Entities {
 
         public void ClearEquipment() {
             recipeEquipment.Clear();
+        }
+
         public void SetMixedFrom(int recipeAId, int recipeBId, string mixIntent) {
             MixedFromRecipeAId = recipeAId;
             MixedFromRecipeBId = recipeBId;
