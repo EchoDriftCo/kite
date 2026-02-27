@@ -7,6 +7,7 @@ namespace RecipeVault.BootStrap.Installer {
     public class RepositoryInstaller : IInstaller {
         public void Install(IServiceCollection services, IConfiguration configuration) {
             services.AddScopedInterfacesBySuffix<RecipeRepository>("Repository");
+            services.AddScoped<ICookingLogRepository, CookingLogRepository>();
         }
     }
 }

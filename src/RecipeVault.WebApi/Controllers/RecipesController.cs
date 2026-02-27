@@ -30,14 +30,18 @@ namespace RecipeVault.WebApi.Controllers {
         private readonly IRecipeFacade facade;
         private readonly RecipeModelMapper recipeMapper;
         private readonly IImageStorage imageStorage;
+        private readonly ICookingLogFacade cookingLogFacade;
+        private readonly CookingLogModelMapper cookingLogMapper;
 
         /// <summary>
         /// Initializes a new instance of the RecipesController
         /// </summary>
-        public RecipesController(IRecipeFacade facade, RecipeModelMapper recipeMapper, IImageStorage imageStorage) {
+        public RecipesController(IRecipeFacade facade, RecipeModelMapper recipeMapper, IImageStorage imageStorage, ICookingLogFacade cookingLogFacade, CookingLogModelMapper cookingLogMapper) {
             this.facade = facade;
             this.recipeMapper = recipeMapper;
             this.imageStorage = imageStorage;
+            this.cookingLogFacade = cookingLogFacade;
+            this.cookingLogMapper = cookingLogMapper;
         }
 
         /// <summary>
@@ -347,6 +351,36 @@ namespace RecipeVault.WebApi.Controllers {
                 var dto = await facade.GetCookingDataAsync(id).ConfigureAwait(false);
                 var model = recipeMapper.Map(dto);
                 return Ok(model);
+            }
+        }
+
+        /// <summary>
+        /// Get cooking history for a specific recipe
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        [HttpGet("{id}/cooking-log")]
+        [ProducesResponseType(typeof(List<CookingLogModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetRecipeCookingHistoryAsync(Guid id) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var logs = await cookingLogFacade.GetRecipeCookingHistoryAsync(id).ConfigureAwait(false);
+                var models = logs.Select(x => cookingLogMapper.Map(x)).ToList();
+                return Ok(models);
+            }
+        }
+
+        /// <summary>
+        /// Get personal stats for a specific recipe (cook count, average rating, last cooked)
+        /// </summary>
+        /// <param name="id">the resource id of the recipe</param>
+        [HttpGet("{id}/personal-stats")]
+        [ProducesResponseType(typeof(RecipePersonalStatsModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetRecipePersonalStatsAsync(Guid id) {
+            using (LogContext.PushProperty("RecipeResourceId", id)) {
+                var stats = await cookingLogFacade.GetRecipePersonalStatsAsync(id).ConfigureAwait(false);
+                if (stats == null) {
+                    return Ok(null);
+                }
+                return Ok(cookingLogMapper.Map(stats));
             }
         }
     }
