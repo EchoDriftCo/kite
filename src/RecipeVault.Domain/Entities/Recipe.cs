@@ -23,6 +23,7 @@ namespace RecipeVault.Domain.Entities {
             ingredients = new List<RecipeIngredient>();
             instructions = new List<RecipeInstruction>();
             recipeTags = new List<RecipeTag>();
+            recipeEquipment = new List<RecipeEquipment>();
             IsPublic = isPublic;
             Update(title, yield, prepTimeMinutes, cookTimeMinutes, description, source, originalImageUrl);
         }
@@ -84,6 +85,9 @@ namespace RecipeVault.Domain.Entities {
 
         private readonly List<RecipeTag> recipeTags = new();
         public virtual IReadOnlyList<RecipeTag> RecipeTags => recipeTags;
+
+        private readonly List<RecipeEquipment> recipeEquipment = new();
+        public virtual IReadOnlyList<RecipeEquipment> RecipeEquipment => recipeEquipment;
 
         public void Update(string title, int yield, int? prepTimeMinutes, int? cookTimeMinutes, string description, string source, string originalImageUrl) {
             var messages = new MessageList();
@@ -155,6 +159,18 @@ namespace RecipeVault.Domain.Entities {
 
         public void RemoveTag(RecipeTag recipeTag) {
             recipeTags.Remove(recipeTag);
+        }
+
+        public void AddEquipment(RecipeEquipment equipment) {
+            recipeEquipment.Add(equipment);
+        }
+
+        public void RemoveEquipment(RecipeEquipment equipment) {
+            recipeEquipment.Remove(equipment);
+        }
+
+        public void ClearEquipment() {
+            recipeEquipment.Clear();
         }
 
         public Recipe Fork(string newTitle = null) {

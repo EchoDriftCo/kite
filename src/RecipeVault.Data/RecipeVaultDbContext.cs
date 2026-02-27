@@ -34,6 +34,9 @@ namespace RecipeVault.Data {
         public DbSet<CollectionRecipe> CollectionRecipes { get; set; }
         public DbSet<CookingLog> CookingLogs { get; set; }
         public DbSet<CookingLogPhoto> CookingLogPhotos { get; set; }
+        public DbSet<Equipment> Equipment { get; set; }
+        public DbSet<UserEquipment> UserEquipment { get; set; }
+        public DbSet<RecipeEquipment> RecipeEquipment { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.HasDefaultSchema("public");
@@ -148,6 +151,25 @@ namespace RecipeVault.Data {
                 .WithMany(cl => cl.Photos)
                 .HasForeignKey(clp => clp.CookingLogId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Equipment cascade deletes
+            modelBuilder.Entity<RecipeEquipment>()
+                .HasOne(re => re.Recipe)
+                .WithMany(r => r.RecipeEquipment)
+                .HasForeignKey(re => re.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RecipeEquipment>()
+                .HasOne(re => re.Equipment)
+                .WithMany()
+                .HasForeignKey(re => re.EquipmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserEquipment>()
+                .HasOne(ue => ue.Equipment)
+                .WithMany()
+                .HasForeignKey(ue => ue.EquipmentId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
