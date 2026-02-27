@@ -1,0 +1,232 @@
+<div class="recipe-generator-container">
+  <mat-card class="generator-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>auto_awesome</mat-icon>
+        AI Recipe Generator
+      </mat-card-title>
+      <mat-card-subtitle>
+        Describe your dream recipe and let AI create it for you
+        <span class="quota-badge" [class.quota-low]="quotaRemaining <= 3">
+          {{quotaRemaining}} generations remaining today
+        </span>
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Input Form -->
+      <div class="input-section" *ngIf="!selectedRecipe">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Describe your recipe</mat-label>
+          <textarea
+            matInput
+            [(ngModel)]="prompt"
+            placeholder="E.g., A creamy pasta with mushrooms and bacon for date night"
+            rows="4"
+            [disabled]="loading"
+          ></textarea>
+          <mat-icon matSuffix>description</mat-icon>
+        </mat-form-field>
+
+        <!-- Constraints -->
+        <mat-expansion-panel class="constraints-panel">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>tune</mat-icon>
+              Optional Constraints
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div class="constraints-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Max Time</mat-label>
+              <mat-select [(ngModel)]="maxTime" [disabled]="loading">
+                <mat-option [value]="null">No limit</mat-option>
+                <mat-option *ngFor="let time of timeOptions" [value]="time">
+                  {{time}} minutes
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Skill Level</mat-label>
+              <mat-select [(ngModel)]="skillLevel" [disabled]="loading">
+                <mat-option value="">Any</mat-option>
+                <mat-option *ngFor="let level of skillLevels" [value]="level">
+                  {{level}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div class="dietary-constraints">
+              <label>Dietary Requirements:</label>
+              <div class="checkbox-list">
+                <mat-checkbox
+                  *ngFor="let option of dietaryOptions"
+                  [(ngModel)]="selectedDietary"
+                  [value]="option"
+                  [disabled]="loading"
+                  (change)="$event.checked ? selectedDietary.push(option) : selectedDietary = selectedDietary.filter(d => d !== option)"
+                >
+                  {{option}}
+                </mat-checkbox>
+              </div>
+            </div>
+          </div>
+        </mat-expansion-panel>
+
+        <div class="actions">
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="generateRecipes()"
+            [disabled]="loading || !prompt.trim() || quotaRemaining <= 0"
+            class="generate-btn"
+          >
+            <mat-icon>auto_awesome</mat-icon>
+            Generate Recipe
+          </button>
+
+          <mat-spinner *ngIf="loading" diameter="30"></mat-spinner>
+        </div>
+      </div>
+
+      <!-- Generated Recipe Preview -->
+      <div class="recipe-preview" *ngIf="selectedRecipe && !loading">
+        <div class="preview-header">
+          <h2>{{selectedRecipe.title}}</h2>
+          <div class="recipe-meta">
+            <mat-chip-set>
+              <mat-chip *ngIf="selectedRecipe.prepTimeMinutes">
+                <mat-icon>schedule</mat-icon>
+                Prep: {{selectedRecipe.prepTimeMinutes}}min
+              </mat-chip>
+              <mat-chip *ngIf="selectedRecipe.cookTimeMinutes">
+                <mat-icon>outdoor_grill</mat-icon>
+                Cook: {{selectedRecipe.cookTimeMinutes}}min
+              </mat-chip>
+              <mat-chip>
+                <mat-icon>restaurant</mat-icon>
+                {{selectedRecipe.yield}} servings
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+        </div>
+
+        <p class="recipe-description">{{selectedRecipe.description}}</p>
+
+        <mat-divider></mat-divider>
+
+        <!-- Ingredients -->
+        <div class="ingredients-section">
+          <h3><mat-icon>shopping_basket</mat-icon> Ingredients</h3>
+          <ul class="ingredient-list">
+            <li *ngFor="let ing of selectedRecipe.ingredients">
+              {{formatIngredient(ing)}}
+            </li>
+          </ul>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Instructions -->
+        <div class="instructions-section">
+          <h3><mat-icon>format_list_numbered</mat-icon> Instructions</h3>
+          <ol class="instruction-list">
+            <li *ngFor="let inst of selectedRecipe.instructions">
+              {{inst.instruction}}
+            </li>
+          </ol>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Tags -->
+        <div class="tags-section" *ngIf="selectedRecipe.tags && selectedRecipe.tags.length > 0">
+          <h3><mat-icon>local_offer</mat-icon> Tags</h3>
+          <mat-chip-set>
+            <mat-chip *ngFor="let tag of selectedRecipe.tags">
+              {{tag}}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+
+        <!-- Actions -->
+        <div class="preview-actions">
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="saveRecipe()"
+            [disabled]="loading"
+          >
+            <mat-icon>save</mat-icon>
+            Save to My Recipes
+          </button>
+
+          <button
+            mat-stroked-button
+            (click)="toggleRefinement()"
+            [disabled]="loading"
+          >
+            <mat-icon>edit</mat-icon>
+            Refine
+          </button>
+
+          <button
+            mat-stroked-button
+            (click)="regenerate()"
+            [disabled]="loading || quotaRemaining <= 0"
+          >
+            <mat-icon>refresh</mat-icon>
+            Regenerate
+          </button>
+
+          <button
+            mat-button
+            (click)="startOver()"
+            [disabled]="loading"
+          >
+            <mat-icon>clear</mat-icon>
+            Start Over
+          </button>
+        </div>
+
+        <!-- Refinement Input -->
+        <div class="refinement-input" *ngIf="showRefinementInput">
+          <mat-divider></mat-divider>
+          <h3><mat-icon>tune</mat-icon> Refine Recipe</h3>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>How would you like to refine this recipe?</mat-label>
+            <textarea
+              matInput
+              [(ngModel)]="refinementText"
+              placeholder="E.g., Make it spicier, Use chicken instead of beef"
+              rows="3"
+              [disabled]="loading"
+            ></textarea>
+          </mat-form-field>
+          <div class="refinement-actions">
+            <button
+              mat-raised-button
+              color="accent"
+              (click)="refineRecipe()"
+              [disabled]="loading || !refinementText.trim() || quotaRemaining <= 0"
+            >
+              <mat-icon>auto_fix_high</mat-icon>
+              Apply Refinement
+            </button>
+            <button
+              mat-button
+              (click)="toggleRefinement()"
+              [disabled]="loading"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+
+        <mat-spinner *ngIf="loading" class="loading-spinner"></mat-spinner>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

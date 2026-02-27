@@ -23,6 +23,11 @@
         </button>
       </mat-form-field>
 
+      <button mat-raised-button color="accent" [routerLink]="['/recipes/generate']">
+        <mat-icon>auto_awesome</mat-icon>
+        AI Generate
+      </button>
+
       <button mat-raised-button color="primary" (click)="createNew()">
         <mat-icon>add</mat-icon>
         New Recipe
