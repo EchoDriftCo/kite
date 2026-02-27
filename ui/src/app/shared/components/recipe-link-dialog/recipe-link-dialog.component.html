@@ -1,0 +1,89 @@
+<h2 mat-dialog-title>{{ data.existingLink ? 'Edit' : 'Add' }} Recipe Link</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="recipe-link-form">
+    <!-- Recipe Search -->
+    <mat-form-field *ngIf="!data.existingLink" class="full-width">
+      <mat-label>Search recipes</mat-label>
+      <input
+        matInput
+        formControlName="recipeSearch"
+        [matAutocomplete]="auto"
+        placeholder="Type to search your recipes..."
+      />
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        [displayWith]="displayRecipeName.bind(this)"
+        (optionSelected)="onRecipeSelected($event.option.value)"
+      >
+        <mat-option *ngFor="let recipe of searchResults$ | async" [value]="recipe">
+          {{ recipe.title }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <!-- Selected Recipe Display -->
+    <div *ngIf="selectedRecipe" class="selected-recipe">
+      <strong>Selected:</strong> {{ selectedRecipe.title }}
+    </div>
+
+    <!-- Display Text -->
+    <mat-form-field class="full-width">
+      <mat-label>Display Text (optional)</mat-label>
+      <input
+        matInput
+        formControlName="displayText"
+        placeholder="e.g., 'My homemade pasta sauce'"
+      />
+      <mat-hint>Custom name to show instead of recipe title</mat-hint>
+    </mat-form-field>
+
+    <!-- Ingredient Index -->
+    <mat-form-field class="full-width">
+      <mat-label>Ingredient Position (optional)</mat-label>
+      <input
+        matInput
+        type="number"
+        formControlName="ingredientIndex"
+        placeholder="0"
+      />
+      <mat-hint>Which ingredient line this link should appear on</mat-hint>
+    </mat-form-field>
+
+    <!-- Portion Used -->
+    <mat-form-field class="full-width">
+      <mat-label>Portion Used (optional)</mat-label>
+      <input
+        matInput
+        type="number"
+        step="0.25"
+        formControlName="portionUsed"
+        placeholder="1.0"
+      />
+      <mat-hint>Multiplier for the linked recipe (e.g., 0.5 for half batch)</mat-hint>
+    </mat-form-field>
+
+    <!-- Include in Total Time -->
+    <mat-checkbox formControlName="includeInTotalTime" class="full-width">
+      Include linked recipe's time in total time calculation
+    </mat-checkbox>
+
+    <!-- Error Message -->
+    <div *ngIf="error" class="error-message">
+      {{ error }}
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="loading">Cancel</button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onSubmit()"
+    [disabled]="loading || form.invalid || !selectedRecipe"
+  >
+    <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+    <span *ngIf="!loading">{{ data.existingLink ? 'Update' : 'Add' }} Link</span>
+  </button>
+</mat-dialog-actions>
