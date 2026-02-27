@@ -129,6 +129,10 @@ export class RecipeDetailComponent implements OnInit {
         // Personal stats are optional, so just log the error
         console.log('No personal stats available for this recipe');
         this.loadingStats = false;
+      }
+    });
+  }
+
   loadRecipeEquipment() {
     if (!this.recipeId) return;
 
@@ -163,6 +167,10 @@ export class RecipeDetailComponent implements OnInit {
         this.snackBar.open('Cooking session logged! 🍳', 'OK', { duration: 3000 });
         // Reload personal stats to show updated data
         this.loadPersonalStats();
+      }
+    });
+  }
+
   detectEquipment() {
     if (!this.recipeId) return;
 
@@ -188,6 +196,8 @@ export class RecipeDetailComponent implements OnInit {
       month: 'long', 
       day: 'numeric' 
     });
+  }
+
   isEquipmentOwned(equipmentCode: string): boolean {
     if (!this.equipmentCheck) return false;
     return !this.equipmentCheck.missingEquipment.some(e => e.code === equipmentCode);

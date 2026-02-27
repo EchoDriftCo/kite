@@ -59,7 +59,7 @@
             *ngFor="let restriction of commonRestrictions"
             class="btn btn-tag"
             (click)="setCommonRestriction(restriction)"
-            [disabled]="selectedProfile.restrictions.some(r => r.restrictionCode === restriction.code)"
+            [disabled]="hasRestriction(restriction.code)"
           >
             {{ restriction.label }}
           </button>

@@ -183,6 +183,11 @@ export class DietaryProfileComponent implements OnInit {
     this.newRestriction.restrictionType = restriction.type;
   }
 
+  hasRestriction(code: string): boolean {
+    if (!this.selectedProfile) return false;
+    return this.selectedProfile.restrictions.some(r => r.restrictionCode === code);
+  }
+
   private updateProfileInList(updatedProfile: DietaryProfile): void {
     const index = this.profiles.findIndex(p => p.dietaryProfileResourceId === updatedProfile.dietaryProfileResourceId);
     if (index !== -1) {
