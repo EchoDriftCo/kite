@@ -1,0 +1,77 @@
+<div class="equipment-setup-container">
+  <div class="header">
+    <h1>
+      <mat-icon>kitchen</mat-icon>
+      My Kitchen Equipment
+    </h1>
+    <p class="subtitle">
+      Select the equipment you have available. This helps us show you recipes you can actually make!
+    </p>
+  </div>
+
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Loading equipment...</p>
+    </div>
+  }
+
+  @if (!loading) {
+    <div class="equipment-summary">
+      <mat-icon>check_circle</mat-icon>
+      <span>{{ getTotalSelectedCount() }} items selected</span>
+    </div>
+
+    <div class="equipment-categories">
+      @for (category of categories; track category) {
+        <mat-card class="category-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>{{ categoryIcons[category] }}</mat-icon>
+            <mat-card-title>{{ category }}</mat-card-title>
+            <mat-card-subtitle>
+              {{ getSelectedCount(category) }} of {{ equipmentByCategory[category].length }} selected
+            </mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <div class="equipment-list">
+              @for (equipment of equipmentByCategory[category]; track equipment.equipmentId) {
+                <div class="equipment-item" [class.common]="equipment.isCommon">
+                  <mat-checkbox 
+                    [(ngModel)]="equipment.selected"
+                    [id]="'equipment-' + equipment.code">
+                    <span class="equipment-name">
+                      {{ equipment.name }}
+                      @if (equipment.isCommon) {
+                        <mat-icon class="common-icon" matTooltip="Common equipment">star</mat-icon>
+                      }
+                    </span>
+                  </mat-checkbox>
+                  @if (equipment.description) {
+                    <p class="equipment-description">{{ equipment.description }}</p>
+                  }
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+
+    <div class="actions">
+      <button 
+        mat-raised-button 
+        color="primary" 
+        (click)="saveEquipment()"
+        [disabled]="saving">
+        @if (saving) {
+          <mat-spinner diameter="20"></mat-spinner>
+          Saving...
+        } @else {
+          <mat-icon>save</mat-icon>
+          Save Equipment
+        }
+      </button>
+    </div>
+  }
+</div>

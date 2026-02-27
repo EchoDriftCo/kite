@@ -75,6 +75,7 @@ export interface RecipeSearchRequest {
   tagCategory?: number;
   isFavorite?: boolean;
   minRating?: number;
+  hasRequiredEquipment?: boolean;
 }
 
 export interface PagedResult<T> {

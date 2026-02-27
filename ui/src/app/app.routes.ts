@@ -15,6 +15,7 @@ import { CircleDetailComponent } from './components/circles/circle-detail/circle
 import { AcceptInviteComponent } from './components/circles/accept-invite/accept-invite.component';
 import { CollectionListComponent } from './components/collections/collection-list/collection-list.component';
 import { DietaryProfileComponent } from './components/dietary-profile/dietary-profile.component';
+import { EquipmentSetupComponent } from './components/equipment-setup/equipment-setup.component';
 import { LoginComponent } from './components/login/login.component';
 import { SharedRecipeComponent } from './components/recipes/shared-recipe/shared-recipe.component';
 import { authGuard } from './guards/auth.guard';
@@ -36,6 +37,7 @@ export const routes: Routes = [
   { path: 'circles/:id', component: CircleDetailComponent, canActivate: [authGuard] },
   { path: 'collections', component: CollectionListComponent, canActivate: [authGuard] },
   { path: 'dietary-profiles', component: DietaryProfileComponent, canActivate: [authGuard] },
+  { path: 'equipment', component: EquipmentSetupComponent, canActivate: [authGuard] },
   { path: 'meal-plans', component: MealPlanListComponent, canActivate: [authGuard] },
   { path: 'meal-plans/new', component: MealPlanFormComponent, canActivate: [authGuard] },
   { path: 'meal-plans/:id', component: MealPlanDetailComponent, canActivate: [authGuard] },

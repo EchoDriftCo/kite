@@ -64,6 +64,12 @@
     </div>
   }
 
+  @if (viewMode === 'mine') {
+    <div class="equipment-filter-container">
+      <app-equipment-filter (filterChange)="onEquipmentFilterChange($event)"></app-equipment-filter>
+    </div>
+  }
+
   @if (loading) {
     <div class="loading-container">
       <mat-spinner></mat-spinner>

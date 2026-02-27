@@ -28,6 +28,8 @@ import { NutritionPanelComponent } from '../nutrition-panel/nutrition-panel.comp
 import { CookingLogDialogComponent, CookingLogDialogData, CookingLogDialogResult } from '../cooking-log-dialog/cooking-log-dialog.component';
 import { CookingLogService } from '../../../services/cooking-log.service';
 import { RecipePersonalStats } from '../../../models/cooking-log.model';
+import { EquipmentService } from '../../../services/equipment.service';
+import { EquipmentCheckResult } from '../../../models/equipment.model';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -68,6 +70,10 @@ export class RecipeDetailComponent implements OnInit {
   // Personal stats
   personalStats: RecipePersonalStats | null = null;
   loadingStats = false;
+  // Equipment
+  equipmentCheck: EquipmentCheckResult | null = null;
+  loadingEquipment = false;
+  detectingEquipment = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -75,7 +81,8 @@ export class RecipeDetailComponent implements OnInit {
     private recipeService: RecipeService,
     private cookingLogService: CookingLogService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private equipmentService: EquipmentService
   ) {}
 
   ngOnInit() {
@@ -99,6 +106,7 @@ export class RecipeDetailComponent implements OnInit {
         this.scaledServings = recipe.yield;
         this.scaleFactor = 1;
         this.loading = false;
+        this.loadRecipeEquipment();
       },
       error: (err) => {
         this.error = err.message || 'Failed to load recipe';
@@ -121,6 +129,18 @@ export class RecipeDetailComponent implements OnInit {
         // Personal stats are optional, so just log the error
         console.log('No personal stats available for this recipe');
         this.loadingStats = false;
+  loadRecipeEquipment() {
+    if (!this.recipeId) return;
+
+    this.loadingEquipment = true;
+    this.equipmentService.checkRecipeEquipment(this.recipeId).subscribe({
+      next: (result) => {
+        this.equipmentCheck = result;
+        this.loadingEquipment = false;
+      },
+      error: (err) => {
+        console.error('Error loading equipment:', err);
+        this.loadingEquipment = false;
       }
     });
   }
@@ -143,6 +163,20 @@ export class RecipeDetailComponent implements OnInit {
         this.snackBar.open('Cooking session logged! 🍳', 'OK', { duration: 3000 });
         // Reload personal stats to show updated data
         this.loadPersonalStats();
+  detectEquipment() {
+    if (!this.recipeId) return;
+
+    this.detectingEquipment = true;
+    this.equipmentService.detectRecipeEquipment(this.recipeId).subscribe({
+      next: () => {
+        this.snackBar.open('Equipment detected!', 'Close', { duration: 3000 });
+        this.loadRecipeEquipment();
+        this.detectingEquipment = false;
+      },
+      error: (err) => {
+        this.snackBar.open('Failed to detect equipment', 'Close', { duration: 3000 });
+        console.error('Error detecting equipment:', err);
+        this.detectingEquipment = false;
       }
     });
   }
@@ -154,6 +188,13 @@ export class RecipeDetailComponent implements OnInit {
       month: 'long', 
       day: 'numeric' 
     });
+  isEquipmentOwned(equipmentCode: string): boolean {
+    if (!this.equipmentCheck) return false;
+    return !this.equipmentCheck.missingEquipment.some(e => e.code === equipmentCode);
+  }
+
+  getEquipmentStatusIcon(equipmentCode: string): string {
+    return this.isEquipmentOwned(equipmentCode) ? 'check_circle' : 'cancel';
   }
 
   goBack() {
