@@ -59,6 +59,9 @@
               <mat-icon>restaurant</mat-icon>
               Start Cooking
             </button>
+            <button mat-raised-button (click)="openCookingLogDialog()">
+              🍳 I Made This
+            </button>
             <button mat-raised-button color="primary" (click)="editRecipe()">
               <mat-icon>edit</mat-icon>
               Edit
@@ -157,6 +160,51 @@
             [readonly]="true">
           </app-tag-selector>
         </div>
+      }
+
+      <!-- Personal Stats Section -->
+      @if (recipe.isOwner !== false && personalStats && personalStats.cookCount > 0) {
+        <mat-card class="personal-stats-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>emoji_events</mat-icon>
+            <mat-card-title>Your Cooking History</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <span class="stat-label">Times Cooked:</span>
+                <span class="stat-value">{{ personalStats.cookCount }}</span>
+              </div>
+              @if (personalStats.averageRating) {
+                <div class="stat-item">
+                  <span class="stat-label">Your Rating:</span>
+                  <span class="stat-value">
+                    <div class="star-rating small">
+                      @for (star of [1, 2, 3, 4, 5]; track star) {
+                        <mat-icon [class.filled]="star <= personalStats.averageRating!">
+                          {{ star <= personalStats.averageRating! ? 'star' : 'star_border' }}
+                        </mat-icon>
+                      }
+                      <span class="rating-text">{{ personalStats.averageRating | number:'1.1-1' }}</span>
+                    </div>
+                  </span>
+                </div>
+              }
+              @if (personalStats.lastCooked) {
+                <div class="stat-item">
+                  <span class="stat-label">Last Cooked:</span>
+                  <span class="stat-value">{{ formatDate(personalStats.lastCooked) }}</span>
+                </div>
+              }
+              @if (personalStats.lastNote) {
+                <div class="stat-item full-width">
+                  <span class="stat-label">💡 Last Note:</span>
+                  <span class="stat-value note">{{ personalStats.lastNote }}</span>
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
       }
     </div>
 

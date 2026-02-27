@@ -1,0 +1,92 @@
+<h2 mat-dialog-title>🍳 Log Cook Session</h2>
+
+<mat-dialog-content>
+  <div class="dialog-content">
+    <h3>{{ data.recipeTitle }}</h3>
+
+    @if (error) {
+      <div class="error-message">{{ error }}</div>
+    }
+
+    <div class="form-field">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Date Cooked</mat-label>
+        <input matInput [matDatepicker]="picker" [(ngModel)]="cookedDate" required>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <div class="form-field">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Servings Made</mat-label>
+        <input matInput type="number" [(ngModel)]="servingsMade" min="1">
+        <mat-hint>Original recipe: {{ data.recipeYield }} servings</mat-hint>
+      </mat-form-field>
+    </div>
+
+    <div class="form-field rating-section">
+      <label>Rating</label>
+      <div class="star-rating">
+        @for (star of [1, 2, 3, 4, 5]; track star) {
+          <mat-icon 
+            class="star"
+            [class.filled]="rating && star <= rating"
+            [class.hover]="hoverRating >= star"
+            (click)="setRating(star)"
+            (mouseenter)="hoverRating = star"
+            (mouseleave)="hoverRating = 0">
+            {{ (rating && star <= rating) || hoverRating >= star ? 'star' : 'star_border' }}
+          </mat-icon>
+        }
+      </div>
+    </div>
+
+    <div class="form-field">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Notes</mat-label>
+        <textarea 
+          matInput 
+          [(ngModel)]="notes" 
+          rows="4"
+          placeholder="How did it turn out? Any modifications?"></textarea>
+      </mat-form-field>
+    </div>
+
+    <div class="form-field photo-section">
+      <label>Photo</label>
+      @if (selectedPhoto) {
+        <div class="photo-preview">
+          <img [src]="getPhotoDataUrl()" alt="Cooking photo">
+          <button mat-icon-button class="remove-photo" (click)="removePhoto()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      } @else {
+        <div class="photo-upload">
+          <input 
+            type="file" 
+            #photoInput 
+            accept="image/*" 
+            (change)="onPhotoSelected($event)"
+            style="display: none">
+          <button mat-stroked-button (click)="photoInput.click()">
+            <mat-icon>add_a_photo</mat-icon>
+            Add Photo
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="loading">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="loading">
+    @if (loading) {
+      <mat-spinner diameter="20"></mat-spinner>
+    } @else {
+      Save
+    }
+  </button>
+</mat-dialog-actions>
