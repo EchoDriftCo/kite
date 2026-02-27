@@ -12,8 +12,8 @@ using RecipeVault.Data;
 namespace RecipeVault.Data.Migrations
 {
     [DbContext(typeof(RecipeVaultDbContext))]
-    [Migration("20260226203449_AddRecipeMixingFields")]
-    partial class AddRecipeMixingFields
+    [Migration("20260227005451_ConsolidatedNewFeatures")]
+    partial class ConsolidatedNewFeatures
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -376,6 +376,102 @@ namespace RecipeVault.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("RecipeVault.Domain.Entities.CookingLog", b =>
+                {
+                    b.Property<int>("CookingLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CookingLogId"));
+
+                    b.Property<DateTime>("CookedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CookingLogResourceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was created");
+
+                    b.Property<Guid>("CreatedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was last modified");
+
+                    b.Property<Guid>("LastModifiedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int?>("Rating")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RecipeId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("ScaleFactor")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("ServingsMade")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CookingLogId");
+
+                    b.HasIndex("CookedDate");
+
+                    b.HasIndex("CookingLogResourceId")
+                        .IsUnique();
+
+                    b.HasIndex("CreatedSubjectId");
+
+                    b.HasIndex("LastModifiedSubjectId");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("CookingLog", "public", t =>
+                        {
+                            t.HasTrigger("trCookingLog");
+                        });
+                });
+
+            modelBuilder.Entity("RecipeVault.Domain.Entities.CookingLogPhoto", b =>
+                {
+                    b.Property<int>("CookingLogPhotoId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CookingLogPhotoId"));
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("CookingLogId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CookingLogPhotoId");
+
+                    b.HasIndex("CookingLogId");
+
+                    b.ToTable("CookingLogPhoto", "public", t =>
+                        {
+                            t.HasTrigger("trCookingLogPhoto");
+                        });
+                });
+
             modelBuilder.Entity("RecipeVault.Domain.Entities.DietaryProfile", b =>
                 {
                     b.Property<int>("DietaryProfileId")
@@ -478,6 +574,63 @@ namespace RecipeVault.Data.Migrations
                     b.ToTable("DietaryRestriction", "public", t =>
                         {
                             t.HasTrigger("trDietaryRestriction");
+                        });
+                });
+
+            modelBuilder.Entity("RecipeVault.Domain.Entities.Equipment", b =>
+                {
+                    b.Property<int>("EquipmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("EquipmentId"));
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was created");
+
+                    b.Property<Guid>("CreatedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsCommon")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was last modified");
+
+                    b.Property<Guid>("LastModifiedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("EquipmentId");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("CreatedSubjectId");
+
+                    b.HasIndex("LastModifiedSubjectId");
+
+                    b.ToTable("Equipment", "public", t =>
+                        {
+                            t.HasTrigger("trEquipment");
                         });
                 });
 
@@ -823,6 +976,54 @@ namespace RecipeVault.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("RecipeVault.Domain.Entities.RecipeEquipment", b =>
+                {
+                    b.Property<int>("RecipeEquipmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RecipeEquipmentId"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was created");
+
+                    b.Property<Guid>("CreatedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("EquipmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was last modified");
+
+                    b.Property<Guid>("LastModifiedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("RecipeId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("RecipeEquipmentId");
+
+                    b.HasIndex("CreatedSubjectId");
+
+                    b.HasIndex("EquipmentId");
+
+                    b.HasIndex("LastModifiedSubjectId");
+
+                    b.HasIndex("RecipeId", "EquipmentId")
+                        .IsUnique();
+
+                    b.ToTable("RecipeEquipment", "public", t =>
+                        {
+                            t.HasTrigger("trRecipeEquipment");
+                        });
+                });
+
             modelBuilder.Entity("RecipeVault.Domain.Entities.RecipeIngredient", b =>
                 {
                     b.Property<int>("RecipeIngredientId")
@@ -937,6 +1138,69 @@ namespace RecipeVault.Data.Migrations
                     b.ToTable("RecipeInstruction", "public", t =>
                         {
                             t.HasTrigger("trRecipeInstruction");
+                        });
+                });
+
+            modelBuilder.Entity("RecipeVault.Domain.Entities.RecipeLink", b =>
+                {
+                    b.Property<int>("RecipeLinkId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RecipeLinkId"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was created");
+
+                    b.Property<Guid>("CreatedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DisplayText")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("IncludeInTotalTime")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("IngredientIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was last modified");
+
+                    b.Property<Guid>("LastModifiedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("LinkedRecipeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ParentRecipeId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("PortionUsed")
+                        .HasColumnType("decimal(10,4)");
+
+                    b.Property<Guid>("RecipeLinkResourceId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("RecipeLinkId");
+
+                    b.HasIndex("CreatedSubjectId");
+
+                    b.HasIndex("LastModifiedSubjectId");
+
+                    b.HasIndex("LinkedRecipeId");
+
+                    b.HasIndex("ParentRecipeId");
+
+                    b.HasIndex("RecipeLinkResourceId")
+                        .IsUnique();
+
+                    b.ToTable("RecipeLink", "public", t =>
+                        {
+                            t.HasTrigger("trRecipeLink");
                         });
                 });
 
@@ -1249,6 +1513,54 @@ namespace RecipeVault.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("RecipeVault.Domain.Entities.UserEquipment", b =>
+                {
+                    b.Property<int>("UserEquipmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserEquipmentId"));
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was created");
+
+                    b.Property<Guid>("CreatedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("EquipmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was last modified");
+
+                    b.Property<Guid>("LastModifiedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("UserEquipmentId");
+
+                    b.HasIndex("CreatedSubjectId");
+
+                    b.HasIndex("EquipmentId");
+
+                    b.HasIndex("LastModifiedSubjectId");
+
+                    b.HasIndex("SubjectId", "EquipmentId")
+                        .IsUnique();
+
+                    b.ToTable("UserEquipment", "public", t =>
+                        {
+                            t.HasTrigger("trUserEquipment");
+                        });
+                });
+
             modelBuilder.Entity("RecipeVault.Domain.Entities.AvoidedIngredient", b =>
                 {
                     b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "CreatedSubject")
@@ -1382,6 +1694,44 @@ namespace RecipeVault.Data.Migrations
                     b.Navigation("Recipe");
                 });
 
+            modelBuilder.Entity("RecipeVault.Domain.Entities.CookingLog", b =>
+                {
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "CreatedSubject")
+                        .WithMany()
+                        .HasForeignKey("CreatedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "LastModifiedSubject")
+                        .WithMany()
+                        .HasForeignKey("LastModifiedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("RecipeVault.Domain.Entities.Recipe", "Recipe")
+                        .WithMany()
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedSubject");
+
+                    b.Navigation("LastModifiedSubject");
+
+                    b.Navigation("Recipe");
+                });
+
+            modelBuilder.Entity("RecipeVault.Domain.Entities.CookingLogPhoto", b =>
+                {
+                    b.HasOne("RecipeVault.Domain.Entities.CookingLog", "CookingLog")
+                        .WithMany("Photos")
+                        .HasForeignKey("CookingLogId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CookingLog");
+                });
+
             modelBuilder.Entity("RecipeVault.Domain.Entities.DietaryProfile", b =>
                 {
                     b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "CreatedSubject")
@@ -1424,6 +1774,25 @@ namespace RecipeVault.Data.Migrations
                     b.Navigation("CreatedSubject");
 
                     b.Navigation("DietaryProfile");
+
+                    b.Navigation("LastModifiedSubject");
+                });
+
+            modelBuilder.Entity("RecipeVault.Domain.Entities.Equipment", b =>
+                {
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "CreatedSubject")
+                        .WithMany()
+                        .HasForeignKey("CreatedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "LastModifiedSubject")
+                        .WithMany()
+                        .HasForeignKey("LastModifiedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("CreatedSubject");
 
                     b.Navigation("LastModifiedSubject");
                 });
@@ -1551,6 +1920,41 @@ namespace RecipeVault.Data.Migrations
                     b.Navigation("MixedFromRecipeB");
                 });
 
+            modelBuilder.Entity("RecipeVault.Domain.Entities.RecipeEquipment", b =>
+                {
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "CreatedSubject")
+                        .WithMany()
+                        .HasForeignKey("CreatedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("RecipeVault.Domain.Entities.Equipment", "Equipment")
+                        .WithMany()
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "LastModifiedSubject")
+                        .WithMany()
+                        .HasForeignKey("LastModifiedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("RecipeVault.Domain.Entities.Recipe", "Recipe")
+                        .WithMany("RecipeEquipment")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedSubject");
+
+                    b.Navigation("Equipment");
+
+                    b.Navigation("LastModifiedSubject");
+
+                    b.Navigation("Recipe");
+                });
+
             modelBuilder.Entity("RecipeVault.Domain.Entities.RecipeIngredient", b =>
                 {
                     b.HasOne("RecipeVault.Domain.Entities.Unit", "CanonicalUnit")
@@ -1606,6 +2010,41 @@ namespace RecipeVault.Data.Migrations
                     b.Navigation("CreatedSubject");
 
                     b.Navigation("LastModifiedSubject");
+                });
+
+            modelBuilder.Entity("RecipeVault.Domain.Entities.RecipeLink", b =>
+                {
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "CreatedSubject")
+                        .WithMany()
+                        .HasForeignKey("CreatedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "LastModifiedSubject")
+                        .WithMany()
+                        .HasForeignKey("LastModifiedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("RecipeVault.Domain.Entities.Recipe", "LinkedRecipe")
+                        .WithMany("UsedInRecipes")
+                        .HasForeignKey("LinkedRecipeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RecipeVault.Domain.Entities.Recipe", "ParentRecipe")
+                        .WithMany("LinkedRecipes")
+                        .HasForeignKey("ParentRecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedSubject");
+
+                    b.Navigation("LastModifiedSubject");
+
+                    b.Navigation("LinkedRecipe");
+
+                    b.Navigation("ParentRecipe");
                 });
 
             modelBuilder.Entity("RecipeVault.Domain.Entities.RecipeNutrition", b =>
@@ -1719,6 +2158,33 @@ namespace RecipeVault.Data.Migrations
                     b.Navigation("Unit");
                 });
 
+            modelBuilder.Entity("RecipeVault.Domain.Entities.UserEquipment", b =>
+                {
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "CreatedSubject")
+                        .WithMany()
+                        .HasForeignKey("CreatedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("RecipeVault.Domain.Entities.Equipment", "Equipment")
+                        .WithMany()
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "LastModifiedSubject")
+                        .WithMany()
+                        .HasForeignKey("LastModifiedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("CreatedSubject");
+
+                    b.Navigation("Equipment");
+
+                    b.Navigation("LastModifiedSubject");
+                });
+
             modelBuilder.Entity("RecipeVault.Domain.Entities.Circle", b =>
                 {
                     b.Navigation("Invites");
@@ -1731,6 +2197,11 @@ namespace RecipeVault.Data.Migrations
             modelBuilder.Entity("RecipeVault.Domain.Entities.Collection", b =>
                 {
                     b.Navigation("CollectionRecipes");
+                });
+
+            modelBuilder.Entity("RecipeVault.Domain.Entities.CookingLog", b =>
+                {
+                    b.Navigation("Photos");
                 });
 
             modelBuilder.Entity("RecipeVault.Domain.Entities.DietaryProfile", b =>
@@ -1753,7 +2224,13 @@ namespace RecipeVault.Data.Migrations
 
                     b.Navigation("Instructions");
 
+                    b.Navigation("LinkedRecipes");
+
+                    b.Navigation("RecipeEquipment");
+
                     b.Navigation("RecipeTags");
+
+                    b.Navigation("UsedInRecipes");
                 });
 
             modelBuilder.Entity("RecipeVault.Domain.Entities.Unit", b =>
