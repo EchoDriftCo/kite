@@ -131,7 +131,12 @@
     </div>
 
     <div *ngIf="!selectedProfile && !isCreating" class="empty-state">
-      <p>No profile selected. Create a new profile to get started.</p>
+      <i class="fas fa-user-circle empty-icon"></i>
+      <h3>No Dietary Profile Selected</h3>
+      <p>Create a profile to track dietary restrictions and avoid specific ingredients.</p>
+      <button class="btn btn-primary btn-large" (click)="startCreateProfile()">
+        <i class="fas fa-plus"></i> Create Your First Profile
+      </button>
     </div>
   </div>
 </div>

@@ -10,6 +10,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -47,6 +48,7 @@ import { EquipmentCheckResult } from '../../../models/equipment.model';
     MatSnackBarModule,
     NutritionPanelComponent,
     MatTooltipModule,
+      MatMenuModule,
     MatExpansionModule,
     MatFormFieldModule,
     MatInputModule,
