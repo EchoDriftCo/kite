@@ -38,6 +38,8 @@ namespace RecipeVault.Data {
         public DbSet<UserEquipment> UserEquipment { get; set; }
         public DbSet<RecipeEquipment> RecipeEquipment { get; set; }
         public DbSet<RecipeLink> RecipeLinks { get; set; }
+        public DbSet<BetaInviteCode> BetaInviteCodes { get; set; }
+        public DbSet<BetaInviteCodeRedemption> BetaInviteCodeRedemptions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.HasDefaultSchema("public");
@@ -184,6 +186,13 @@ namespace RecipeVault.Data {
                 .WithMany(r => r.UsedInRecipes)
                 .HasForeignKey(rl => rl.LinkedRecipeId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Beta invite code cascade deletes
+            modelBuilder.Entity<BetaInviteCodeRedemption>()
+                .HasOne(r => r.BetaInviteCode)
+                .WithMany(c => c.Redemptions)
+                .HasForeignKey(r => r.BetaInviteCodeId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Recipe mixing relationships (AI Fusion)
             modelBuilder.Entity<Recipe>()
