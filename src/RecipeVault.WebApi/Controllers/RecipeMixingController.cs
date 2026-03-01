@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
 using RecipeVault.Dto.Input;
 using RecipeVault.Dto.Output;
+using RecipeVault.Domain.Enums;
 using RecipeVault.Facade;
+using RecipeVault.WebApi.Filters;
 
 namespace RecipeVault.WebApi.Controllers {
     /// <summary>
@@ -19,6 +21,7 @@ namespace RecipeVault.WebApi.Controllers {
     [ApiController]
     [Route("api/v{version:apiVersion}/recipes/mix")]
     [Authorize]
+    [RequiresTier(AccountTier.Premium)]
     public class RecipeMixingController : ControllerBase {
         private readonly IRecipeMixingFacade facade;
         private readonly ILogger<RecipeMixingController> logger;

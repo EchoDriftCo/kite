@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using RecipeVault.Dto.Input;
 using RecipeVault.Dto.Output;
+using RecipeVault.Domain.Enums;
 using RecipeVault.Facade;
+using RecipeVault.WebApi.Filters;
 using Serilog.Context;
 
 namespace RecipeVault.WebApi.Controllers {
@@ -20,6 +22,7 @@ namespace RecipeVault.WebApi.Controllers {
     [ApiController]
     [Route("api/v{version:apiVersion}")]
     [Authorize]
+    [RequiresTier(AccountTier.Premium)]
     public class NutritionController : ControllerBase {
         private readonly INutritionFacade _facade;
         private readonly ILogger<NutritionController> _logger;
