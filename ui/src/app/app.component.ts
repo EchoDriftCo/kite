@@ -8,6 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from './services/auth.service';
 import { FeedbackButtonComponent } from './shared/components/feedback-button/feedback-button.component';
+import { InstallPromptComponent } from './shared/components/install-prompt/install-prompt.component';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +22,8 @@ import { FeedbackButtonComponent } from './shared/components/feedback-button/fee
     MatIconModule,
     MatMenuModule,
     MatDividerModule,
-    FeedbackButtonComponent
+    FeedbackButtonComponent,
+    InstallPromptComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
