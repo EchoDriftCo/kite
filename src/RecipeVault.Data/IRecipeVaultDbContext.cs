@@ -33,6 +33,7 @@ namespace RecipeVault.Data {
         DbSet<RecipeLink> RecipeLinks { get; set; }
         DbSet<BetaInviteCode> BetaInviteCodes { get; set; }
         DbSet<BetaInviteCodeRedemption> BetaInviteCodeRedemptions { get; set; }
+        DbSet<UserAccount> UserAccounts { get; set; }
 
         void RemoveRange(IEnumerable<object> entities);
         EntityEntry Remove(object entity);

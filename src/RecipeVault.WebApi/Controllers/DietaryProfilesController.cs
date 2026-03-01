@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using RecipeVault.Domain.Enums;
 using RecipeVault.Facade;
+using RecipeVault.WebApi.Filters;
 using RecipeVault.WebApi.Mappers;
 using RecipeVault.WebApi.Models.Requests;
 using RecipeVault.WebApi.Models.Responses;
@@ -21,6 +23,7 @@ namespace RecipeVault.WebApi.Controllers {
     [ApiController]
     [Route("api/v{version:apiVersion}/dietary-profiles")]
     [Authorize]
+    [RequiresTier(AccountTier.Premium)]
     public class DietaryProfilesController : ControllerBase {
         private readonly IDietaryProfileFacade facade;
         private readonly DietaryProfileModelMapper mapper;
