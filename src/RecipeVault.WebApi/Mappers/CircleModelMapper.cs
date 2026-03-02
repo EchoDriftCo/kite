@@ -31,7 +31,8 @@ namespace RecipeVault.WebApi.Mappers {
                     SharedDate = sr.SharedDate
                 }).ToList(),
                 MemberCount = dto.MemberCount,
-                RecipeCount = dto.RecipeCount
+                RecipeCount = dto.RecipeCount,
+                IsOwner = dto.IsOwner
             };
         }
 

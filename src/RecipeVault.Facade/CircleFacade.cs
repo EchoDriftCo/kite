@@ -40,13 +40,13 @@ namespace RecipeVault.Facade {
         public async Task<CircleDto> CreateCircleAsync(UpdateCircleDto dto) {
             var circle = await circleService.CreateCircleAsync(dto).ConfigureAwait(false);
             await uow.SaveChangesAsync().ConfigureAwait(false);
-            return mapper.MapToDto(circle);
+            return mapper.MapToDto(circle, CurrentSubjectId);
         }
 
         public async Task<CircleDto> GetCircleAsync(Guid resourceId) {
             await using (var tx = uow.BeginNoTracking()) {
                 var circle = await circleService.GetCircleAsync(resourceId);
-                return mapper.MapToDto(circle);
+                return mapper.MapToDto(circle, CurrentSubjectId);
             }
         }
 
@@ -55,7 +55,7 @@ namespace RecipeVault.Facade {
             circleSearch.SubjectId = CurrentSubjectId;
             await using (var tx = await uow.BeginReadUncommitedAsync().ConfigureAwait(false)) {
                 var circles = await circleService.SearchCirclesAsync(circleSearch).ConfigureAwait(false);
-                return circles.Convert(x => mapper.MapToDto(x));
+                return circles.Convert(x => mapper.MapToDto(x, CurrentSubjectId));
             }
         }
 
@@ -68,7 +68,7 @@ namespace RecipeVault.Facade {
 
                 var circle = await circleService.UpdateCircleAsync(resourceId, dto).ConfigureAwait(false);
                 await uow.SaveChangesAsync().ConfigureAwait(false);
-                return mapper.MapToDto(circle);
+                return mapper.MapToDto(circle, CurrentSubjectId);
             }
         }
 
@@ -100,7 +100,7 @@ namespace RecipeVault.Facade {
         public async Task<CircleDto> AcceptInviteAsync(Guid inviteToken) {
             var circle = await circleService.AcceptInviteAsync(inviteToken).ConfigureAwait(false);
             await uow.SaveChangesAsync().ConfigureAwait(false);
-            return mapper.MapToDto(circle);
+            return mapper.MapToDto(circle, CurrentSubjectId);
         }
 
         public async Task<CircleInviteDto> GetInviteDetailsAsync(Guid inviteToken) {
@@ -143,7 +143,7 @@ namespace RecipeVault.Facade {
 
                 var circle = await circleService.ShareRecipeToCircleAsync(circleResourceId, dto).ConfigureAwait(false);
                 await uow.SaveChangesAsync().ConfigureAwait(false);
-                return mapper.MapToDto(circle);
+                return mapper.MapToDto(circle, CurrentSubjectId);
             }
         }
 
@@ -162,7 +162,7 @@ namespace RecipeVault.Facade {
         public async Task<PagedList<RecipeDto>> GetCircleRecipesAsync(Guid circleResourceId, int pageNumber = 1, int pageSize = 20) {
             await using (var tx = uow.BeginNoTracking()) {
                 var recipes = await circleService.GetCircleRecipesAsync(circleResourceId, pageNumber, pageSize);
-                return recipes.Convert(x => recipeMapper.MapToDto(x));
+                return recipes.Convert(x => recipeMapper.MapToDto(x, CurrentSubjectId));
             }
         }
     }

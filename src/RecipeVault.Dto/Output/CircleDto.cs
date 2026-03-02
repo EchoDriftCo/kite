@@ -12,6 +12,7 @@ namespace RecipeVault.Dto.Output {
         public List<CircleRecipeDto> SharedRecipes { get; set; }
         public int MemberCount { get; set; }
         public int RecipeCount { get; set; }
+        public bool IsOwner { get; set; }
     }
 
     public class CircleMemberDto {

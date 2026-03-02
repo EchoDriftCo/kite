@@ -3,6 +3,7 @@ using RecipeVault.Data.Searches;
 using RecipeVault.Domain.Entities;
 using RecipeVault.Dto.Output;
 using RecipeVault.Dto.Search;
+using System;
 
 namespace RecipeVault.Facade.Mappers {
     public class CircleMapper {
@@ -15,9 +16,15 @@ namespace RecipeVault.Facade.Mappers {
         }
 
         public CircleDto MapToDto(Circle entity) {
+            return MapToDto(entity, null);
+        }
+
+        public CircleDto MapToDto(Circle entity, Guid? currentSubjectId) {
             if (entity == null) {
                 return null;
             }
+
+            var ownerSubjectId = entity.OwnerSubjectId;
 
             return new CircleDto {
                 CircleResourceId = entity.CircleResourceId,
@@ -38,7 +45,8 @@ namespace RecipeVault.Facade.Mappers {
                     SharedDate = sr.SharedDate
                 }).ToList(),
                 MemberCount = entity.Members?.Count ?? 0,
-                RecipeCount = entity.SharedRecipes?.Count ?? 0
+                RecipeCount = entity.SharedRecipes?.Count ?? 0,
+                IsOwner = currentSubjectId.HasValue && ownerSubjectId == currentSubjectId
             };
         }
 
