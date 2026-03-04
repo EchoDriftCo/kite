@@ -59,6 +59,23 @@ export class LoginComponent {
     }
   }
 
+  async forgotPassword() {
+    if (!this.email) {
+      this.error = 'Enter your email address first';
+      return;
+    }
+    this.error = '';
+    this.loading = true;
+    try {
+      await this.authService.resetPassword(this.email);
+      this.successMessage = 'Password reset email sent! Check your inbox.';
+    } catch (err: any) {
+      this.error = err.message || 'Failed to send reset email';
+    } finally {
+      this.loading = false;
+    }
+  }
+
   openSignUp() {
     const dialogRef = this.dialog.open(SignUpDialogComponent, {
       width: '400px'

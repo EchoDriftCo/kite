@@ -26,11 +26,46 @@
     flex: 1 1 auto;
   }
 
+  .desktop-nav {
+    display: flex;
+    align-items: center;
+
+    button {
+      margin-left: 4px;
+
+      mat-icon {
+        margin-right: 4px;
+      }
+    }
+
+    .active-link {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+  }
+
+  .mobile-nav-btn {
+    display: none;
+  }
+
   button {
-    margin-left: 8px;
+    margin-left: 4px;
 
     mat-icon {
       margin-right: 4px;
+    }
+  }
+}
+
+// Mobile breakpoint
+@media (max-width: 768px) {
+  .app-toolbar {
+    .desktop-nav {
+      display: none;
+    }
+
+    .mobile-nav-btn {
+      display: inline-flex;
     }
   }
 }

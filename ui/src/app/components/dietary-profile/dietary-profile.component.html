@@ -1,142 +1,182 @@
 <div class="dietary-profiles-container">
+  <!-- Sidebar -->
   <div class="profiles-sidebar">
-    <h2>Dietary Profiles</h2>
-    <button class="btn btn-primary" (click)="startCreateProfile()">
-      <i class="fas fa-plus"></i> New Profile
-    </button>
-
-    <div class="profiles-list">
-      <div
-        *ngFor="let profile of profiles"
-        class="profile-item"
-        [class.active]="selectedProfile?.dietaryProfileResourceId === profile.dietaryProfileResourceId"
-        (click)="selectProfile(profile)"
-      >
-        <div class="profile-info">
-          <strong>{{ profile.profileName }}</strong>
-          <span *ngIf="profile.isDefault" class="badge">Default</span>
-        </div>
-        <button class="btn-icon" (click)="deleteProfile(profile); $event.stopPropagation()" title="Delete">
-          <i class="fas fa-trash"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="profile-details">
-    <div *ngIf="isCreating" class="create-form">
-      <h2>Create New Profile</h2>
-      <div class="form-group">
-        <label for="profileName">Profile Name</label>
-        <input
-          type="text"
-          id="profileName"
-          [(ngModel)]="newProfile.profileName"
-          placeholder="e.g., Me, Kids, Partner"
-          class="form-control"
-        />
-      </div>
-      <div class="form-group">
-        <label>
-          <input type="checkbox" [(ngModel)]="newProfile.isDefault" />
-          Set as default profile
-        </label>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" (click)="createProfile()">Create</button>
-        <button class="btn btn-secondary" (click)="cancelCreate()">Cancel</button>
-      </div>
-    </div>
-
-    <div *ngIf="selectedProfile && !isCreating" class="profile-content">
-      <h2>{{ selectedProfile.profileName }}</h2>
-
-      <!-- Dietary Restrictions -->
-      <section class="restrictions-section">
-        <h3>Dietary Restrictions</h3>
-        <div class="common-restrictions">
-          <button
-            *ngFor="let restriction of commonRestrictions"
-            class="btn btn-tag"
-            (click)="setCommonRestriction(restriction)"
-            [disabled]="hasRestriction(restriction.code)"
-          >
-            {{ restriction.label }}
-          </button>
-        </div>
-
-        <div class="add-restriction-form">
-          <input
-            type="text"
-            [(ngModel)]="newRestriction.restrictionCode"
-            placeholder="Restriction code"
-            class="form-control"
-          />
-          <select [(ngModel)]="newRestriction.restrictionType" class="form-control">
-            <option value="Allergy">Allergy</option>
-            <option value="Intolerance">Intolerance</option>
-            <option value="DietaryChoice">Dietary Choice</option>
-          </select>
-          <select [(ngModel)]="newRestriction.severity" class="form-control">
-            <option value="Strict">Strict</option>
-            <option value="Flexible">Flexible</option>
-          </select>
-          <button class="btn btn-primary" (click)="addRestriction()">Add</button>
-        </div>
-
-        <div class="restrictions-list">
-          <div *ngFor="let restriction of selectedProfile.restrictions" class="restriction-item">
-            <span class="restriction-badge" [attr.data-type]="restriction.restrictionType.toLowerCase()">
-              {{ restriction.restrictionCode }}
-            </span>
-            <span class="restriction-meta">{{ restriction.restrictionType }} · {{ restriction.severity }}</span>
-            <button class="btn-icon" (click)="removeRestriction(restriction.restrictionCode)" title="Remove">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Avoided Ingredients -->
-      <section class="avoided-ingredients-section">
-        <h3>Avoided Ingredients</h3>
-        <div class="add-ingredient-form">
-          <input
-            type="text"
-            [(ngModel)]="newAvoidedIngredient.ingredientName"
-            placeholder="Ingredient name"
-            class="form-control"
-          />
-          <input
-            type="text"
-            [(ngModel)]="newAvoidedIngredient.reason"
-            placeholder="Reason (optional)"
-            class="form-control"
-          />
-          <button class="btn btn-primary" (click)="addAvoidedIngredient()">Add</button>
-        </div>
-
-        <div class="ingredients-list">
-          <div *ngFor="let ingredient of selectedProfile.avoidedIngredients" class="ingredient-item">
-            <div class="ingredient-info">
-              <strong>{{ ingredient.ingredientName }}</strong>
-              <span *ngIf="ingredient.reason" class="ingredient-reason">{{ ingredient.reason }}</span>
-            </div>
-            <button class="btn-icon" (click)="removeAvoidedIngredient(ingredient.avoidedIngredientId)" title="Remove">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <div *ngIf="!selectedProfile && !isCreating" class="empty-state">
-      <i class="fas fa-user-circle empty-icon"></i>
-      <h3>No Dietary Profile Selected</h3>
-      <p>Create a profile to track dietary restrictions and avoid specific ingredients.</p>
-      <button class="btn btn-primary btn-large" (click)="startCreateProfile()">
-        <i class="fas fa-plus"></i> Create Your First Profile
+    <div class="sidebar-header">
+      <h2>Dietary Profiles</h2>
+      <button mat-raised-button color="primary" (click)="startCreateProfile()">
+        <mat-icon>add</mat-icon> New Profile
       </button>
     </div>
+
+    <mat-nav-list class="profiles-list">
+      @for (profile of profiles; track profile.dietaryProfileResourceId) {
+        <mat-list-item
+          [class.active]="selectedProfile?.dietaryProfileResourceId === profile.dietaryProfileResourceId"
+          (click)="selectProfile(profile)"
+        >
+          <mat-icon matListItemIcon>person</mat-icon>
+          <div matListItemTitle>{{ profile.profileName }}</div>
+          @if (profile.isDefault) {
+            <span matListItemMeta class="default-badge">Default</span>
+          }
+          <button mat-icon-button matListItemMeta (click)="deleteProfile(profile); $event.stopPropagation()" title="Delete">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-list-item>
+      }
+    </mat-nav-list>
+
+    @if (profiles.length === 0 && !isCreating) {
+      <div class="sidebar-empty">
+        <p>No profiles yet</p>
+      </div>
+    }
+  </div>
+
+  <!-- Main Content -->
+  <div class="profile-details">
+    <!-- Create Form -->
+    @if (isCreating) {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Create New Profile</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Profile Name</mat-label>
+            <input matInput [(ngModel)]="newProfile.profileName" placeholder="e.g., Me, Kids, Partner" />
+          </mat-form-field>
+
+          <mat-checkbox [(ngModel)]="newProfile.isDefault">Set as default profile</mat-checkbox>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-button (click)="cancelCreate()">Cancel</button>
+          <button mat-raised-button color="primary" (click)="createProfile()">Create</button>
+        </mat-card-actions>
+      </mat-card>
+    }
+
+    <!-- Profile Content -->
+    @if (selectedProfile && !isCreating) {
+      <div class="profile-content">
+        <h2>{{ selectedProfile.profileName }}</h2>
+
+        <!-- Dietary Restrictions -->
+        <mat-card class="section-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>no_food</mat-icon> Dietary Restrictions
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="common-restrictions">
+              @for (restriction of commonRestrictions; track restriction.code) {
+                <button
+                  mat-stroked-button
+                  [class.active-restriction]="hasRestriction(restriction.code)"
+                  [disabled]="hasRestriction(restriction.code)"
+                  (click)="setCommonRestriction(restriction)"
+                >
+                  {{ restriction.label }}
+                </button>
+              }
+            </div>
+
+            <div class="add-restriction-form">
+              <mat-form-field appearance="outline">
+                <mat-label>Restriction code</mat-label>
+                <input matInput [(ngModel)]="newRestriction.restrictionCode" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Type</mat-label>
+                <mat-select [(ngModel)]="newRestriction.restrictionType">
+                  <mat-option value="Allergy">Allergy</mat-option>
+                  <mat-option value="Intolerance">Intolerance</mat-option>
+                  <mat-option value="DietaryChoice">Dietary Choice</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Severity</mat-label>
+                <mat-select [(ngModel)]="newRestriction.severity">
+                  <mat-option value="Strict">Strict</mat-option>
+                  <mat-option value="Flexible">Flexible</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <button mat-raised-button color="primary" (click)="addRestriction()">Add</button>
+            </div>
+
+            @if (selectedProfile.restrictions.length > 0) {
+              <div class="restrictions-list">
+                @for (restriction of selectedProfile.restrictions; track restriction.restrictionCode) {
+                  <div class="restriction-chip" [attr.data-type]="restriction.restrictionType.toLowerCase()">
+                    <span class="restriction-label">{{ restriction.restrictionCode }}</span>
+                    <span class="restriction-meta">{{ restriction.restrictionType }} · {{ restriction.severity }}</span>
+                    <button mat-icon-button (click)="removeRestriction(restriction.restrictionCode)">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="no-items">No restrictions added yet. Use the buttons above to add common restrictions.</p>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Avoided Ingredients -->
+        <mat-card class="section-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>block</mat-icon> Avoided Ingredients
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="add-ingredient-form">
+              <mat-form-field appearance="outline">
+                <mat-label>Ingredient name</mat-label>
+                <input matInput [(ngModel)]="newAvoidedIngredient.ingredientName" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Reason (optional)</mat-label>
+                <input matInput [(ngModel)]="newAvoidedIngredient.reason" />
+              </mat-form-field>
+              <button mat-raised-button color="primary" (click)="addAvoidedIngredient()">Add</button>
+            </div>
+
+            @if (selectedProfile.avoidedIngredients.length > 0) {
+              <div class="ingredients-list">
+                @for (ingredient of selectedProfile.avoidedIngredients; track ingredient.avoidedIngredientId) {
+                  <div class="ingredient-item">
+                    <div class="ingredient-info">
+                      <strong>{{ ingredient.ingredientName }}</strong>
+                      @if (ingredient.reason) {
+                        <span class="ingredient-reason">{{ ingredient.reason }}</span>
+                      }
+                    </div>
+                    <button mat-icon-button (click)="removeAvoidedIngredient(ingredient.avoidedIngredientId)">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="no-items">No avoided ingredients yet.</p>
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
+    }
+
+    <!-- Empty State -->
+    @if (!selectedProfile && !isCreating) {
+      <div class="empty-state">
+        <mat-icon class="empty-icon">person_outline</mat-icon>
+        <h3>No Dietary Profile Selected</h3>
+        <p>Create a profile to track dietary restrictions and avoid specific ingredients.</p>
+        <button mat-raised-button color="primary" (click)="startCreateProfile()">
+          <mat-icon>add</mat-icon> Create Your First Profile
+        </button>
+      </div>
+    }
   </div>
 </div>

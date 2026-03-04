@@ -5,34 +5,86 @@
     <span class="spacer"></span>
     
     @if (isAuthenticated()) {
-      <button mat-button routerLink="/recipes">
-        <mat-icon>restaurant_menu</mat-icon>
-        Recipes
+      <!-- Desktop nav -->
+      <div class="desktop-nav">
+        <button mat-button routerLink="/recipes" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+          <mat-icon>restaurant_menu</mat-icon>
+          Recipes
+        </button>
+        <button mat-button routerLink="/circles" routerLinkActive="active-link">
+          <mat-icon>group</mat-icon>
+          Circles
+        </button>
+        <button mat-button routerLink="/meal-plans" routerLinkActive="active-link">
+          <mat-icon>calendar_month</mat-icon>
+          Meal Plans
+        </button>
+        <button mat-button [matMenuTriggerFor]="moreMenu" class="more-menu-btn">
+          <mat-icon>more_horiz</mat-icon>
+          More
+        </button>
+        <mat-menu #moreMenu="matMenu">
+          <button mat-menu-item routerLink="/dietary-profiles">
+            <mat-icon>person</mat-icon>
+            <span>Dietary Profiles</span>
+          </button>
+          <button mat-menu-item routerLink="/cooking-history">
+            <mat-icon>history</mat-icon>
+            <span>Cooking Log</span>
+          </button>
+          <button mat-menu-item routerLink="/cooking-stats">
+            <mat-icon>bar_chart</mat-icon>
+            <span>Stats</span>
+          </button>
+          <button mat-menu-item routerLink="/equipment">
+            <mat-icon>kitchen</mat-icon>
+            <span>Equipment</span>
+          </button>
+          <button mat-menu-item routerLink="/collections">
+            <mat-icon>menu_book</mat-icon>
+            <span>Collections</span>
+          </button>
+        </mat-menu>
+      </div>
+
+      <!-- Mobile nav (hamburger) -->
+      <button mat-icon-button [matMenuTriggerFor]="mobileMenu" class="mobile-nav-btn">
+        <mat-icon>menu</mat-icon>
       </button>
-      <button mat-button routerLink="/circles">
-        <mat-icon>group</mat-icon>
-        Circles
-      </button>
-      <button mat-button routerLink="/dietary-profiles">
-        <mat-icon>person</mat-icon>
-        Dietary Profiles
-      </button>
-      <button mat-button routerLink="/meal-plans">
-        <mat-icon>calendar_month</mat-icon>
-        Meal Plans
-      </button>
-      <button mat-button routerLink="/cooking-history">
-        <mat-icon>history</mat-icon>
-        Cooking Log
-      </button>
-      <button mat-button routerLink="/cooking-stats">
-        <mat-icon>bar_chart</mat-icon>
-        Stats
-      </button>
-      <button mat-button routerLink="/equipment">
-        <mat-icon>kitchen</mat-icon>
-        Equipment
-      </button>
+      <mat-menu #mobileMenu="matMenu">
+        <button mat-menu-item routerLink="/recipes">
+          <mat-icon>restaurant_menu</mat-icon>
+          <span>Recipes</span>
+        </button>
+        <button mat-menu-item routerLink="/circles">
+          <mat-icon>group</mat-icon>
+          <span>Circles</span>
+        </button>
+        <button mat-menu-item routerLink="/meal-plans">
+          <mat-icon>calendar_month</mat-icon>
+          <span>Meal Plans</span>
+        </button>
+        <button mat-menu-item routerLink="/dietary-profiles">
+          <mat-icon>person</mat-icon>
+          <span>Dietary Profiles</span>
+        </button>
+        <button mat-menu-item routerLink="/cooking-history">
+          <mat-icon>history</mat-icon>
+          <span>Cooking Log</span>
+        </button>
+        <button mat-menu-item routerLink="/cooking-stats">
+          <mat-icon>bar_chart</mat-icon>
+          <span>Stats</span>
+        </button>
+        <button mat-menu-item routerLink="/equipment">
+          <mat-icon>kitchen</mat-icon>
+          <span>Equipment</span>
+        </button>
+        <button mat-menu-item routerLink="/collections">
+          <mat-icon>menu_book</mat-icon>
+          <span>Collections</span>
+        </button>
+      </mat-menu>
 
       <button mat-icon-button [matMenuTriggerFor]="userMenu">
         <mat-icon>account_circle</mat-icon>
