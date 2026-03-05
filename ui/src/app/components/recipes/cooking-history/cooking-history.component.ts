@@ -79,7 +79,7 @@ export class CookingHistoryComponent implements OnInit {
 
     this.cookingLogService.getCalendar(this.currentYear, this.currentMonth).subscribe({
       next: (result) => {
-        this.calendarDays = result.days;
+        this.calendarDays = result.days || [];
         this.calendarLoading = false;
       },
       error: (err) => {
