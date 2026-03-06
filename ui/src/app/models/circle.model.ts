@@ -4,17 +4,17 @@ export interface Circle {
   circleResourceId: string;
   name: string;
   description?: string;
-  ownerSubjectId: number;
+  ownerSubjectId: string;
   isOwner?: boolean;
   memberCount?: number;
-  sharedRecipeCount?: number;
+  recipeCount?: number;
   createdDate?: string;
 }
 
 export interface CircleMember {
-  circleMemberResourceId: string;
-  circleId: string;
-  subjectId: number;
+  circleMemberResourceId?: string;
+  circleId?: string;
+  subjectId: string;
   userEmail?: string;
   role: CircleRole;
   status: MemberStatus;
@@ -35,25 +35,25 @@ export enum MemberStatus {
 }
 
 export interface CircleRecipe {
-  circleRecipeResourceId: string;
-  circleId: string;
-  recipeId: string;
-  recipeTitle?: string;
+  circleRecipeResourceId?: string;
+  circleId?: string;
+  recipeResourceId: string;
+  title?: string;
   recipeImageUrl?: string;
-  sharedBySubjectId: number;
+  sharedBySubjectId: string;
   sharedByEmail?: string;
   sharedDate: string;
 }
 
 export interface CircleInvite {
-  circleInviteResourceId: string;
+  circleInviteResourceId?: string;
   inviteToken: string;
-  circleId: string;
+  circleId?: string;
   circleName?: string;
   inviteeEmail?: string;
-  invitedBySubjectId: number;
+  invitedBySubjectId?: string;
   invitedByEmail?: string;
-  createdDate: string;
+  createdDate?: string;
   expiresDate: string;
   status: InviteStatus;
 }
@@ -78,13 +78,8 @@ export interface UpdateCircleRequest {
 }
 
 export interface InviteMemberRequest {
-  email?: string;  // For email-based invites
-  generateLink?: boolean;  // For link-based invites
-}
-
-export interface InviteResponse {
-  invite: CircleInvite;
-  inviteUrl?: string;  // Full URL to share
+  inviteeEmail?: string;
+  expiresDate?: string;
 }
 
 export interface ShareRecipeRequest {

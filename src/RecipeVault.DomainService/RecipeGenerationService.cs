@@ -80,7 +80,7 @@ Generate recipes that are:
                 variationsCount, request.Prompt, request.MaxTime, string.Join(", ", dietaryConstraints), request.SkillLevel);
 
             // Build the generation prompt
-            var prompt = BuildGenerationPrompt(request.Prompt, request.MaxTime, dietaryConstraints, request.SkillLevel);
+            var prompt = BuildGenerationPrompt(request.Prompt, request.MaxTime, dietaryConstraints, request.SkillLevel, variationsCount);
 
             // Call Gemini API
             var responseText = await CallGeminiForRecipeAsync(prompt, cancellationToken).ConfigureAwait(false);
@@ -178,7 +178,8 @@ Generate recipes that are:
             string userPrompt,
             int? maxTime,
             List<string> dietaryConstraints,
-            string skillLevel) {
+            string skillLevel,
+            int variationsCount) {
 
             var promptBuilder = new StringBuilder();
 
@@ -201,6 +202,8 @@ Generate recipes that are:
             }
 
             promptBuilder.AppendLine();
+            promptBuilder.AppendLine(CultureInfo.InvariantCulture, $"- Number of recipe variations to generate: {variationsCount}");
+            promptBuilder.AppendLine();
             promptBuilder.AppendLine("Generate a complete recipe with:");
             promptBuilder.AppendLine("1. Creative but descriptive title");
             promptBuilder.AppendLine("2. Brief description (2-3 sentences)");
@@ -210,7 +213,14 @@ Generate recipes that are:
             promptBuilder.AppendLine("6. Step-by-step instructions");
             promptBuilder.AppendLine("7. Suggested tags (dietary categories, cuisine types, meal types)");
             promptBuilder.AppendLine();
-            promptBuilder.AppendLine("Return ONLY valid JSON matching this schema:");
+            promptBuilder.AppendLine("Return ONLY valid JSON.");
+            if (variationsCount > 1) {
+                promptBuilder.AppendLine(CultureInfo.InvariantCulture, $"Generate exactly {variationsCount} distinct recipe variations and return them as a JSON array of recipe objects.");
+            } else {
+                promptBuilder.AppendLine("Return a single JSON recipe object.");
+            }
+
+            promptBuilder.AppendLine("Recipe object schema:");
             promptBuilder.AppendLine(@"{
   ""title"": ""string"",
   ""description"": ""string"",

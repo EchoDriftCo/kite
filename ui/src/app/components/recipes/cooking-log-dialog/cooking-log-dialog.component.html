@@ -43,6 +43,11 @@
     </div>
 
     <div class="form-field">
+      @if (data.lastNote) {
+        <div class="last-note-hint">
+          💡 Last time you noted: "{{ data.lastNote }}"
+        </div>
+      }
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Notes</mat-label>
         <textarea 

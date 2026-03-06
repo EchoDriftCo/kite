@@ -82,7 +82,7 @@ export class CircleListComponent implements OnInit {
   }
 
   getRecipeText(circle: Circle): string {
-    const count = circle.sharedRecipeCount || 0;
+    const count = circle.recipeCount || 0;
     return count === 1 ? '1 recipe' : `${count} recipes`;
   }
 }

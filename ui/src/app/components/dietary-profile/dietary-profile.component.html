@@ -59,7 +59,21 @@
     <!-- Profile Content -->
     @if (selectedProfile && !isCreating) {
       <div class="profile-content">
-        <h2>{{ selectedProfile.profileName }}</h2>
+        <div class="profile-header">
+          <h2>{{ selectedProfile.profileName }}</h2>
+          <button
+            mat-stroked-button
+            color="primary"
+            [disabled]="selectedProfile.isDefault"
+            (click)="setAsDefaultProfile(selectedProfile)"
+          >
+            @if (selectedProfile.isDefault) {
+              Default Profile
+            } @else {
+              Set as Default
+            }
+          </button>
+        </div>
 
         <!-- Dietary Restrictions -->
         <mat-card class="section-card">

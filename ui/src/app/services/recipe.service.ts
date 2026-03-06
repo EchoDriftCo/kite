@@ -94,6 +94,14 @@ export class RecipeService {
    * Parse a recipe from image or URL using AI (Gemini)
    */
   parseRecipe(request: ParseRecipeRequest): Observable<ParseRecipeResponse> {
+    if (request.recipeText) {
+      // Browser-extension fallback parsing from already-captured page HTML/text
+      return this.api.post<ParseRecipeResponse>(`${this.endpoint}/parse`, {
+        html: request.recipeText,
+        url: request.imageUrl
+      });
+    }
+
     if (request.imageUrl) {
       // URL-based parsing
       return this.api.post<ParseRecipeResponse>(`${this.endpoint}/parse`, {

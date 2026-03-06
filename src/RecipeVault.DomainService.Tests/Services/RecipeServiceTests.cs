@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Auditable.Entities;
 using Cortside.AspNetCore.Common.Paging;
@@ -1022,6 +1023,46 @@ namespace RecipeVault.DomainService.Tests.Services {
             await Should.ThrowAsync<RecipeNotFoundException>(async () =>
                 await service.ForkRecipeAsync(nonExistentId)
             );
+        }
+
+        [Fact]
+        public async Task ParseRecipeImageAsync_WithHtmlPayload_ParsesUsingGeminiTextAndExtractsOgImage() {
+            // Arrange
+            const string html = "<html><head><meta property=\"og:image\" content=\"https://example.com/recipe.jpg\" /></head><body><h1>Best Pancakes</h1><p>2 cups flour</p></body></html>";
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = CreateMockSubjectPrincipal();
+
+            mockGeminiClient
+                .Setup(x => x.ParseRecipeTextAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new GeminiParseResponse {
+                    Confidence = 0.91,
+                    Title = "Best Pancakes",
+                    Ingredients = new List<GeminiIngredient> {
+                        new GeminiIngredient { Item = "flour", RawText = "2 cups flour" }
+                    },
+                    Instructions = new List<GeminiInstruction> {
+                        new GeminiInstruction { StepNumber = 1, Instruction = "Mix and cook", RawText = "Mix and cook" }
+                    }
+                });
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            var result = await service.ParseRecipeImageAsync(new ParseRecipeRequestDto {
+                Url = "https://example.com/pancakes",
+                Html = html
+            });
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.Parsed.ShouldNotBeNull();
+            result.Parsed.Title.ShouldBe("Best Pancakes");
+            result.Parsed.ImageUrl.ShouldBe("https://example.com/recipe.jpg");
+            mockGeminiClient.Verify(x => x.ParseRecipeTextAsync(It.Is<string>(s => s.Contains("Best Pancakes")), It.IsAny<CancellationToken>()), Times.Once);
+            mockGeminiClient.Verify(x => x.ParseRecipeAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         }
     }
 }

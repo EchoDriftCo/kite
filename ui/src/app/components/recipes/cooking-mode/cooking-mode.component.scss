@@ -255,6 +255,25 @@
   }
 }
 
+.voice-help {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: grid;
+    gap: 0.35rem;
+  }
+}
+
 .voice-status {
   position: fixed;
   bottom: 2rem;

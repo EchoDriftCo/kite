@@ -1,4 +1,5 @@
-import { RecipeIngredient, RecipeInstruction, RecipeTag } from './recipe.model';
+import { RecipeIngredient, RecipeInstruction } from './recipe.model';
+import { RecipeTag } from './tag.model';
 
 export interface RecipeLink {
   recipeLinkResourceId: string;

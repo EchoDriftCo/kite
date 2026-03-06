@@ -157,20 +157,16 @@ export class CircleDetailComponent implements OnInit {
     if (!this.circle || !this.circleId) return;
 
     if (confirm(`Are you sure you want to leave "${this.circle.name}"?`)) {
-      // Get current user's member record
-      const currentMember = this.members.find(m => !m.userEmail); // Simplified - in real app, check against current user
-      if (currentMember) {
-        this.circleService.removeMember(this.circleId, currentMember.subjectId).subscribe({
-          next: () => {
-            this.snackBar.open('Left circle successfully', 'Close', { duration: 3000 });
-            this.router.navigate(['/circles']);
-          },
-          error: (err) => {
-            this.snackBar.open('Failed to leave circle', 'Close', { duration: 3000 });
-            console.error('Error leaving circle:', err);
-          }
-        });
-      }
+      this.circleService.leaveCircle(this.circleId).subscribe({
+        next: () => {
+          this.snackBar.open('Left circle successfully', 'Close', { duration: 3000 });
+          this.router.navigate(['/circles']);
+        },
+        error: (err) => {
+          this.snackBar.open('Failed to leave circle', 'Close', { duration: 3000 });
+          console.error('Error leaving circle:', err);
+        }
+      });
     }
   }
 
@@ -192,7 +188,12 @@ export class CircleDetailComponent implements OnInit {
   }
 
   viewRecipe(recipe: CircleRecipe) {
-    this.router.navigate(['/recipes', recipe.recipeId]);
+    if (!recipe.recipeResourceId) {
+      this.snackBar.open('Unable to open recipe from this share entry', 'Close', { duration: 3000 });
+      return;
+    }
+
+    this.router.navigate(['/recipes', recipe.recipeResourceId]);
   }
 
   getRoleColor(role: CircleRole): string {

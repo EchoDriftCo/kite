@@ -112,7 +112,9 @@ namespace RecipeVault.Facade.Mappers {
                 TagResourceIds = dto.TagResourceIds,
                 TagCategory = dto.TagCategory,
                 IsFavorite = dto.IsFavorite,
+                HasRequiredEquipment = dto.HasRequiredEquipment,
                 MinRating = dto.MinRating,
+                CollectionResourceId = dto.CollectionResourceId,
                 PageNumber = dto.PageNumber,
                 PageSize = dto.PageSize,
                 Sort = dto.Sort

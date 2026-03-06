@@ -16,6 +16,7 @@ export interface CookingLogDialogData {
   recipeId: string;
   recipeTitle: string;
   recipeYield: number;
+  lastNote?: string;
 }
 
 export interface CookingLogDialogResult {

@@ -88,6 +88,10 @@
                 <mat-icon>restaurant_menu</mat-icon>
                 <span>I Made This</span>
               </button>
+              <button mat-menu-item (click)="loadGroceryOptions()">
+                <mat-icon>shopping_cart</mat-icon>
+                <span>Shop Ingredients</span>
+              </button>
               <button mat-menu-item [routerLink]="['/recipes/mix']" [queryParams]="{recipeId: recipe.recipeResourceId}">
                 <mat-icon>blender</mat-icon>
                 <span>Mix with...</span>
@@ -112,6 +116,10 @@
               <button mat-stroked-button (click)="openCookingLogDialog()">
                 <mat-icon>restaurant_menu</mat-icon>
                 <span class="button-text">I Made This</span>
+              </button>
+              <button mat-stroked-button (click)="loadGroceryOptions()">
+                <mat-icon>shopping_cart</mat-icon>
+                <span class="button-text">Shop Ingredients</span>
               </button>
               <button mat-stroked-button [routerLink]="['/recipes/mix']" [queryParams]="{recipeId: recipe.recipeResourceId}">
                 <mat-icon>blender</mat-icon>
@@ -334,6 +342,38 @@
 
     <mat-divider></mat-divider>
 
+    <div class="equipment-section grocery-section">
+      <div class="section-header">
+        <h2>
+          <mat-icon>shopping_cart</mat-icon>
+          Grocery Delivery
+        </h2>
+        <button mat-stroked-button color="primary" (click)="loadGroceryOptions()" [disabled]="loadingGroceryOptions">
+          {{ loadingGroceryOptions ? 'Loading...' : 'Get Checkout Links' }}
+        </button>
+      </div>
+
+      @if (groceryError) {
+        <p class="grocery-error">{{ groceryError }}</p>
+      }
+
+      @if (!loadingGroceryOptions && groceryOptions) {
+        <p class="grocery-summary">
+          Ready to shop {{ groceryOptions.itemCount }} ingredient{{ groceryOptions.itemCount === 1 ? '' : 's' }}.
+        </p>
+        <div class="grocery-links">
+          @for (option of groceryOptions.options; track option.service) {
+            <button mat-stroked-button (click)="openCheckoutUrl(option)">
+              <mat-icon>launch</mat-icon>
+              {{ getServiceDisplayName(option.service) }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <mat-divider></mat-divider>
+
     <div class="scaling-controls">
       <div class="scaling-label">
         <mat-icon>straighten</mat-icon>
@@ -366,7 +406,7 @@
         </h2>
 
         <div class="ingredients-list">
-          @for (ingredient of recipe.ingredients; track ingredient.recipeIngredientId || $index) {
+          @for (ingredient of recipe.ingredients; track ingredient.recipeIngredientId || $index; let i = $index) {
             <div class="ingredient-item">
               <mat-icon class="check-circle">radio_button_unchecked</mat-icon>
               <span class="ingredient-text">
@@ -376,6 +416,12 @@
                 {{ ingredient.item }}
                 @if (ingredient.preparation) {
                   <em>({{ ingredient.preparation }})</em>
+                }
+                @if (getIngredientLink(i); as linkedRecipe) {
+                  <a class="ingredient-link" [routerLink]="['/recipes', linkedRecipe.recipeResourceId]" matTooltip="View component recipe">
+                    <mat-icon>link</mat-icon>
+                    {{ linkedRecipe.displayText || linkedRecipe.title }}
+                  </a>
                 }
               </span>
             </div>
@@ -399,6 +445,14 @@
         </div>
       </div>
     </div>
+
+    <app-recipe-links
+      [recipeId]="recipe.recipeResourceId"
+      [linkedRecipes]="linkedRecipes"
+      [usedInRecipes]="usedInRecipes"
+      [canEdit]="recipe.isOwner !== false"
+      (refreshRequested)="loadRecipeLinks(recipe.recipeResourceId)">
+    </app-recipe-links>
 
     @if (recipe.sourceImageUrl) {
       <mat-divider></mat-divider>

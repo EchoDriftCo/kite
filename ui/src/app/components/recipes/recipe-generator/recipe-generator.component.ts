@@ -20,7 +20,6 @@ import {
   GenerateRecipeRequest,
   GeneratedRecipe
 } from '../../../models/recipe-generation.model';
-import { FractionPipe } from '../../../pipes/fraction.pipe';
 
 @Component({
   selector: 'app-recipe-generator',
@@ -39,8 +38,7 @@ import { FractionPipe } from '../../../pipes/fraction.pipe';
     MatChipsModule,
     MatDividerModule,
     MatSnackBarModule,
-    MatExpansionModule,
-    FractionPipe
+    MatExpansionModule
   ],
   templateUrl: './recipe-generator.component.html',
   styleUrl: './recipe-generator.component.scss'
@@ -51,10 +49,12 @@ export class RecipeGeneratorComponent implements OnInit {
   maxTime: number | null = null;
   skillLevel = '';
   selectedDietary: string[] = [];
+  variations = 1;
 
   // Available options
   timeOptions = [15, 30, 45, 60, 90, 120];
   skillLevels = ['Beginner', 'Intermediate', 'Advanced'];
+  variationOptions = [1, 2, 3];
   dietaryOptions: string[] = [];
 
   // Generated recipe
@@ -149,7 +149,7 @@ export class RecipeGeneratorComponent implements OnInit {
 
     const request: GenerateRecipeRequest = {
       prompt: this.prompt.trim(),
-      variations: 1 // Start with 1, can add more later
+      variations: this.variations
     };
 
     if (this.maxTime) {
@@ -282,9 +282,18 @@ export class RecipeGeneratorComponent implements OnInit {
     this.prompt = '';
     this.maxTime = null;
     this.skillLevel = '';
+    this.variations = 1;
     this.selectedDietary = [];
     this.generatedRecipes = [];
     this.selectedRecipe = null;
+    this.showRefinementInput = false;
+    this.refinementText = '';
+  }
+
+  selectVariation(index: number) {
+    if (index < 0 || index >= this.generatedRecipes.length) return;
+    this.selectedRecipeIndex = index;
+    this.selectedRecipe = this.generatedRecipes[index];
     this.showRefinementInput = false;
     this.refinementText = '';
   }

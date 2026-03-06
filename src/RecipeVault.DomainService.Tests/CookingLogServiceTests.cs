@@ -120,5 +120,35 @@ namespace RecipeVault.DomainService.Tests {
             Assert.Equal(2, result.TotalItems);
             Assert.Equal(2, result.Items.Count);
         }
+
+        [Fact]
+        public async Task GetRecipePersonalStatsAsync_ShouldIncludeMostRecentNonEmptyNote() {
+            // Arrange
+            var recipe = new Recipe("Test Recipe", 4, 30, 45, "Test description", null, null);
+            var recipeIdProperty = typeof(Recipe).GetProperty("RecipeId");
+            recipeIdProperty.SetValue(recipe, 123);
+
+            mockRecipeRepository
+                .Setup(x => x.GetAsync(RecipeResourceId1))
+                .ReturnsAsync(recipe);
+
+            var logs = new List<CookingLog> {
+                new CookingLog(123, DateTime.UtcNow.AddDays(-5), 1.0m, 4, "", 4),
+                new CookingLog(123, DateTime.UtcNow.AddDays(-3), 1.0m, 4, "Use less salt", 5),
+                new CookingLog(123, DateTime.UtcNow.AddDays(-1), 1.0m, 4, "Add extra garlic", 5)
+            };
+
+            mockCookingLogRepository
+                .Setup(x => x.GetByRecipeIdAsync(123, SubjectId1))
+                .ReturnsAsync(logs);
+
+            // Act
+            var result = await service.GetRecipePersonalStatsAsync(RecipeResourceId1);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(3, result.CookCount);
+            Assert.Equal("Add extra garlic", result.LastNote);
+        }
     }
 }

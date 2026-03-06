@@ -139,7 +139,7 @@ namespace RecipeVault.Data {
 
             modelBuilder.Entity<CollectionRecipe>()
                 .HasOne(cr => cr.Recipe)
-                .WithMany()
+                .WithMany(r => r.CollectionRecipes)
                 .HasForeignKey(cr => cr.RecipeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -171,7 +171,7 @@ namespace RecipeVault.Data {
 
             modelBuilder.Entity<UserEquipment>()
                 .HasOne(ue => ue.Equipment)
-                .WithMany()
+                .WithMany(e => e.UserEquipment)
                 .HasForeignKey(ue => ue.EquipmentId)
                 .OnDelete(DeleteBehavior.Restrict);
 

@@ -117,6 +117,14 @@
       </div>
     </div>
 
+    <!-- Voice Commands Help -->
+    <div class="voice-help" *ngIf="isVoiceEnabled">
+      <h3>Voice Commands</h3>
+      <ul>
+        <li *ngFor="let command of voiceCommandExamples">{{ command }}</li>
+      </ul>
+    </div>
+
     <!-- Voice Status Indicator -->
     <div class="voice-status" *ngIf="isVoiceEnabled">
       <mat-icon [class.listening]="isListening">{{ isListening ? 'mic' : 'mic_off' }}</mat-icon>

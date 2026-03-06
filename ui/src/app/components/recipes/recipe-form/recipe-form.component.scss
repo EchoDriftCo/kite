@@ -194,10 +194,12 @@
     flex: 1;
     margin-bottom: -1.25em; // Cancel Material field margin
 
-    // iOS textarea fix - ensure proper touch/edit behavior
+    // iOS textarea fix - allow normal text selection, focus and scrolling
     textarea {
       -webkit-appearance: none;
-      touch-action: manipulation; // Prevent zoom on double-tap while allowing input
+      touch-action: auto;
+      -webkit-user-select: text;
+      user-select: text;
     }
   }
 
@@ -253,6 +255,12 @@
 @media (max-width: 768px) {
   .recipe-form-container {
     padding: 16px;
+  }
+
+  .ingredients-list,
+  .instructions-list {
+    max-height: none;
+    overflow-y: visible;
   }
 
   .form-grid {

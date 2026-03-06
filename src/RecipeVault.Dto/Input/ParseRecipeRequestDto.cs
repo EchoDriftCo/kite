@@ -17,5 +17,10 @@ namespace RecipeVault.Dto.Input {
         /// URL of a recipe webpage to parse
         /// </summary>
         public string Url { get; set; }
+
+        /// <summary>
+        /// Raw HTML content from a recipe page (used by browser extension fallback parsing)
+        /// </summary>
+        public string Html { get; set; }
     }
 }

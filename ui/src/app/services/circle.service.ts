@@ -9,7 +9,6 @@ import {
   CreateCircleRequest,
   UpdateCircleRequest,
   InviteMemberRequest,
-  InviteResponse,
   ShareRecipeRequest,
   AcceptInviteRequest,
   PagedResult
@@ -74,21 +73,28 @@ export class CircleService {
   /**
    * Invite a member by email or generate shareable link
    */
-  inviteMember(circleId: string, request: InviteMemberRequest): Observable<InviteResponse> {
-    return this.api.post<InviteResponse>(`${this.endpoint}/${circleId}/invite`, request);
+  inviteMember(circleId: string, request: InviteMemberRequest): Observable<CircleInvite> {
+    return this.api.post<CircleInvite>(`${this.endpoint}/${circleId}/invite`, request);
   }
 
   /**
-   * Remove a member or leave circle (self)
+   * Remove a member from a circle
    */
-  removeMember(circleId: string, subjectId: number): Observable<void> {
+  removeMember(circleId: string, subjectId: string): Observable<void> {
     return this.api.delete<void>(`${this.endpoint}/${circleId}/members/${subjectId}`);
+  }
+
+  /**
+   * Leave a circle as the current user
+   */
+  leaveCircle(circleId: string): Observable<void> {
+    return this.api.post<void>(`${this.endpoint}/${circleId}/leave`, {});
   }
 
   /**
    * Change member role (owner only)
    */
-  updateMemberRole(circleId: string, subjectId: number, role: string): Observable<CircleMember> {
+  updateMemberRole(circleId: string, subjectId: string, role: string): Observable<CircleMember> {
     return this.api.put<CircleMember>(`${this.endpoint}/${circleId}/members/${subjectId}`, { role });
   }
 

@@ -58,13 +58,13 @@
             </div>
           } @else {
             <div class="recipes-grid">
-              @for (recipe of recipes; track recipe.circleRecipeResourceId) {
+              @for (recipe of recipes; track recipe.recipeResourceId) {
                 <mat-card class="recipe-card" (click)="viewRecipe(recipe)">
                   @if (recipe.recipeImageUrl) {
-                    <img mat-card-image [src]="recipe.recipeImageUrl" [alt]="recipe.recipeTitle">
+                    <img mat-card-image [src]="recipe.recipeImageUrl" [alt]="recipe.title">
                   }
                   <mat-card-content>
-                    <h3>{{ recipe.recipeTitle }}</h3>
+                    <h3>{{ recipe.title }}</h3>
                     <p class="shared-by">
                       Shared by {{ recipe.sharedByEmail }}
                     </p>

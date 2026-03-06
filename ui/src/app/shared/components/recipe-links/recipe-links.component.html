@@ -30,6 +30,12 @@
               <span *ngIf="link.totalTimeMinutes">{{ formatTime(link.totalTimeMinutes) }}</span>
               <span *ngIf="link.portionUsed">{{ link.portionUsed }}x portion</span>
             </div>
+            <div class="link-actions-row" *ngIf="hasExpandableDetails(link)">
+              <button mat-button type="button" (click)="toggleExpanded(link)">
+                <mat-icon>{{ isExpanded(link) ? 'expand_less' : 'expand_more' }}</mat-icon>
+                {{ isExpanded(link) ? 'Hide details' : 'Expand here' }}
+              </button>
+            </div>
             <mat-chip-set *ngIf="link.tags && link.tags.length > 0">
               <mat-chip *ngFor="let tag of link.tags.slice(0, 3)">
                 {{ tag.displayName || tag.globalName }}
@@ -45,6 +51,26 @@
           <button mat-icon-button (click)="deleteLink(link)" matTooltip="Remove link">
             <mat-icon>delete</mat-icon>
           </button>
+        </div>
+
+        <div *ngIf="isExpanded(link)" class="linked-recipe-expanded">
+          <div class="expanded-section" *ngIf="link.ingredients?.length">
+            <h5>Ingredients</h5>
+            <ul>
+              <li *ngFor="let ingredient of link.ingredients">
+                {{ ingredient.rawText || ((ingredient.quantity || '') + ' ' + (ingredient.unit || '') + ' ' + ingredient.item).trim() }}
+              </li>
+            </ul>
+          </div>
+
+          <div class="expanded-section" *ngIf="link.instructions?.length">
+            <h5>Instructions</h5>
+            <ol>
+              <li *ngFor="let instruction of link.instructions">
+                {{ instruction.rawText || instruction.instruction }}
+              </li>
+            </ol>
+          </div>
         </div>
       </div>
     </div>

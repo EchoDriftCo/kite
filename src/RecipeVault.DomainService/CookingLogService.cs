@@ -249,10 +249,17 @@ namespace RecipeVault.DomainService {
 
             var ratedLogs = logs.Where(l => l.Rating.HasValue).ToList();
 
+            var lastNote = logs
+                .Where(l => !string.IsNullOrWhiteSpace(l.Notes))
+                .OrderByDescending(l => l.CookedDate)
+                .Select(l => l.Notes)
+                .FirstOrDefault();
+
             return new RecipePersonalStatsDto {
                 CookCount = logs.Count,
                 AverageRating = ratedLogs.Count > 0 ? ratedLogs.Average(l => l.Rating.Value) : null,
-                LastCookedDate = logs.Max(l => l.CookedDate)
+                LastCookedDate = logs.Max(l => l.CookedDate),
+                LastNote = lastNote
             };
         }
     }

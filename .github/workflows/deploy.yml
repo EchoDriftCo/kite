@@ -120,3 +120,25 @@ jobs:
             echo "❌ Health check failed with status $response"
             exit 1
           fi
+
+      - name: Notify success
+        if: success()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_DEPLOY_WEBHOOK }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK" ]; then
+            curl -s -H "Content-Type: application/json" \
+              -d "{\"content\":\"✅ **RecipeVault deployed successfully**\nCommit: \`${GITHUB_SHA::7}\` — ${GITHUB_EVENT_HEAD_COMMIT_MESSAGE:-$(git log -1 --pretty=%s)}\nHealth check passed.\"}" \
+              "$DISCORD_WEBHOOK"
+          fi
+
+      - name: Notify failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_DEPLOY_WEBHOOK }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK" ]; then
+            curl -s -H "Content-Type: application/json" \
+              -d "{\"content\":\"🔴 **RecipeVault deploy FAILED**\nCommit: \`${GITHUB_SHA::7}\`\nWorkflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\nCheck the logs ^^^\"}" \
+              "$DISCORD_WEBHOOK"
+          fi

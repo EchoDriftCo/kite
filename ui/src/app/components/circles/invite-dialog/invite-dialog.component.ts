@@ -61,9 +61,9 @@ export class InviteDialogComponent {
     this.sendingEmail = true;
     this.error = '';
 
-    const email = this.emailForm.value.email;
+    const inviteeEmail = this.emailForm.value.email;
 
-    this.circleService.inviteMember(this.data.circle.circleResourceId, { email }).subscribe({
+    this.circleService.inviteMember(this.data.circle.circleResourceId, { inviteeEmail }).subscribe({
       next: () => {
         this.sendingEmail = false;
         this.snackBar.open('Invitation sent!', 'Close', { duration: 3000 });
@@ -82,9 +82,9 @@ export class InviteDialogComponent {
     this.generatingLink = true;
     this.error = '';
 
-    this.circleService.inviteMember(this.data.circle.circleResourceId, { generateLink: true }).subscribe({
-      next: (response) => {
-        this.inviteLink = response.inviteUrl || '';
+    this.circleService.inviteMember(this.data.circle.circleResourceId, {}).subscribe({
+      next: (invite) => {
+        this.inviteLink = invite.inviteToken ? `${window.location.origin}/join/${invite.inviteToken}` : '';
         this.generatingLink = false;
         this.snackBar.open('Invite link generated!', 'Close', { duration: 2000 });
       },

@@ -13,6 +13,7 @@ namespace RecipeVault.Data.Searches {
         List<Guid> TagResourceIds { get; set; }
         int? TagCategory { get; set; }
         bool? IsFavorite { get; set; }
+        bool? HasRequiredEquipment { get; set; }
         int? MinRating { get; set; }
     }
 }

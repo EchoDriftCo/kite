@@ -308,7 +308,20 @@ namespace RecipeVault.DomainService {
             GeminiParseResponse geminiResponse;
             string extractedImageUrl = null;
 
-            if (!string.IsNullOrWhiteSpace(request.Url)) {
+            if (!string.IsNullOrWhiteSpace(request.Html)) {
+                logger.LogInformation("Parsing recipe from provided HTML payload (sourceUrl={Url})", request.Url);
+
+                try {
+                    extractedImageUrl = ExtractOpenGraphImage(request.Html);
+                    var cleanedContent = StripHtmlNonContent(request.Html);
+
+                    geminiResponse = await geminiClient.ParseRecipeTextAsync(cleanedContent)
+                        .ConfigureAwait(false);
+                } catch (Exception ex) when (ex is not GeminiApiException) {
+                    logger.LogError(ex, "Failed to parse recipe from provided HTML (sourceUrl={Url})", request.Url);
+                    throw;
+                }
+            } else if (!string.IsNullOrWhiteSpace(request.Url)) {
                 logger.LogInformation("Parsing recipe from URL={Url}", request.Url);
 
                 try {
@@ -334,7 +347,7 @@ namespace RecipeVault.DomainService {
                     throw;
                 }
             } else {
-                throw new ArgumentException("Either image data or URL is required");
+                throw new ArgumentException("One of html, image data, or URL is required");
             }
 
             var result = new ParseRecipeResponseDto {

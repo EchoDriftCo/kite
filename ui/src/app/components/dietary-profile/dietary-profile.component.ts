@@ -131,6 +131,32 @@ export class DietaryProfileComponent implements OnInit {
     });
   }
 
+  setAsDefaultProfile(profile: DietaryProfile): void {
+    if (profile.isDefault) return;
+
+    const updateRequest: UpdateDietaryProfile = {
+      profileName: profile.profileName,
+      isDefault: true
+    };
+
+    this.dietaryProfileService.updateProfile(profile.dietaryProfileResourceId, updateRequest).subscribe({
+      next: (updatedProfile) => {
+        this.profiles = this.profiles.map(p =>
+          p.dietaryProfileResourceId === updatedProfile.dietaryProfileResourceId
+            ? { ...updatedProfile, isDefault: true }
+            : { ...p, isDefault: false }
+        );
+
+        if (this.selectedProfile) {
+          this.selectedProfile = this.profiles.find(
+            p => p.dietaryProfileResourceId === this.selectedProfile?.dietaryProfileResourceId
+          );
+        }
+      },
+      error: (error) => console.error('Error setting default profile:', error)
+    });
+  }
+
   addRestriction(): void {
     if (!this.selectedProfile || !this.newRestriction.restrictionCode.trim()) return;
 

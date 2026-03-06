@@ -5,5 +5,6 @@ namespace RecipeVault.Dto.Output {
         public int CookCount { get; set; }
         public double? AverageRating { get; set; }
         public DateTime LastCookedDate { get; set; }
+        public string LastNote { get; set; }
     }
 }

@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { LinkedRecipe, UsedInRecipe } from '../../../models/recipe-link.model';
 import { RecipeLinkDialogComponent } from '../recipe-link-dialog/recipe-link-dialog.component';
 import { RecipeLinkService } from '../../../services/recipe-link.service';
@@ -18,7 +19,8 @@ import { RecipeLinkService } from '../../../services/recipe-link.service';
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTooltipModule
   ],
   templateUrl: './recipe-links.component.html',
   styleUrl: './recipe-links.component.scss'
@@ -29,6 +31,8 @@ export class RecipeLinksComponent {
   @Input() usedInRecipes: UsedInRecipe[] = [];
   @Input() canEdit = false;
   @Output() refreshRequested = new EventEmitter<void>();
+
+  expandedLinkIds = new Set<string>();
 
   constructor(
     private dialog: MatDialog,
@@ -77,6 +81,22 @@ export class RecipeLinksComponent {
         }
       });
     }
+  }
+
+  toggleExpanded(link: LinkedRecipe) {
+    if (this.expandedLinkIds.has(link.recipeLinkResourceId)) {
+      this.expandedLinkIds.delete(link.recipeLinkResourceId);
+    } else {
+      this.expandedLinkIds.add(link.recipeLinkResourceId);
+    }
+  }
+
+  isExpanded(link: LinkedRecipe): boolean {
+    return this.expandedLinkIds.has(link.recipeLinkResourceId);
+  }
+
+  hasExpandableDetails(link: LinkedRecipe): boolean {
+    return (link.ingredients?.length ?? 0) > 0 || (link.instructions?.length ?? 0) > 0;
   }
 
   formatTime(minutes?: number): string {

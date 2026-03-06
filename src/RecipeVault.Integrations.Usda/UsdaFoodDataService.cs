@@ -40,7 +40,7 @@ namespace RecipeVault.Integrations.Usda {
                 return response ?? new FoodSearchResponse { Foods = new List<FoodSearchResult>(), TotalHits = 0 };
             } catch (Exception ex) {
                 _logger.LogError(ex, "Error searching USDA foods for query: {Query}", query);
-                return GetMockSearchResponse(query, pageSize);
+                throw new HttpRequestException("Failed to search USDA foods", ex);
             }
         }
 
@@ -57,7 +57,7 @@ namespace RecipeVault.Integrations.Usda {
                 return response ?? GetMockFoodDetails(fdcId);
             } catch (Exception ex) {
                 _logger.LogError(ex, "Error fetching USDA food details for FdcId: {FdcId}", fdcId);
-                return GetMockFoodDetails(fdcId);
+                throw new HttpRequestException($"Failed to fetch USDA food details for {fdcId}", ex);
             }
         }
 

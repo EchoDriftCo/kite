@@ -91,6 +91,37 @@
   gap: 0.25rem;
 }
 
+.link-actions-row {
+  margin-bottom: 0.5rem;
+}
+
+.linked-recipe-expanded {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border, #e0e0e0);
+
+  .expanded-section + .expanded-section {
+    margin-top: 0.75rem;
+  }
+
+  h5 {
+    margin: 0 0 0.4rem;
+    font-size: 0.95rem;
+  }
+
+  ul,
+  ol {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--text-secondary, #757575);
+  }
+
+  li + li {
+    margin-top: 0.25rem;
+  }
+}
+
 .used-in-list {
   display: flex;
   flex-direction: column;

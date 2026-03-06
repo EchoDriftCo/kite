@@ -98,7 +98,8 @@ namespace RecipeVault.WebApi.Mappers {
             return new RecipePersonalStatsModel {
                 CookCount = dto.CookCount,
                 AverageRating = dto.AverageRating,
-                LastCookedDate = dto.LastCookedDate
+                LastCookedDate = dto.LastCookedDate,
+                LastNote = dto.LastNote
             };
         }
     }

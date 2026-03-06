@@ -31,6 +31,11 @@ import { CookingLogService } from '../../../services/cooking-log.service';
 import { RecipePersonalStats } from '../../../models/cooking-log.model';
 import { EquipmentService } from '../../../services/equipment.service';
 import { EquipmentCheckResult } from '../../../models/equipment.model';
+import { RecipeLinkService } from '../../../services/recipe-link.service';
+import { LinkedRecipe, UsedInRecipe } from '../../../models/recipe-link.model';
+import { RecipeLinksComponent } from '../../../shared/components/recipe-links/recipe-links.component';
+import { GroceryService } from '../../../services/grocery.service';
+import { GroceryCheckoutOptions, GroceryCheckoutUrl } from '../../../models/grocery.model';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -54,7 +59,8 @@ import { EquipmentCheckResult } from '../../../models/equipment.model';
     MatInputModule,
     FormsModule,
     FractionPipe,
-    TagSelectorComponent
+    TagSelectorComponent,
+    RecipeLinksComponent
   ],
   templateUrl: './recipe-detail.component.html',
   styleUrl: './recipe-detail.component.scss'
@@ -77,6 +83,15 @@ export class RecipeDetailComponent implements OnInit {
   loadingEquipment = false;
   detectingEquipment = false;
 
+  // Recipe linking
+  linkedRecipes: LinkedRecipe[] = [];
+  usedInRecipes: UsedInRecipe[] = [];
+
+  // Grocery delivery links
+  groceryOptions: GroceryCheckoutOptions | null = null;
+  loadingGroceryOptions = false;
+  groceryError = '';
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -84,7 +99,9 @@ export class RecipeDetailComponent implements OnInit {
     private cookingLogService: CookingLogService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private equipmentService: EquipmentService
+    private equipmentService: EquipmentService,
+    private recipeLinkService: RecipeLinkService,
+    private groceryService: GroceryService
   ) {}
 
   ngOnInit() {
@@ -109,6 +126,7 @@ export class RecipeDetailComponent implements OnInit {
         this.scaleFactor = 1;
         this.loading = false;
         this.loadRecipeEquipment();
+        this.loadRecipeLinks(recipe.recipeResourceId);
       },
       error: (err) => {
         this.error = err.message || 'Failed to load recipe';
@@ -147,6 +165,28 @@ export class RecipeDetailComponent implements OnInit {
       error: (err) => {
         console.error('Error loading equipment:', err);
         this.loadingEquipment = false;
+      }
+    });
+  }
+
+  loadRecipeLinks(recipeResourceId: string) {
+    this.recipeLinkService.getLinkedRecipes(recipeResourceId).subscribe({
+      next: (links) => {
+        this.linkedRecipes = links;
+      },
+      error: (err) => {
+        console.error('Error loading linked recipes:', err);
+        this.linkedRecipes = [];
+      }
+    });
+
+    this.recipeLinkService.getUsedInRecipes(recipeResourceId).subscribe({
+      next: (usage) => {
+        this.usedInRecipes = usage;
+      },
+      error: (err) => {
+        console.error('Error loading used-in recipes:', err);
+        this.usedInRecipes = [];
       }
     });
   }
@@ -325,6 +365,52 @@ export class RecipeDetailComponent implements OnInit {
   getScaledQuantity(quantity: number | undefined): number | undefined {
     if (quantity == null) return undefined;
     return quantity * this.scaleFactor;
+  }
+
+  getIngredientLink(index: number): LinkedRecipe | undefined {
+    return this.linkedRecipes.find(link => link.ingredientIndex === index);
+  }
+
+  loadGroceryOptions() {
+    if (!this.recipe?.ingredients?.length) {
+      this.groceryError = 'No ingredients found for this recipe.';
+      return;
+    }
+
+    const ingredientItems = this.recipe.ingredients
+      .map(i => i.item)
+      .filter((item): item is string => !!item?.trim());
+
+    this.loadingGroceryOptions = true;
+    this.groceryError = '';
+
+    this.groceryService.getCheckoutOptions(ingredientItems).subscribe({
+      next: (options) => {
+        this.groceryOptions = options;
+        this.loadingGroceryOptions = false;
+      },
+      error: (err) => {
+        this.groceryOptions = null;
+        this.groceryError = err?.message || 'Failed to load grocery checkout links.';
+        this.loadingGroceryOptions = false;
+      }
+    });
+  }
+
+  openCheckoutUrl(option: GroceryCheckoutUrl) {
+    window.open(option.url, '_blank', 'noopener,noreferrer');
+  }
+
+  getServiceDisplayName(service: string): string {
+    const names: Record<string, string> = {
+      instacart: 'Instacart',
+      walmart: 'Walmart Grocery',
+      amazonfresh: 'Amazon Fresh',
+      shipt: 'Shipt',
+      manual: 'Manual List'
+    };
+
+    return names[service] || service;
   }
 
   printRecipe() {

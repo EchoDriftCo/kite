@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Cortside.AspNetCore.Auditable.Entities;
@@ -34,6 +35,9 @@ namespace RecipeVault.Domain.Entities {
         public string Description { get; private set; }
 
         public bool IsCommon { get; private set; }
+
+        private readonly List<UserEquipment> userEquipment = new();
+        public virtual IReadOnlyList<UserEquipment> UserEquipment => userEquipment;
 
         public void Update(string name, string code, EquipmentCategory category, string description, bool isCommon) {
             var messages = new MessageList();

@@ -38,6 +38,18 @@ namespace RecipeVault.Facade {
         private Guid CurrentSubjectId => Guid.Parse(subjectPrincipal.SubjectId);
 
         public async Task<MixedRecipePreviewDto> MixRecipesAsync(MixRecipesRequestDto request) {
+            if (request == null) {
+                throw new ArgumentException("Mix request is required", nameof(request));
+            }
+
+            if (request.RecipeAId == Guid.Empty || request.RecipeBId == Guid.Empty) {
+                throw new ArgumentException("Both recipe IDs are required");
+            }
+
+            if (request.RecipeAId == request.RecipeBId) {
+                throw new ArgumentException("Cannot mix a recipe with itself");
+            }
+
             logger.LogInformation("Mixing recipes: {RecipeA} + {RecipeB}, mode={Mode}",
                 request.RecipeAId, request.RecipeBId, request.Mode);
 
@@ -59,14 +71,23 @@ namespace RecipeVault.Facade {
         }
 
         public async Task<MixedRecipePreviewDto> RefineMixedRecipeAsync(RefineMixRequestDto request) {
-            logger.LogInformation("Refining mixed recipe: {Title}", request.Preview?.Title);
+            if (request?.Preview == null) {
+                throw new ArgumentException("Preview is required", nameof(request));
+            }
+
+            logger.LogInformation("Refining mixed recipe: {Title}", request.Preview.Title);
 
             var preview = MapFromDto(request.Preview);
             var refinedPreview = await recipeMixingService.RefineMixedRecipeAsync(
                 preview,
                 request.RefinementNotes);
 
-            return MapToDto(refinedPreview);
+            var refinedDto = MapToDto(refinedPreview);
+            // Preserve parent tracking metadata across refine calls so save can retain lineage.
+            refinedDto.RecipeAResourceId = request.Preview.RecipeAResourceId;
+            refinedDto.RecipeBResourceId = request.Preview.RecipeBResourceId;
+
+            return refinedDto;
         }
 
         public async Task<RecipeDto> SaveMixedRecipeAsync(MixedRecipePreviewDto preview) {

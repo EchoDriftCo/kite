@@ -15,9 +15,11 @@ namespace RecipeVault.Data.Searches {
         public List<Guid> TagResourceIds { get; set; }
         public int? TagCategory { get; set; }
         public bool? IsFavorite { get; set; }
+        public bool? HasRequiredEquipment { get; set; }
         public int? MinRating { get; set; }
         public Guid? SearchingUserId { get; set; }  // Used to match user's own aliases
         public int? ForkedFromRecipeId { get; set; }
+        public Guid? CollectionResourceId { get; set; }
 
         public IQueryable<Recipe> Build(IQueryable<Recipe> entities) {
             if (IncludePublic && CreatedSubjectId.HasValue) {
@@ -93,12 +95,21 @@ namespace RecipeVault.Data.Searches {
                 entities = entities.Where(x => x.IsFavorite == IsFavorite.Value);
             }
 
+            if (HasRequiredEquipment.GetValueOrDefault(false) && CreatedSubjectId.HasValue) {
+                var subjectId = CreatedSubjectId.Value;
+                entities = entities.Where(x => !x.RecipeEquipment.Any(re => re.IsRequired && !re.Equipment.UserEquipment.Any(ue => ue.SubjectId == subjectId)));
+            }
+
             if (MinRating.HasValue) {
                 entities = entities.Where(x => x.Rating.HasValue && x.Rating.Value >= MinRating.Value);
             }
 
             if (ForkedFromRecipeId.HasValue) {
                 entities = entities.Where(x => x.ForkedFromRecipeId == ForkedFromRecipeId.Value);
+            }
+
+            if (CollectionResourceId.HasValue) {
+                entities = entities.Where(x => x.CollectionRecipes.Any(cr => cr.Collection.CollectionResourceId == CollectionResourceId.Value));
             }
 
             return entities;

@@ -43,6 +43,17 @@ export class CookingModeComponent implements OnInit, OnDestroy {
   isListening = false;
   wakeLock: any = null;
   activeTimers: ActiveTimer[] = [];
+
+  readonly voiceCommandExamples: string[] = [
+    '"Next step"',
+    '"Previous step"',
+    '"Go to step 4"',
+    '"Read step"',
+    '"Start timer"',
+    '"Pause timer" / "Resume timer" / "Reset timer"',
+    '"What step am I on?"',
+    '"Ingredients"'
+  ];
   
   private destroy$ = new Subject<void>();
 
@@ -172,25 +183,125 @@ export class CookingModeComponent implements OnInit, OnDestroy {
   private handleVoiceCommand(command: string): void {
     console.log('Processing voice command:', command);
 
+    const normalized = command.toLowerCase();
+
+    if (this.tryHandleStepNavigation(normalized)) {
+      return;
+    }
+
+    if (normalized.includes('read') || normalized.includes('repeat')) {
+      this.readStep();
+      return;
+    }
+
+    if (normalized.includes('pause') && normalized.includes('timer')) {
+      this.pauseAllTimers();
+      return;
+    }
+
+    if ((normalized.includes('resume') || normalized.includes('continue')) && normalized.includes('timer')) {
+      this.resumeAllTimers();
+      return;
+    }
+
+    if (normalized.includes('reset') && normalized.includes('timer')) {
+      this.resetAllTimers();
+      return;
+    }
+
+    if (normalized.includes('timer') || normalized.includes('start')) {
+      this.startCurrentStepTimer();
+      return;
+    }
+
+    if (normalized.includes('what step') || normalized.includes('which step')) {
+      this.cookingService.speak(`Step ${this.currentStepIndex + 1} of ${this.totalSteps}`);
+      return;
+    }
+
+    if (normalized.includes('ingredients')) {
+      this.cookingService.speak(`Recipe uses ${this.recipe?.ingredients.length ?? 0} ingredients`);
+      return;
+    }
+
+    this.cookingService.speak('Sorry, I did not catch that command. Try saying next step, read step, or start timer.');
+  }
+
+  private tryHandleStepNavigation(command: string): boolean {
     if (command.includes('next')) {
       this.nextStep();
       this.cookingService.speak(`Step ${this.currentStepIndex + 1}`);
-    } else if (command.includes('previous') || command.includes('back')) {
+      return true;
+    }
+
+    if (command.includes('previous') || command.includes('back')) {
       this.previousStep();
       this.cookingService.speak(`Step ${this.currentStepIndex + 1}`);
-    } else if (command.includes('read') || command.includes('repeat')) {
-      this.readStep();
-    } else if (command.includes('timer') || command.includes('start')) {
-      const timers = this.stepTimers;
-      if (timers.length > 0) {
-        this.cookingService.startTimer(timers[0]);
-        this.cookingService.speak(`Timer started: ${timers[0].label}`);
-      }
-    } else if (command.includes('what step') || command.includes('which step')) {
-      this.cookingService.speak(`Step ${this.currentStepIndex + 1} of ${this.totalSteps}`);
-    } else if (command.includes('ingredients')) {
-      this.cookingService.speak(`Recipe uses ${this.recipe?.ingredients.length} ingredients`);
+      return true;
     }
+
+    const stepMatch = command.match(/(?:go to|jump to|step)\s+(\d+)/);
+    if (!stepMatch) {
+      return false;
+    }
+
+    const requestedStep = Number.parseInt(stepMatch[1], 10);
+    if (Number.isNaN(requestedStep)) {
+      return false;
+    }
+
+    if (requestedStep < 1 || requestedStep > this.totalSteps) {
+      this.cookingService.speak(`That recipe has ${this.totalSteps} steps.`);
+      return true;
+    }
+
+    this.currentStepIndex = requestedStep - 1;
+    this.cookingService.stopSpeaking();
+    this.cookingService.speak(`Step ${requestedStep}`);
+    return true;
+  }
+
+  private startCurrentStepTimer(): void {
+    const timers = this.stepTimers;
+    if (timers.length === 0) {
+      this.cookingService.speak('No timer found for this step.');
+      return;
+    }
+
+    this.cookingService.startTimer(timers[0]);
+    this.cookingService.speak(`Timer started: ${timers[0].label}`);
+  }
+
+  private pauseAllTimers(): void {
+    const runningTimers = this.activeTimers.filter(timer => timer.isRunning);
+    if (runningTimers.length === 0) {
+      this.cookingService.speak('No running timers to pause.');
+      return;
+    }
+
+    runningTimers.forEach(timer => this.cookingService.pauseTimer(timer.timer.index));
+    this.cookingService.speak(`Paused ${runningTimers.length} timer${runningTimers.length > 1 ? 's' : ''}.`);
+  }
+
+  private resumeAllTimers(): void {
+    const pausedTimers = this.activeTimers.filter(timer => timer.isPaused);
+    if (pausedTimers.length === 0) {
+      this.cookingService.speak('No paused timers to resume.');
+      return;
+    }
+
+    pausedTimers.forEach(timer => this.cookingService.startTimer(timer.timer));
+    this.cookingService.speak(`Resumed ${pausedTimers.length} timer${pausedTimers.length > 1 ? 's' : ''}.`);
+  }
+
+  private resetAllTimers(): void {
+    if (this.activeTimers.length === 0) {
+      this.cookingService.speak('No active timers to reset.');
+      return;
+    }
+
+    this.activeTimers.forEach(timer => this.cookingService.resetTimer(timer.timer.index));
+    this.cookingService.speak(`Reset ${this.activeTimers.length} timer${this.activeTimers.length > 1 ? 's' : ''}.`);
   }
 
   startTimer(timer: any): void {

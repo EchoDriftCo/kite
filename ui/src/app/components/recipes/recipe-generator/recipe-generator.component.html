@@ -58,6 +58,15 @@
               </mat-select>
             </mat-form-field>
 
+            <mat-form-field appearance="outline">
+              <mat-label>Variations</mat-label>
+              <mat-select [(ngModel)]="variations" [disabled]="loading">
+                <mat-option *ngFor="let count of variationOptions" [value]="count">
+                  {{count}} {{count === 1 ? 'variation' : 'variations'}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
             <div class="dietary-constraints">
               <label>Dietary Requirements:</label>
               <div class="checkbox-list">
@@ -92,6 +101,17 @@
 
       <!-- Generated Recipe Preview -->
       <div class="recipe-preview" *ngIf="selectedRecipe && !loading">
+        <div class="variation-switcher" *ngIf="generatedRecipes.length > 1">
+          <mat-chip-set>
+            <mat-chip
+              *ngFor="let recipe of generatedRecipes; let i = index"
+              [highlighted]="i === selectedRecipeIndex"
+              (click)="selectVariation(i)">
+              Variation {{i + 1}}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+
         <div class="preview-header">
           <h2>{{selectedRecipe.title}}</h2>
           <div class="recipe-meta">

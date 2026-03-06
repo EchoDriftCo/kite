@@ -28,5 +28,6 @@
     <ProjectReference Include="..\RecipeVault.TestUtilities\RecipeVault.TestUtilities.csproj" />
     <ProjectReference Include="..\RecipeVault.DomainService\RecipeVault.DomainService.csproj" />
     <ProjectReference Include="..\RecipeVault.Data\RecipeVault.Data.csproj" />
+    <ProjectReference Include="..\RecipeVault.Integrations.Usda\RecipeVault.Integrations.Usda.csproj" />
   </ItemGroup>
 </Project>

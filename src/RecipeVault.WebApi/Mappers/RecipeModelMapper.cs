@@ -93,7 +93,9 @@ namespace RecipeVault.WebApi.Mappers {
                 TagResourceIds = model.TagResourceIds,
                 TagCategory = model.TagCategory,
                 IsFavorite = model.IsFavorite,
+                HasRequiredEquipment = model.HasRequiredEquipment,
                 MinRating = model.MinRating,
+                CollectionResourceId = model.CollectionResourceId,
                 PageNumber = model.PageNumber,
                 PageSize = model.PageSize,
                 Sort = model.Sort
@@ -139,7 +141,8 @@ namespace RecipeVault.WebApi.Mappers {
             return new ParseRecipeRequestDto {
                 Image = model.Image,
                 MimeType = model.MimeType,
-                Url = model.Url
+                Url = model.Url,
+                Html = model.Html
             };
         }
 

@@ -53,10 +53,18 @@
 }
 
 .profile-content {
-  h2 {
-    margin: 0 0 24px 0;
-    font-size: 1.75rem;
-    font-weight: 500;
+  .profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 24px;
+
+    h2 {
+      margin: 0;
+      font-size: 1.75rem;
+      font-weight: 500;
+    }
   }
 }
 
@@ -226,6 +234,13 @@
   .profiles-sidebar {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 16px;
+  }
+
+  .profile-content {
+    .profile-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 
   .add-restriction-form {

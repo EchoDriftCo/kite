@@ -98,6 +98,10 @@ namespace RecipeVault.Domain.Entities {
 
         private readonly List<RecipeEquipment> recipeEquipment = new();
         public virtual IReadOnlyList<RecipeEquipment> RecipeEquipment => recipeEquipment;
+
+        private readonly List<CollectionRecipe> collectionRecipes = new();
+        public virtual IReadOnlyList<CollectionRecipe> CollectionRecipes => collectionRecipes;
+
         private readonly List<RecipeLink> linkedRecipes = new();
         public virtual IReadOnlyList<RecipeLink> LinkedRecipes => linkedRecipes;
 
