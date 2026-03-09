@@ -37,16 +37,13 @@
     display: flex;
     align-items: center;
     gap: 8px;
-
-    button {
-      mat-icon {
-        margin-right: 4px;
-      }
-    }
+    
+    // Icon sizing handled globally in styles.scss
 
     .filter-count {
       color: #90caf9;
       font-weight: 500;
+      margin-left: 4px;
     }
 
     .clear-btn {
@@ -327,15 +324,8 @@
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-
-    button {
-      mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        margin-right: 4px;
-      }
-    }
+    
+    // Icon sizing handled globally in styles.scss
   }
 }
 

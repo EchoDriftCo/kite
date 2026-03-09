@@ -26,10 +26,32 @@ p, span, div {
 }
 
 // Ensure Material components use light text
-.mat-mdc-button,
-.mat-mdc-raised-button,
-.mat-mdc-icon-button {
-  color: #f1f5f9 !important;
+// Remove aggressive !important - let Material handle button internals
+.mat-mdc-button:not([color]),
+.mat-mdc-raised-button:not([color]),
+.mat-mdc-icon-button:not([color]) {
+  color: #f1f5f9;
+}
+
+// Fix MDC button text rendering
+.mat-mdc-button .mdc-button__label,
+.mat-mdc-raised-button .mdc-button__label,
+.mat-mdc-outlined-button .mdc-button__label {
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.5;
+}
+
+// Fix icon spacing in MDC buttons
+.mat-mdc-button mat-icon,
+.mat-mdc-raised-button mat-icon,
+.mat-mdc-outlined-button mat-icon {
+  margin-right: 8px;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
 }
 
 // Form field text
