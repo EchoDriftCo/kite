@@ -71,6 +71,7 @@ namespace RecipeVault.Data.Repositories {
             return context.CookingLogs
                 .Include(x => x.Recipe)
                 .Include(x => x.Photos)
+                .Include(x => x.CreatedSubject)
                 .Where(cl => cl.CreatedSubject.SubjectId == subjectId 
                     && cl.CookedDate >= startDate 
                     && cl.CookedDate < endDate)
