@@ -35,6 +35,7 @@ export interface Recipe {
   isFavorite?: boolean;
   isOwner?: boolean;
   shareToken?: string;
+  forkCount?: number;
   ingredients: RecipeIngredient[];
   instructions: RecipeInstruction[];
   tags?: RecipeTag[];

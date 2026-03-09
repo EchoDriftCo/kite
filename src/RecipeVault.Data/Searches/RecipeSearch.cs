@@ -20,6 +20,8 @@ namespace RecipeVault.Data.Searches {
         public Guid? SearchingUserId { get; set; }  // Used to match user's own aliases
         public int? ForkedFromRecipeId { get; set; }
         public Guid? CollectionResourceId { get; set; }
+        public string SortBy { get; set; }
+        public string SortDirection { get; set; }
 
         public IQueryable<Recipe> Build(IQueryable<Recipe> entities) {
             if (IncludePublic && CreatedSubjectId.HasValue) {

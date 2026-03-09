@@ -82,7 +82,7 @@ namespace RecipeVault.Facade.Mappers {
                             IsAvailable = false
                         }
                         : null),
-                ForkCount = entity.Forks?.Count(f => f.IsPublic) ?? 0,
+                ForkCount = entity.ForkCount,
                 MixedFrom = (entity.MixedFromRecipeA != null && entity.MixedFromRecipeB != null)
                     ? new MixedFromDto {
                         RecipeAResourceId = entity.MixedFromRecipeA.RecipeResourceId,
@@ -117,7 +117,9 @@ namespace RecipeVault.Facade.Mappers {
                 CollectionResourceId = dto.CollectionResourceId,
                 PageNumber = dto.PageNumber,
                 PageSize = dto.PageSize,
-                Sort = dto.Sort
+                Sort = dto.Sort,
+                SortBy = dto.SortBy,
+                SortDirection = dto.SortDirection
             };
         }
     }

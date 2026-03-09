@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { RecipeListComponent } from './components/recipes/recipe-list/recipe-list.component';
+import { DiscoverComponent } from './components/recipes/discover/discover.component';
 import { RecipeDetailComponent } from './components/recipes/recipe-detail/recipe-detail.component';
 import { RecipeFormComponent } from './components/recipes/recipe-form/recipe-form.component';
 import { RecipeGeneratorComponent } from './components/recipes/recipe-generator/recipe-generator.component';
@@ -26,6 +27,7 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'share/:token', component: SharedRecipeComponent },
   { path: 'join/:token', component: AcceptInviteComponent, canActivate: [authGuard] },
+  { path: 'discover', component: DiscoverComponent, canActivate: [authGuard] },
   { path: 'recipes', component: RecipeListComponent, canActivate: [authGuard] },
   { path: 'recipes/new', component: RecipeFormComponent, canActivate: [authGuard] },
   { path: 'recipes/generate', component: RecipeGeneratorComponent, canActivate: [authGuard] },

@@ -165,6 +165,32 @@ export class RecipeService {
   }
 
   /**
+   * Discover public recipes (popular/newest/rating)
+   */
+  discoverRecipes(request: { title?: string; sortBy?: string; tagResourceIds?: string[]; minRating?: number; pageNumber?: number; pageSize?: number } = {}): Observable<PagedResult<Recipe>> {
+    const params: any = {};
+    if (request.pageNumber) params.pageNumber = request.pageNumber;
+    if (request.pageSize) params.pageSize = request.pageSize;
+    if (request.title) params.title = request.title;
+    if (request.sortBy) params.sortBy = request.sortBy;
+    if (request.minRating != null) params.minRating = request.minRating;
+
+    let queryString = Object.keys(params)
+      .map(key => `${key}=${encodeURIComponent(params[key])}`)
+      .join('&');
+
+    if (request.tagResourceIds && request.tagResourceIds.length > 0) {
+      const tagParams = request.tagResourceIds
+        .map(id => `tagResourceIds=${encodeURIComponent(id)}`)
+        .join('&');
+      queryString = queryString ? `${queryString}&${tagParams}` : tagParams;
+    }
+
+    const url = queryString ? `${this.endpoint}/discover?${queryString}` : `${this.endpoint}/discover`;
+    return this.api.get<PagedResult<Recipe>>(url);
+  }
+
+  /**
    * Fork a recipe to create a personal copy
    */
   forkRecipe(id: string, title?: string): Observable<Recipe> {

@@ -102,6 +102,28 @@ namespace RecipeVault.WebApi.Mappers {
             };
         }
 
+        public RecipeSearchDto MapToDto(DiscoverSearchModel model) {
+            if (model == null) {
+                return null;
+            }
+
+            var (sortBy, sortDirection) = model.SortBy switch {
+                "popular" => ("ForkCount", "desc"),
+                "rating" => ("Rating", "desc"),
+                _ => ("CreatedDate", "desc")  // "newest" is the default
+            };
+
+            return new RecipeSearchDto {
+                Title = model.Title,
+                TagResourceIds = model.TagResourceIds,
+                MinRating = model.MinRating,
+                PageNumber = model.PageNumber,
+                PageSize = model.PageSize,
+                SortBy = sortBy,
+                SortDirection = sortDirection
+            };
+        }
+
         public UpdateRecipeDto MapToDto(UpdateRecipeModel model) {
             if (model == null) {
                 return null;

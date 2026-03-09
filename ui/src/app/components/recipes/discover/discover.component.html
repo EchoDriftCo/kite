@@ -1,0 +1,135 @@
+<div class="discover-container">
+  <div class="header">
+    <div class="title-section">
+      <h1>Discover Recipes</h1>
+      <p class="subtitle">Explore public recipes shared by the community</p>
+    </div>
+
+    <div class="controls">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search recipes</mat-label>
+        <input matInput [(ngModel)]="searchTitle" (keyup.enter)="onSearch()" placeholder="Search...">
+        <button mat-icon-button matSuffix (click)="onSearch()">
+          <mat-icon>search</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="sort-field">
+        <mat-label>Sort by</mat-label>
+        <mat-select [(ngModel)]="sortBy" (ngModelChange)="onSortChange()">
+          @for (opt of sortOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Loading recipes...</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-message">
+      <mat-icon>error</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-button (click)="loadRecipes()">Try Again</button>
+    </div>
+  }
+
+  @if (!loading && !error) {
+    @if (recipes.length === 0) {
+      <div class="empty-state">
+        <mat-icon>explore</mat-icon>
+        <h2>No public recipes found</h2>
+        <p>Be the first to share a recipe with the community!</p>
+      </div>
+    } @else {
+      <div class="recipe-grid">
+        @for (recipe of recipes; track recipe.recipeResourceId) {
+          <mat-card class="recipe-card" (click)="viewRecipe(recipe)">
+            <div class="card-image-wrapper">
+              @if (recipe.originalImageUrl) {
+                <img mat-card-image [src]="recipe.originalImageUrl" [alt]="recipe.title">
+              } @else {
+                <div class="placeholder-image">
+                  <mat-icon>restaurant</mat-icon>
+                </div>
+              }
+            </div>
+
+            <mat-card-content>
+              <h3>{{ recipe.title }}</h3>
+
+              @if (recipe.description) {
+                <p class="description">{{ recipe.description }}</p>
+              }
+
+              @if (recipe.rating) {
+                <div class="card-star-rating">
+                  @for (star of [1, 2, 3, 4, 5]; track star) {
+                    <mat-icon [class.filled]="star <= (recipe.rating || 0)">
+                      {{ star <= (recipe.rating || 0) ? 'star' : 'star_border' }}
+                    </mat-icon>
+                  }
+                </div>
+              }
+
+              <div class="recipe-meta">
+                <mat-chip-set>
+                  <mat-chip>
+                    <mat-icon>schedule</mat-icon>
+                    {{ getTotalTime(recipe) }}
+                  </mat-chip>
+                  <mat-chip>
+                    <mat-icon>restaurant_menu</mat-icon>
+                    {{ recipe.yield }} servings
+                  </mat-chip>
+                </mat-chip-set>
+
+                @if ((recipe.forkCount || 0) > 0) {
+                  <div class="fork-count">
+                    <mat-icon>call_split</mat-icon>
+                    {{ recipe.forkCount }} {{ recipe.forkCount === 1 ? 'fork' : 'forks' }}
+                  </div>
+                }
+              </div>
+            </mat-card-content>
+
+            <mat-card-actions>
+              <button mat-button (click)="viewRecipe(recipe)">
+                <mat-icon>visibility</mat-icon>
+                View
+              </button>
+              <button mat-button color="accent"
+                      [disabled]="forkingId === recipe.recipeResourceId"
+                      (click)="forkToVault(recipe, $event)"
+                      matTooltip="Add a copy to My Vault">
+                @if (forkingId === recipe.recipeResourceId) {
+                  <mat-icon>hourglass_empty</mat-icon>
+                } @else {
+                  <mat-icon>call_split</mat-icon>
+                }
+                Fork to Vault
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        }
+      </div>
+
+      @if (totalCount > pageSize) {
+        <mat-paginator
+          [length]="totalCount"
+          [pageSize]="pageSize"
+          [pageIndex]="pageNumber - 1"
+          [pageSizeOptions]="[12, 24, 48]"
+          (page)="onPageChange($event)"
+          showFirstLastButtons>
+        </mat-paginator>
+      }
+    }
+  }
+</div>

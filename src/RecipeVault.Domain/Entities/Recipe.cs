@@ -73,6 +73,9 @@ namespace RecipeVault.Domain.Entities {
         // Forking fields
         public int? ForkedFromRecipeId { get; private set; }
         public virtual Recipe ForkedFromRecipe { get; private set; }
+        public int ForkCount { get; private set; }
+
+        public void IncrementForkCount() { ForkCount++; }
         
         private readonly List<Recipe> forks = new();
         public virtual IReadOnlyList<Recipe> Forks => forks;

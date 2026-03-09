@@ -68,7 +68,24 @@ namespace RecipeVault.Facade {
             await using (var tx = await uow.BeginReadUncommitedAsync().ConfigureAwait(false)) {
                 var recipes = await recipeService.SearchRecipesAsync(recipeSearch).ConfigureAwait(false);
                 var currentSubjectId = CurrentSubjectId;
-                
+
+                return recipes.Convert(x => mapper.MapToDto(x, currentSubjectId));
+            }
+        }
+
+        public async Task<PagedList<RecipeDto>> DiscoverRecipesAsync(RecipeSearchDto search) {
+            var recipeSearch = mapper.Map(search);
+            // Discover returns all public recipes — no owner filter
+            recipeSearch.IsPublic = true;
+            recipeSearch.SearchingUserId = CurrentSubjectId;
+            // Default sort for discover is newest
+            if (string.IsNullOrEmpty(recipeSearch.SortBy)) {
+                recipeSearch.SortBy = "CreatedDate";
+                recipeSearch.SortDirection = "desc";
+            }
+            await using (var tx = await uow.BeginReadUncommitedAsync().ConfigureAwait(false)) {
+                var recipes = await recipeService.SearchRecipesAsync(recipeSearch).ConfigureAwait(false);
+                var currentSubjectId = CurrentSubjectId;
                 return recipes.Convert(x => mapper.MapToDto(x, currentSubjectId));
             }
         }

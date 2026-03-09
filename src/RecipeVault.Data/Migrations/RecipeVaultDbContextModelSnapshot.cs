@@ -893,6 +893,9 @@ namespace RecipeVault.Data.Migrations
                     b.Property<int?>("ForkedFromRecipeId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("ForkCount")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsFavorite")
                         .HasColumnType("boolean");
 

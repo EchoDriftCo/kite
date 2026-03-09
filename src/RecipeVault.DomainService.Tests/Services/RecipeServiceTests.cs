@@ -1064,5 +1064,47 @@ namespace RecipeVault.DomainService.Tests.Services {
             mockGeminiClient.Verify(x => x.ParseRecipeTextAsync(It.Is<string>(s => s.Contains("Best Pancakes")), It.IsAny<CancellationToken>()), Times.Once);
             mockGeminiClient.Verify(x => x.ParseRecipeAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         }
+
+        [Fact]
+        public async Task ForkRecipeAsync_WithPublicRecipe_IncrementsForkCount() {
+            // Arrange
+            var original = BuildRecipeWithOwner();
+            var forkerSubjectId = Guid.NewGuid();
+
+            var mockRepository = MockRepository.Create<IRecipeRepository>();
+            var mockTagRepository = MockRepository.Create<ITagRepository>();
+            var mockGeminiClient = MockRepository.Create<IGeminiClient>();
+            var mockSubjectPrincipal = MockRepository.Create<ISubjectPrincipal>();
+            mockSubjectPrincipal.Setup(x => x.SubjectId).Returns(forkerSubjectId.ToString());
+
+            mockRepository
+                .Setup(x => x.GetAsync(original.RecipeResourceId))
+                .ReturnsAsync(original);
+            mockRepository
+                .Setup(x => x.AddAsync(It.IsAny<Recipe>()))
+                .ReturnsAsync((Recipe r) => r);
+
+            var service = CreateService(mockRepository, mockTagRepository, mockGeminiClient, mockSubjectPrincipal);
+
+            // Act
+            await service.ForkRecipeAsync(original.RecipeResourceId);
+
+            // Assert
+            original.ForkCount.ShouldBe(1);
+        }
+
+        [Fact]
+        public void IncrementForkCount_CalledMultipleTimes_IncrementsCorrectly() {
+            // Arrange
+            var recipe = new RecipeBuilder().Build();
+
+            // Act
+            recipe.IncrementForkCount();
+            recipe.IncrementForkCount();
+            recipe.IncrementForkCount();
+
+            // Assert
+            recipe.ForkCount.ShouldBe(3);
+        }
     }
 }

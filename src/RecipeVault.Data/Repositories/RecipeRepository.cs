@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
 using Cortside.AspNetCore.EntityFramework;
@@ -31,7 +32,23 @@ namespace RecipeVault.Data.Repositories {
                 Items = [],
             };
 
-            recipes = recipes.ToSortedQuery(model.Sort);
+            if (!string.IsNullOrEmpty(model.SortBy)) {
+                bool descending = model.SortDirection?.ToLowerInvariant() != "asc";
+                recipes = model.SortBy switch {
+                    "ForkCount" => descending
+                        ? recipes.OrderByDescending(x => x.ForkCount)
+                        : recipes.OrderBy(x => x.ForkCount),
+                    "CreatedDate" => descending
+                        ? recipes.OrderByDescending(x => x.CreatedDate)
+                        : recipes.OrderBy(x => x.CreatedDate),
+                    "Rating" => descending
+                        ? recipes.OrderByDescending(x => x.Rating)
+                        : recipes.OrderBy(x => x.Rating),
+                    _ => recipes.ToSortedQuery(model.Sort)
+                };
+            } else {
+                recipes = recipes.ToSortedQuery(model.Sort);
+            }
             result.Items = await recipes.ToPagedQuery(model.PageNumber, model.PageSize).ToListAsync().ConfigureAwait(false);
 
             return result;

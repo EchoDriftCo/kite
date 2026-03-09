@@ -478,6 +478,7 @@ namespace RecipeVault.DomainService {
 
             using (logger.PushProperty("OriginalRecipeResourceId", original.RecipeResourceId)) {
                 var fork = original.Fork(newTitle);
+                original.IncrementForkCount();
 
                 // Fix up tag assignments with current user
                 var currentSubjectId = Guid.Parse(subjectPrincipal.SubjectId);

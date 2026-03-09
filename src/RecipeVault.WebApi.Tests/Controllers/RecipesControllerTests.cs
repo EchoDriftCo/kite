@@ -420,5 +420,43 @@ namespace RecipeVault.WebApi.Tests.Controllers {
 
             mockFacade.Verify(x => x.SetRecipeVisibilityAsync(recipeId, true), Times.Once);
         }
+
+        [Fact]
+        public async Task DiscoverRecipesAsync_WithValidSearch_ReturnsOkWithPagedResults() {
+            // Arrange
+            var recipeDtos = new List<RecipeDto>
+            {
+                new RecipeDtoBuilder().WithTitle("Public Recipe 1").Build(),
+                new RecipeDtoBuilder().WithTitle("Public Recipe 2").Build()
+            };
+
+            var pagedList = new PagedList<RecipeDto>
+            {
+                Items = recipeDtos,
+                PageNumber = 1,
+                PageSize = 12,
+                TotalItems = 2
+            };
+
+            var mockFacade = MockRepository.Create<IRecipeFacade>();
+            var mockSubjectMapper = MockRepository.Create<SubjectModelMapper>();
+            var mapper = new RecipeModelMapper(mockSubjectMapper.Object);
+
+            mockFacade
+                .Setup(x => x.DiscoverRecipesAsync(It.IsAny<RecipeSearchDto>()))
+                .ReturnsAsync(pagedList)
+                .Verifiable();
+
+            var controller = new RecipesController(mockFacade.Object, mapper, Mock.Of<IImageStorage>(), Mock.Of<ICookingLogFacade>(), new Mock<CookingLogModelMapper>(Mock.Of<SubjectModelMapper>()).Object);
+
+            // Act
+            var result = await controller.DiscoverRecipesAsync(new RecipeVault.WebApi.Models.Requests.DiscoverSearchModel { PageNumber = 1, PageSize = 12 });
+
+            // Assert
+            var okResult = result.ShouldBeOfType<OkObjectResult>();
+            okResult.StatusCode.ShouldBe(200);
+
+            mockFacade.Verify(x => x.DiscoverRecipesAsync(It.IsAny<RecipeSearchDto>()), Times.Once);
+        }
     }
 }

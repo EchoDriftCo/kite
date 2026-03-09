@@ -1,0 +1,266 @@
+.discover-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  .title-section {
+    h1 {
+      margin: 0 0 4px;
+      font-size: 2rem;
+      font-weight: 500;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.95rem;
+    }
+  }
+
+  .controls {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+
+    .search-field {
+      width: 280px;
+      margin-bottom: -1.25em;
+    }
+
+    .sort-field {
+      width: 160px;
+      margin-bottom: -1.25em;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 0;
+  gap: 16px;
+
+  p {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px;
+  background-color: rgba(127, 29, 29, 0.3);
+  border-radius: 8px;
+  gap: 8px;
+
+  mat-icon {
+    color: #fca5a5;
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+  }
+
+  p {
+    color: #fca5a5;
+    margin: 0;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 24px;
+  text-align: center;
+
+  mat-icon {
+    font-size: 96px;
+    width: 96px;
+    height: 96px;
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  h2 {
+    margin: 16px 0 8px;
+    font-weight: 400;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 24px;
+  }
+}
+
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.recipe-card {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .card-image-wrapper {
+    img {
+      height: 200px;
+      object-fit: cover;
+    }
+  }
+
+  .placeholder-image {
+    height: 200px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+      font-size: 72px;
+      width: 72px;
+      height: 72px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+
+  mat-card-content {
+    flex: 1;
+    padding: 16px !important;
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 1.25rem;
+      font-weight: 500;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .description {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.875rem;
+      line-height: 1.4;
+      margin: 0 0 16px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .card-star-rating {
+      display: flex;
+      gap: 1px;
+      margin-bottom: 8px;
+
+      mat-icon {
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+
+        &.filled {
+          color: #ffc107;
+        }
+      }
+    }
+
+    .recipe-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      mat-chip-set {
+        display: flex;
+        gap: 8px;
+      }
+
+      mat-chip {
+        font-size: 0.75rem;
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          margin-right: 4px;
+        }
+      }
+
+      .fork-count {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.5);
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+  }
+
+  mat-card-actions {
+    padding: 8px 16px !important;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+
+    button mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin-right: 4px;
+    }
+  }
+}
+
+mat-paginator {
+  background: transparent;
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+
+    .controls {
+      width: 100%;
+      flex-direction: column;
+
+      .search-field,
+      .sort-field {
+        width: 100%;
+      }
+    }
+  }
+
+  .recipe-grid {
+    grid-template-columns: 1fr;
+  }
+}

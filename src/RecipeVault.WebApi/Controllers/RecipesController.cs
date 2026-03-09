@@ -57,6 +57,18 @@ namespace RecipeVault.WebApi.Controllers {
         }
 
         /// <summary>
+        /// Discover public recipes (all public recipes, sorted by popular/newest/rating)
+        /// </summary>
+        [HttpGet("discover")]
+        [ProducesResponseType(typeof(PagedList<RecipeModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DiscoverRecipesAsync([FromQuery] DiscoverSearchModel search) {
+            var searchDto = recipeMapper.MapToDto(search);
+            var results = await facade.DiscoverRecipesAsync(searchDto).ConfigureAwait(false);
+            var models = results.Convert(x => recipeMapper.Map(x));
+            return Ok(models);
+        }
+
+        /// <summary>
         /// Gets a recipe by id
         /// </summary>
         /// <param name="id">the resource id of the recipe to get</param>
