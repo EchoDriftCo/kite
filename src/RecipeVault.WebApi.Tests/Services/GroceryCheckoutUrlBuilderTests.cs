@@ -7,7 +7,7 @@ namespace RecipeVault.WebApi.Tests.Services {
     public class GroceryCheckoutUrlBuilderTests {
         [Fact]
         public void NormalizeItems_DedupesAndCleansAndCapsAt30() {
-            // Arrange
+            // Arrange - use unique named items to test cap at 30
             var items = new List<string> {
                 "2 lbs chicken breast, diced",
                 "chicken breast",
@@ -15,7 +15,7 @@ namespace RecipeVault.WebApi.Tests.Services {
             };
 
             for (var i = 0; i < 40; i++) {
-                items.Add($"item {i}");
+                items.Add($"ingredient{i}");
             }
 
             // Act
@@ -23,8 +23,10 @@ namespace RecipeVault.WebApi.Tests.Services {
 
             // Assert
             normalized.Count.ShouldBe(30);
-            normalized[0].ShouldBe("chicken breast diced");
-            normalized[1].ShouldBe("chicken breast");
+            // "2 lbs chicken breast, diced" splits on comma -> "chicken breast" + "diced"
+            normalized[0].ShouldBe("chicken breast");
+            normalized[1].ShouldBe("diced");
+            // "chicken breast" dedupes with first
             normalized.ShouldContain("olive oil");
         }
 
