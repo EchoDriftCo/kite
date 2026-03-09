@@ -150,7 +150,7 @@ namespace RecipeVault.WebApi {
             // add health services
             services.AddHealth(o => {
                 o.UseConfiguration(Configuration);
-                o.AddCustomCheck("postgres", typeof(PostgresHealthCheck));
+                o.AddCustomCheck("recipevault-db", typeof(PostgresHealthCheck));
                 o.AddCustomCheck("gemini", typeof(GeminiHealthCheck));
                 o.AddCustomCheck("usda", typeof(UsdaHealthCheck));
             });
