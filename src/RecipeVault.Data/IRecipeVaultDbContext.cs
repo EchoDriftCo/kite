@@ -35,6 +35,8 @@ namespace RecipeVault.Data {
         DbSet<BetaInviteCodeRedemption> BetaInviteCodeRedemptions { get; set; }
         DbSet<UserAccount> UserAccounts { get; set; }
         DbSet<ApiToken> ApiTokens { get; set; }
+        DbSet<IngredientSynonym> IngredientSynonyms { get; set; }
+        DbSet<UserPantryItem> UserPantryItems { get; set; }
 
         void RemoveRange(IEnumerable<object> entities);
         EntityEntry Remove(object entity);
