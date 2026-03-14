@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Cortside.Common.Security;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
@@ -17,24 +19,23 @@ namespace RecipeVault.DomainService {
         private readonly IUserPantryRepository userPantryRepository;
         private readonly ISubjectPrincipal subjectPrincipal;
         private readonly ILogger<IngredientSearchService> logger;
-        private readonly string connectionString;
-
-        private static readonly List<string> DefaultPantryStaples = new() {
-            "salt", "black pepper", "water", "olive oil", "vegetable oil",
-            "butter", "all-purpose flour", "granulated sugar", "garlic", "onion"
-        };
+        private readonly DbContext dbContext;
+        private readonly List<string> defaultPantryStaples;
 
         public IngredientSearchService(
             IRecipeRepository recipeRepository,
             IUserPantryRepository userPantryRepository,
             ISubjectPrincipal subjectPrincipal,
             ILogger<IngredientSearchService> logger,
+            DbContext dbContext,
             IConfiguration configuration) {
             this.recipeRepository = recipeRepository ?? throw new ArgumentNullException(nameof(recipeRepository));
             this.userPantryRepository = userPantryRepository ?? throw new ArgumentNullException(nameof(userPantryRepository));
             this.subjectPrincipal = subjectPrincipal ?? throw new ArgumentNullException(nameof(subjectPrincipal));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            connectionString = configuration["Database:ConnectionString"];
+            this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            defaultPantryStaples = configuration.GetSection("IngredientSearch:DefaultPantryStaples").Get<List<string>>()
+                ?? new List<string> { "salt", "black pepper", "water", "olive oil", "vegetable oil", "butter", "all-purpose flour", "granulated sugar", "garlic", "onion" };
         }
 
         public async Task<List<IngredientSearchResultDto>> SearchByIngredientsAsync(IngredientSearchRequestDto request) {
@@ -66,12 +67,9 @@ namespace RecipeVault.DomainService {
                     .ToList();
             }
 
-            // 5. Apply dietary profile filter
-            if (request.DietaryProfileResourceId.HasValue) {
-                filtered = FilterByDietaryProfile(filtered, request.DietaryProfileResourceId.Value);
-            }
+            // TODO: dietary profile filtering will be implemented in a future iteration
 
-            // 6. Sort
+            // 5. Sort
             var sorted = request.SortBy switch {
                 "matchPercentage" => filtered
                     .OrderByDescending(r => r.WeightedMatchPercentage)
@@ -108,8 +106,10 @@ namespace RecipeVault.DomainService {
 
             var results = new List<IngredientSearchResultDto>();
 
-            await using var conn = new NpgsqlConnection(connectionString);
-            await conn.OpenAsync().ConfigureAwait(false);
+            var conn = (NpgsqlConnection)dbContext.Database.GetDbConnection();
+            if (conn.State != ConnectionState.Open) {
+                await conn.OpenAsync().ConfigureAwait(false);
+            }
             await using var command = conn.CreateCommand();
             command.CommandText = sql;
             command.Parameters.AddWithValue("@SubjectId", NpgsqlDbType.Uuid, subjectId);
@@ -131,10 +131,13 @@ namespace RecipeVault.DomainService {
                 ));
             }
 
-            // Fetch full recipe details for scored recipes
+            // Batch load all scored recipes to avoid N+1 queries
+            var ids = recipeIds.Select(r => r.RecipeId).ToList();
+            var recipes = await recipeRepository.GetByIdsAsync(ids).ConfigureAwait(false);
+            var recipeLookup = recipes.ToDictionary(r => r.RecipeId);
+
             foreach (var scored in recipeIds) {
-                var recipe = await recipeRepository.GetByIdAsync(scored.RecipeId).ConfigureAwait(false);
-                if (recipe != null) {
+                if (recipeLookup.TryGetValue(scored.RecipeId, out var recipe)) {
                     results.Add(new IngredientSearchResultDto {
                         Recipe = MapToRecipeSummary(recipe, subjectId),
                         MatchedIngredients = scored.Matched.ToList(),
@@ -154,7 +157,7 @@ namespace RecipeVault.DomainService {
             var existingCount = await userPantryRepository.CountAsync(subjectId).ConfigureAwait(false);
 
             if (existingCount == 0) {
-                var stapleItems = DefaultPantryStaples.Select(name => new UserPantryItem(
+                var stapleItems = defaultPantryStaples.Select(name => new UserPantryItem(
                     subjectId,
                     name,
                     isStaple: true
@@ -168,14 +171,6 @@ namespace RecipeVault.DomainService {
                     subjectId
                 );
             }
-        }
-
-        private static List<IngredientSearchResultDto> FilterByDietaryProfile(
-            List<IngredientSearchResultDto> results,
-            Guid dietaryProfileResourceId) {
-            // Dietary profile filtering is handled at the facade level
-            // where the dietary profile service is available
-            return results;
         }
 
         private static RecipeSummaryDto MapToRecipeSummary(Recipe recipe, Guid currentSubjectId) {

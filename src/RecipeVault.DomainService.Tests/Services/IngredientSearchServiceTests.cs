@@ -2,21 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cortside.Common.Security;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using RecipeVault.Data.Repositories;
+using RecipeVault.Domain.Entities;
 using RecipeVault.Dto.Input;
 using Shouldly;
 using Xunit;
 
 namespace RecipeVault.DomainService.Tests.Services {
-    public class IngredientSearchServiceTests {
+    public class IngredientSearchServiceTests : IDisposable {
         private readonly Mock<IRecipeRepository> recipeRepositoryMock;
         private readonly Mock<IUserPantryRepository> userPantryRepositoryMock;
         private readonly Mock<ISubjectPrincipal> subjectPrincipalMock;
         private readonly Mock<ILogger<IngredientSearchService>> loggerMock;
+        private readonly DbContext dbContext;
         private readonly Mock<IConfiguration> configurationMock;
+        private readonly Mock<IConfigurationSection> configSectionMock;
         private readonly IngredientSearchService service;
         private readonly Guid currentSubjectId = Guid.NewGuid();
 
@@ -26,24 +30,37 @@ namespace RecipeVault.DomainService.Tests.Services {
             subjectPrincipalMock = new Mock<ISubjectPrincipal>();
             loggerMock = new Mock<ILogger<IngredientSearchService>>();
             configurationMock = new Mock<IConfiguration>();
+            configSectionMock = new Mock<IConfigurationSection>();
 
             subjectPrincipalMock.Setup(x => x.SubjectId).Returns(currentSubjectId.ToString());
-            configurationMock.Setup(x => x["Database:ConnectionString"]).Returns("Host=localhost;Database=test");
+            configurationMock.Setup(x => x.GetSection("IngredientSearch:DefaultPantryStaples"))
+                .Returns(configSectionMock.Object);
+
+            var options = new DbContextOptionsBuilder<DbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+            dbContext = new DbContext(options);
 
             service = new IngredientSearchService(
                 recipeRepositoryMock.Object,
                 userPantryRepositoryMock.Object,
                 subjectPrincipalMock.Object,
                 loggerMock.Object,
+                dbContext,
                 configurationMock.Object
             );
+        }
+
+        public void Dispose() {
+            dbContext?.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         [Fact]
         public async Task SearchByIngredientsAsync_WhenFirstAccess_ShouldSeedPantry() {
             // Arrange
             userPantryRepositoryMock.Setup(x => x.CountAsync(currentSubjectId)).ReturnsAsync(0);
-            userPantryRepositoryMock.Setup(x => x.AddRangeAsync(It.IsAny<List<Domain.Entities.UserPantryItem>>()))
+            userPantryRepositoryMock.Setup(x => x.AddRangeAsync(It.IsAny<List<UserPantryItem>>()))
                 .Returns(Task.CompletedTask);
             userPantryRepositoryMock.Setup(x => x.GetStaplesAsync(currentSubjectId))
                 .ReturnsAsync(new List<string> { "salt", "pepper" });
@@ -53,17 +70,17 @@ namespace RecipeVault.DomainService.Tests.Services {
                 IncludePantryStaples = true
             };
 
-            // Act & Assert - will throw because no real DB connection,
-            // but we can verify the seeding was attempted
+            // Act - will throw because InMemory provider doesn't support raw SQL,
+            // but pantry seeding happens before the DB scoring call
             try {
                 await service.SearchByIngredientsAsync(request);
             } catch (Exception) {
-                // Expected - no real database connection for the scoring function
+                // Expected - InMemory connection cannot be cast to NpgsqlConnection
             }
 
-            // Verify seeding was attempted
+            // Assert - seeding was attempted with 10 default items
             userPantryRepositoryMock.Verify(x => x.CountAsync(currentSubjectId), Times.Once);
-            userPantryRepositoryMock.Verify(x => x.AddRangeAsync(It.Is<List<Domain.Entities.UserPantryItem>>(items =>
+            userPantryRepositoryMock.Verify(x => x.AddRangeAsync(It.Is<List<UserPantryItem>>(items =>
                 items.Count == 10)), Times.Once);
         }
 
@@ -79,15 +96,15 @@ namespace RecipeVault.DomainService.Tests.Services {
                 IncludePantryStaples = true
             };
 
-            // Act & Assert
+            // Act
             try {
                 await service.SearchByIngredientsAsync(request);
             } catch (Exception) {
-                // Expected - no real database connection
+                // Expected - InMemory connection cannot be cast to NpgsqlConnection
             }
 
-            // Verify seeding was NOT attempted
-            userPantryRepositoryMock.Verify(x => x.AddRangeAsync(It.IsAny<List<Domain.Entities.UserPantryItem>>()), Times.Never);
+            // Assert - seeding was NOT attempted
+            userPantryRepositoryMock.Verify(x => x.AddRangeAsync(It.IsAny<List<UserPantryItem>>()), Times.Never);
         }
 
         [Fact]
@@ -100,35 +117,38 @@ namespace RecipeVault.DomainService.Tests.Services {
                 IncludePantryStaples = false
             };
 
-            // Act & Assert
+            // Act
             try {
                 await service.SearchByIngredientsAsync(request);
             } catch (Exception) {
-                // Expected - no real database connection
+                // Expected - InMemory connection cannot be cast to NpgsqlConnection
             }
 
-            // Verify staples were NOT fetched
+            // Assert - staples were NOT fetched
             userPantryRepositoryMock.Verify(x => x.GetStaplesAsync(currentSubjectId), Times.Never);
         }
 
         [Fact]
         public void Constructor_ShouldThrowOnNullDependencies() {
-            // Assert
             Should.Throw<ArgumentNullException>(() => new IngredientSearchService(
                 null, userPantryRepositoryMock.Object, subjectPrincipalMock.Object,
-                loggerMock.Object, configurationMock.Object));
+                loggerMock.Object, dbContext, configurationMock.Object));
 
             Should.Throw<ArgumentNullException>(() => new IngredientSearchService(
                 recipeRepositoryMock.Object, null, subjectPrincipalMock.Object,
-                loggerMock.Object, configurationMock.Object));
+                loggerMock.Object, dbContext, configurationMock.Object));
 
             Should.Throw<ArgumentNullException>(() => new IngredientSearchService(
                 recipeRepositoryMock.Object, userPantryRepositoryMock.Object, null,
-                loggerMock.Object, configurationMock.Object));
+                loggerMock.Object, dbContext, configurationMock.Object));
 
             Should.Throw<ArgumentNullException>(() => new IngredientSearchService(
                 recipeRepositoryMock.Object, userPantryRepositoryMock.Object,
-                subjectPrincipalMock.Object, null, configurationMock.Object));
+                subjectPrincipalMock.Object, null, dbContext, configurationMock.Object));
+
+            Should.Throw<ArgumentNullException>(() => new IngredientSearchService(
+                recipeRepositoryMock.Object, userPantryRepositoryMock.Object,
+                subjectPrincipalMock.Object, loggerMock.Object, null, configurationMock.Object));
         }
     }
 }
