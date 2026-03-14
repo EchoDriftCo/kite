@@ -21,6 +21,7 @@ import { EquipmentSetupComponent } from './components/equipment-setup/equipment-
 import { IngredientSearchComponent } from './components/ingredient-search/ingredient-search.component';
 import { LoginComponent } from './components/login/login.component';
 import { SharedRecipeComponent } from './components/recipes/shared-recipe/shared-recipe.component';
+import { SettingsComponent } from './components/settings/settings.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -44,6 +45,7 @@ export const routes: Routes = [
   { path: 'dietary-profiles', component: DietaryProfileComponent, canActivate: [authGuard] },
   { path: 'equipment', component: EquipmentSetupComponent, canActivate: [authGuard] },
   { path: 'ingredient-search', component: IngredientSearchComponent, canActivate: [authGuard] },
+  { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
   { path: 'meal-plans', component: MealPlanListComponent, canActivate: [authGuard] },
   { path: 'meal-plans/new', component: MealPlanFormComponent, canActivate: [authGuard] },
   { path: 'meal-plans/:id', component: MealPlanDetailComponent, canActivate: [authGuard] },
