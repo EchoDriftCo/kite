@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Cortside.AspNetCore.Auditable.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace RecipeVault.Domain.Entities {
@@ -8,7 +9,7 @@ namespace RecipeVault.Domain.Entities {
     [Index(nameof(TokenHash), IsUnique = true)]
     [Index(nameof(SubjectId))]
     [Table("ApiToken")]
-    public class ApiToken {
+    public class ApiToken : AuditableEntity {
         protected ApiToken() {
         }
 
@@ -18,7 +19,6 @@ namespace RecipeVault.Domain.Entities {
             Name = name;
             TokenHash = tokenHash;
             TokenPrefix = tokenPrefix;
-            CreatedDate = DateTime.UtcNow;
             ExpiresDate = expiresDate;
             IsRevoked = false;
         }
@@ -40,10 +40,8 @@ namespace RecipeVault.Domain.Entities {
         public string TokenHash { get; private set; }
 
         [Required]
-        [StringLength(10)]
+        [StringLength(20)]
         public string TokenPrefix { get; private set; }
-
-        public DateTime CreatedDate { get; private set; }
 
         public DateTime? LastUsedDate { get; private set; }
 

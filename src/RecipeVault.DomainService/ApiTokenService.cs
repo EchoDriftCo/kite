@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using RecipeVault.Data.Repositories;
 using RecipeVault.Domain.Entities;
 using RecipeVault.Dto.Output;
+using RecipeVault.Exceptions;
 using UUIDNext;
 
 namespace RecipeVault.DomainService {
@@ -35,7 +36,7 @@ namespace RecipeVault.DomainService {
                 subjectId: subjectId,
                 name: name,
                 tokenHash: hash,
-                tokenPrefix: token[..10],
+                tokenPrefix: token[^8..],
                 expiresDate: expiresInDays.HasValue
                     ? DateTime.UtcNow.AddDays(expiresInDays.Value)
                     : null
@@ -77,7 +78,7 @@ namespace RecipeVault.DomainService {
                 .GetAsync(apiTokenResourceId).ConfigureAwait(false);
 
             if (token == null || token.SubjectId != subjectId) {
-                throw new InvalidOperationException("Token not found");
+                throw new ApiTokenNotFoundException("Token not found");
             }
 
             token.Revoke();

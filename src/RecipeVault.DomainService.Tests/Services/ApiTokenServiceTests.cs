@@ -8,6 +8,7 @@ using Xunit;
 using RecipeVault.Data.Repositories;
 using RecipeVault.Domain.Entities;
 using RecipeVault.DomainService.Tests.Base;
+using RecipeVault.Exceptions;
 
 namespace RecipeVault.DomainService.Tests.Services {
     public class ApiTokenServiceTests : DomainServiceTestBase {
@@ -48,8 +49,7 @@ namespace RecipeVault.DomainService.Tests.Services {
             result.ShouldNotBeNull();
             result.Token.ShouldStartWith("rv_");
             result.Name.ShouldBe("Chrome Extension");
-            result.TokenPrefix.ShouldStartWith("rv_");
-            result.TokenPrefix.Length.ShouldBe(10);
+            result.TokenPrefix.Length.ShouldBe(8);
             result.ApiTokenResourceId.ShouldNotBe(Guid.Empty);
             result.ExpiresDate.ShouldNotBeNull();
 
@@ -194,7 +194,7 @@ namespace RecipeVault.DomainService.Tests.Services {
             var service = CreateService(mockRepo);
 
             // Act & Assert
-            await Should.ThrowAsync<InvalidOperationException>(
+            await Should.ThrowAsync<ApiTokenNotFoundException>(
                 () => service.RevokeTokenAsync(tokenResourceId));
         }
 
@@ -214,7 +214,7 @@ namespace RecipeVault.DomainService.Tests.Services {
             var service = CreateService(mockRepo);
 
             // Act & Assert
-            await Should.ThrowAsync<InvalidOperationException>(
+            await Should.ThrowAsync<ApiTokenNotFoundException>(
                 () => service.RevokeTokenAsync(tokenResourceId));
         }
 
@@ -240,7 +240,7 @@ namespace RecipeVault.DomainService.Tests.Services {
             // The stored hash should be 64 chars (SHA-256 hex)
             savedToken.TokenHash.Length.ShouldBe(64);
             // Token prefix should match start of token
-            result.Token[..10].ShouldBe(savedToken.TokenPrefix);
+            result.Token[^8..].ShouldBe(savedToken.TokenPrefix);
         }
     }
 }
