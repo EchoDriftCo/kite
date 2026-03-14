@@ -1,0 +1,308 @@
+.ingredient-search-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px;
+
+  h1 {
+    margin-bottom: 24px;
+    font-weight: 300;
+    font-size: 2rem;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.search-content,
+.pantry-content {
+  padding: 16px 0;
+}
+
+// Selected ingredients
+.selected-ingredients {
+  margin: 8px 0 16px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.875rem;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+// Filters
+.filters-panel {
+  margin: 16px 0;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 8px 0;
+
+  .filter-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: center;
+  }
+}
+
+// Action buttons
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+.helper-text {
+  text-align: center;
+  color: rgba(0, 0, 0, 0.5);
+  margin: 32px 0;
+  font-style: italic;
+}
+
+// Loading
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+// Results
+.results-header {
+  margin: 16px 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+  h3 {
+    margin: 0;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.result-card {
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.match-percentage {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.cook-time {
+  margin-left: 12px;
+  color: rgba(0, 0, 0, 0.6);
+
+  &::before {
+    content: '\b7\00a0';
+  }
+}
+
+.rating {
+  margin-left: 8px;
+
+  .star-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: rgba(0, 0, 0, 0.3);
+
+    &.filled {
+      color: #ffc107;
+    }
+  }
+}
+
+.recipe-count {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 0.85em;
+  margin-left: 8px;
+}
+
+// Ingredient breakdown
+.ingredients-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+
+  .matched,
+  .missing,
+  .pantry,
+  .substitutions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+.ingredient-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+
+  &.matched-tag {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  &.missing-tag {
+    background: #ffebee;
+    color: #c62828;
+  }
+
+  &.pantry-tag {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+}
+
+.substitution-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  background: #fff3e0;
+  color: #e65100;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+// No results
+.no-results {
+  text-align: center;
+  padding: 48px 16px;
+  color: rgba(0, 0, 0, 0.5);
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+  }
+}
+
+// Pantry
+.pantry-description {
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 16px;
+}
+
+.add-pantry-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+
+  .pantry-input {
+    flex: 1;
+    min-width: 200px;
+  }
+}
+
+.pantry-section {
+  margin-bottom: 24px;
+
+  h3 {
+    margin: 0 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    color: rgba(0, 0, 0, 0.7);
+  }
+}
+
+.pantry-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+
+  .item-name {
+    flex: 1;
+    font-weight: 500;
+  }
+
+  .expiration {
+    font-size: 0.85rem;
+    color: rgba(0, 0, 0, 0.5);
+  }
+
+  .item-actions {
+    display: flex;
+    gap: 0;
+  }
+}
+
+.empty-pantry {
+  text-align: center;
+  padding: 48px 16px;
+  color: rgba(0, 0, 0, 0.5);
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+  }
+}
+
+.pantry-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+// Mobile layout
+@media (max-width: 600px) {
+  .ingredient-search-container {
+    padding: 16px 8px;
+
+    h1 {
+      font-size: 1.5rem;
+    }
+  }
+
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+}
