@@ -86,6 +86,12 @@ namespace RecipeVault.Data.Repositories {
             return Task.CompletedTask;
         }
 
+        public Task<Recipe> GetBySourceAsync(Guid subjectId, string source) {
+            return context.Recipes
+                .Include(x => x.CreatedSubject)
+                .FirstOrDefaultAsync(r => r.CreatedSubject.SubjectId == subjectId && r.Source == source);
+        }
+
         public Task<Recipe> GetByShareTokenAsync(string shareToken) {
             return context.Recipes
                 .Include(x => x.Ingredients)

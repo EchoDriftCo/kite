@@ -16,6 +16,7 @@ using RecipeVault.DomainService.Models;
 using RecipeVault.DomainService.Utilities;
 using RecipeVault.Dto.Input;
 using RecipeVault.Dto.Output;
+using Cortside.Common.Messages.MessageExceptions;
 using RecipeVault.Integrations.Gemini;
 
 namespace RecipeVault.DomainService {
@@ -688,6 +689,91 @@ namespace RecipeVault.DomainService {
             }
 
             return "image/jpeg"; // Default fallback
+        }
+
+        public async Task<Recipe> ImportStructuredAsync(ImportStructuredRequestDto dto) {
+            using (logger.PushProperty("Source", dto.Source)) {
+                logger.LogInformation("Starting structured import: {Title}", dto.Title);
+
+                var recipe = new Recipe(
+                    title: dto.Title,
+                    yield: dto.Yield ?? 4,
+                    prepTimeMinutes: dto.PrepTimeMinutes,
+                    cookTimeMinutes: dto.CookTimeMinutes,
+                    description: dto.Description,
+                    source: dto.Source,
+                    originalImageUrl: dto.OriginalImageUrl,
+                    isPublic: false
+                );
+
+                // Parse raw ingredients
+                if (dto.RawIngredients != null && dto.RawIngredients.Count > 0) {
+                    var ingredients = new List<RecipeIngredient>();
+                    for (int i = 0; i < dto.RawIngredients.Count; i++) {
+                        ingredients.Add(new RecipeIngredient(
+                            sortOrder: i + 1,
+                            quantity: null,
+                            unit: null,
+                            item: null,
+                            preparation: null,
+                            rawText: dto.RawIngredients[i]
+                        ));
+                    }
+                    recipe.SetIngredients(ingredients);
+                }
+
+                // Parse raw instructions
+                if (dto.RawInstructions != null && dto.RawInstructions.Count > 0) {
+                    var instructions = new List<RecipeInstruction>();
+                    for (int i = 0; i < dto.RawInstructions.Count; i++) {
+                        instructions.Add(new RecipeInstruction(
+                            stepNumber: i + 1,
+                            instruction: dto.RawInstructions[i],
+                            rawText: dto.RawInstructions[i]
+                        ));
+                    }
+                    recipe.SetInstructions(instructions);
+                }
+
+                // Save recipe
+                await recipeRepository.AddAsync(recipe).ConfigureAwait(false);
+
+                // Handle categories as tags
+                if (dto.Categories != null && dto.Categories.Count > 0) {
+                    await AssignCategoryTagsAsync(recipe, dto.Categories.ToArray()).ConfigureAwait(false);
+                }
+
+                logger.LogInformation("Successfully imported structured recipe: {Title}", recipe.Title);
+                return recipe;
+            }
+        }
+
+        public async Task<Recipe> ImportHtmlAsync(ImportHtmlRequestDto dto) {
+            using (logger.PushProperty("Source", dto.Source)) {
+                logger.LogInformation("Starting HTML import from: {Source}", dto.Source);
+
+                if (string.IsNullOrWhiteSpace(dto.Html)) {
+                    throw new InvalidOperationException("HTML content is required");
+                }
+
+                // Try schema.org extraction first
+                var schemaRecipe = ExtractSchemaOrgRecipe(dto.Html);
+                Recipe recipe;
+
+                if (schemaRecipe != null) {
+                    logger.LogInformation("Found schema.org/Recipe markup in HTML, parsing structured data");
+                    recipe = MapSchemaOrgToRecipe(schemaRecipe, dto.Source);
+                } else {
+                    logger.LogInformation("No schema.org markup found in HTML, falling back to Gemini AI parsing");
+                    recipe = await ParseWithGeminiAsync(dto.Html, dto.Source).ConfigureAwait(false);
+                }
+
+                // Save recipe
+                await recipeRepository.AddAsync(recipe).ConfigureAwait(false);
+
+                logger.LogInformation("Successfully imported HTML recipe: {Title}", recipe.Title);
+                return recipe;
+            }
         }
 
         private static string StripHtmlTags(string html) {
