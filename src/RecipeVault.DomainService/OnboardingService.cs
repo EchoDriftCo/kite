@@ -14,6 +14,7 @@ namespace RecipeVault.DomainService {
         private readonly IUserAccountRepository userAccountRepository;
         private readonly IRecipeRepository recipeRepository;
         private readonly IRecipeService recipeService;
+        private readonly IDietaryProfileService dietaryProfileService;
         private readonly ISubjectPrincipal subjectPrincipal;
 
         private static readonly Guid SystemSubjectId = Guid.Parse("d290f1ee-6c54-5f96-8b2f-9f14e72c8c39");
@@ -26,11 +27,13 @@ namespace RecipeVault.DomainService {
             IUserAccountRepository userAccountRepository,
             IRecipeRepository recipeRepository,
             IRecipeService recipeService,
+            IDietaryProfileService dietaryProfileService,
             ISubjectPrincipal subjectPrincipal,
             ILogger<OnboardingService> logger) {
             this.userAccountRepository = userAccountRepository;
             this.recipeRepository = recipeRepository;
             this.recipeService = recipeService;
+            this.dietaryProfileService = dietaryProfileService;
             this.subjectPrincipal = subjectPrincipal;
             this.logger = logger;
         }
@@ -40,6 +43,7 @@ namespace RecipeVault.DomainService {
         public async Task<OnboardingStatusDto> GetOnboardingStatusAsync() {
             var account = await userAccountRepository.GetBySubjectIdAsync(CurrentSubjectId).ConfigureAwait(false);
             var recipeCount = await recipeRepository.GetCountByOwnerAsync(CurrentSubjectId).ConfigureAwait(false);
+            var dietaryProfiles = await dietaryProfileService.GetProfilesBySubjectAsync().ConfigureAwait(false);
 
             var progress = new OnboardingProgressDto();
             if (account != null && !string.IsNullOrEmpty(account.OnboardingProgressJson)) {
@@ -53,7 +57,7 @@ namespace RecipeVault.DomainService {
             return new OnboardingStatusDto {
                 HasCompletedOnboarding = account?.HasCompletedOnboarding ?? false,
                 RecipeCount = recipeCount,
-                HasDietaryProfile = false,
+                HasDietaryProfile = dietaryProfiles.Count > 0,
                 HasImportedRecipes = recipeCount > 0,
                 Progress = progress
             };
@@ -109,7 +113,7 @@ namespace RecipeVault.DomainService {
                 results.Add(new AddedRecipeDto {
                     RecipeResourceId = forked.RecipeResourceId,
                     Title = forked.Title,
-                    Showcases = GetFeatureShowcase(sample.RecipeId)
+                    Showcases = sample.ShowcaseFeature ?? "general"
                 });
             }
 
@@ -157,16 +161,5 @@ namespace RecipeVault.DomainService {
             logger.LogInformation("Reset onboarding for user {SubjectId}", CurrentSubjectId);
         }
 
-        private static string GetFeatureShowcase(int recipeId) {
-            return recipeId switch {
-                1000001 => "ingredient-substitutions",
-                1000002 => "cooking-mode",
-                1000003 => "nutrition",
-                1000004 => "recipe-forking",
-                1000005 => "recipe-scaling",
-                1000006 => "tags-collections",
-                _ => "general"
-            };
-        }
     }
 }

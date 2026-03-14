@@ -69,8 +69,15 @@ namespace RecipeVault.Domain.Entities {
 
         public bool IsSampleRecipe { get; private set; }
 
+        [StringLength(50)]
+        public string ShowcaseFeature { get; private set; }
+
         public void MarkAsSample() {
             IsSampleRecipe = true;
+        }
+
+        public void SetShowcaseFeature(string feature) {
+            ShowcaseFeature = feature;
         }
 
         [StringLength(12)]

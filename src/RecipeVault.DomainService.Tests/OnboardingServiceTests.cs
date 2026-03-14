@@ -14,6 +14,7 @@ namespace RecipeVault.DomainService.Tests {
         private readonly Mock<IUserAccountRepository> mockUserAccountRepository;
         private readonly Mock<IRecipeRepository> mockRecipeRepository;
         private readonly Mock<IRecipeService> mockRecipeService;
+        private readonly Mock<IDietaryProfileService> mockDietaryProfileService;
         private readonly Mock<ISubjectPrincipal> mockSubjectPrincipal;
         private readonly Mock<ILogger<OnboardingService>> mockLogger;
         private readonly OnboardingService service;
@@ -25,15 +26,18 @@ namespace RecipeVault.DomainService.Tests {
             mockUserAccountRepository = new Mock<IUserAccountRepository>();
             mockRecipeRepository = new Mock<IRecipeRepository>();
             mockRecipeService = new Mock<IRecipeService>();
+            mockDietaryProfileService = new Mock<IDietaryProfileService>();
             mockSubjectPrincipal = new Mock<ISubjectPrincipal>();
             mockLogger = new Mock<ILogger<OnboardingService>>();
 
             mockSubjectPrincipal.Setup(x => x.SubjectId).Returns(SubjectId.ToString());
+            mockDietaryProfileService.Setup(x => x.GetProfilesBySubjectAsync()).ReturnsAsync(new List<DietaryProfile>());
 
             service = new OnboardingService(
                 mockUserAccountRepository.Object,
                 mockRecipeRepository.Object,
                 mockRecipeService.Object,
+                mockDietaryProfileService.Object,
                 mockSubjectPrincipal.Object,
                 mockLogger.Object
             );
