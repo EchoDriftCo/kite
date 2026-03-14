@@ -197,7 +197,7 @@ namespace RecipeVault.DomainService {
                         TagResourceId = rt.Tag?.TagResourceId ?? Guid.Empty,
                         GlobalName = rt.Tag?.Name,
                         DisplayName = rt.Tag?.Name,
-                        Category = rt.Tag?.Category ?? 0,
+                        Category = (int)(rt.Tag?.Category ?? 0),
                         IsAiAssigned = rt.IsAiAssigned,
                         Confidence = rt.Confidence
                     }).ToList() ?? new List<RecipeTagDto>(),
