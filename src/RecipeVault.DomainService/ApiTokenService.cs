@@ -87,9 +87,12 @@ namespace RecipeVault.DomainService {
         }
 
         internal static (string token, string hash) GenerateToken() {
-            var randomBytes = RandomNumberGenerator.GetBytes(32);
+            var randomBytes = RandomNumberGenerator.GetBytes(48);
             var randomPart = Convert.ToBase64String(randomBytes)
-                .Replace("+", "").Replace("/", "").Replace("=", "")[..40];
+                .Replace("+", "").Replace("/", "").Replace("=", "");
+            if (randomPart.Length > 40) {
+                randomPart = randomPart[..40];
+            }
             var token = $"rv_{randomPart}";
             var hash = ComputeSha256(token);
             return (token, hash);
