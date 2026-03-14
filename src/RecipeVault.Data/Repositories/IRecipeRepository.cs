@@ -15,5 +15,9 @@ namespace RecipeVault.Data.Repositories {
         Task RemoveAsync(Recipe recipe);
         Task<Recipe> GetByShareTokenAsync(string shareToken);
         Task<Recipe> GetBySourceAsync(Guid subjectId, string source);
+        Task<int> GetCountByOwnerAsync(Guid subjectId);
+        Task<List<Recipe>> GetSampleRecipesByOwnerAsync(Guid subjectId);
+        Task<List<Recipe>> GetSampleRecipesAsync(Guid systemSubjectId);
+        Task<HashSet<int>> GetForkSourceIdsAsync(Guid subjectId);
     }
 }

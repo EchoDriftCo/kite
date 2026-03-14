@@ -67,6 +67,12 @@ namespace RecipeVault.Domain.Entities {
 
         public bool IsFavorite { get; private set; }
 
+        public bool IsSampleRecipe { get; private set; }
+
+        public void MarkAsSample() {
+            IsSampleRecipe = true;
+        }
+
         [StringLength(12)]
         public string ShareToken { get; private set; }
 
