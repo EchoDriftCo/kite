@@ -41,6 +41,7 @@ namespace RecipeVault.Data {
         public DbSet<BetaInviteCode> BetaInviteCodes { get; set; }
         public DbSet<BetaInviteCodeRedemption> BetaInviteCodeRedemptions { get; set; }
         public DbSet<UserAccount> UserAccounts { get; set; }
+        public DbSet<ApiToken> ApiTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.HasDefaultSchema("public");

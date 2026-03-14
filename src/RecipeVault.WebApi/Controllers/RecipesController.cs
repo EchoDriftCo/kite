@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Cortside.Common.Security;
+using RecipeVault.Data.Repositories;
 using RecipeVault.DomainService;
 using RecipeVault.Dto.Input;
 using RecipeVault.Facade;
@@ -32,16 +34,20 @@ namespace RecipeVault.WebApi.Controllers {
         private readonly IImageStorage imageStorage;
         private readonly ICookingLogFacade cookingLogFacade;
         private readonly CookingLogModelMapper cookingLogMapper;
+        private readonly IRecipeRepository recipeRepository;
+        private readonly ISubjectPrincipal subjectPrincipal;
 
         /// <summary>
         /// Initializes a new instance of the RecipesController
         /// </summary>
-        public RecipesController(IRecipeFacade facade, RecipeModelMapper recipeMapper, IImageStorage imageStorage, ICookingLogFacade cookingLogFacade, CookingLogModelMapper cookingLogMapper) {
+        public RecipesController(IRecipeFacade facade, RecipeModelMapper recipeMapper, IImageStorage imageStorage, ICookingLogFacade cookingLogFacade, CookingLogModelMapper cookingLogMapper, IRecipeRepository recipeRepository, ISubjectPrincipal subjectPrincipal) {
             this.facade = facade;
             this.recipeMapper = recipeMapper;
             this.imageStorage = imageStorage;
             this.cookingLogFacade = cookingLogFacade;
             this.cookingLogMapper = cookingLogMapper;
+            this.recipeRepository = recipeRepository;
+            this.subjectPrincipal = subjectPrincipal;
         }
 
         /// <summary>
@@ -394,6 +400,34 @@ namespace RecipeVault.WebApi.Controllers {
                 }
                 return Ok(cookingLogMapper.Map(stats));
             }
+        }
+
+        /// <summary>
+        /// Check if a recipe with the given source URL already exists for the current user
+        /// </summary>
+        /// <param name="url">the source URL to check</param>
+        [HttpGet("check-source")]
+        [ProducesResponseType(typeof(CheckSourceResponseModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> CheckSourceAsync([FromQuery] string url) {
+            if (string.IsNullOrWhiteSpace(url)) {
+                return BadRequest("URL is required");
+            }
+
+            var subjectId = Guid.Parse(subjectPrincipal.SubjectId);
+            var existing = await recipeRepository
+                .GetBySourceAsync(subjectId, url)
+                .ConfigureAwait(false);
+
+            if (existing == null) {
+                return Ok(new CheckSourceResponseModel { Exists = false });
+            }
+
+            return Ok(new CheckSourceResponseModel {
+                Exists = true,
+                RecipeResourceId = existing.RecipeResourceId,
+                Title = existing.Title,
+                CreatedDate = existing.CreatedDate
+            });
         }
     }
 }

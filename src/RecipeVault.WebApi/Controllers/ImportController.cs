@@ -32,9 +32,15 @@ namespace RecipeVault.WebApi.Controllers {
         /// <summary>
         /// Initializes a new instance of the ImportController
         /// </summary>
-        public ImportController(IImportFacade facade, ImportModelMapper mapper, ILogger<ImportController> logger) {
+        private readonly RecipeModelMapper recipeMapper;
+
+        /// <summary>
+        /// Initializes a new instance of the ImportController
+        /// </summary>
+        public ImportController(IImportFacade facade, ImportModelMapper mapper, RecipeModelMapper recipeMapper, ILogger<ImportController> logger) {
             this.facade = facade;
             this.mapper = mapper;
+            this.recipeMapper = recipeMapper;
             this.logger = logger;
         }
 
@@ -150,6 +156,48 @@ namespace RecipeVault.WebApi.Controllers {
                     logger.LogError(ex, "Error importing from multiple images");
                     throw;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Import a recipe from structured data (browser extension)
+        /// </summary>
+        [HttpPost("structured")]
+        [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ImportStructuredAsync([FromBody] Models.Requests.ImportStructuredRequestModel model) {
+            using (LogContext.PushProperty("Source", model.Source)) {
+                var dto = new Dto.Input.ImportStructuredRequestDto {
+                    Title = model.Title,
+                    Description = model.Description,
+                    Yield = model.Yield,
+                    PrepTimeMinutes = model.PrepTimeMinutes,
+                    CookTimeMinutes = model.CookTimeMinutes,
+                    Source = model.Source,
+                    OriginalImageUrl = model.OriginalImageUrl,
+                    RawIngredients = model.RawIngredients,
+                    RawInstructions = model.RawInstructions,
+                    Categories = model.Categories
+                };
+                var recipe = await facade.ImportStructuredAsync(dto).ConfigureAwait(false);
+                return Ok(recipeMapper.Map(recipe));
+            }
+        }
+
+        /// <summary>
+        /// Import a recipe from raw HTML content (browser extension server-side extraction)
+        /// </summary>
+        [HttpPost("html")]
+        [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ImportHtmlAsync([FromBody] Models.Requests.ImportHtmlRequestModel model) {
+            using (LogContext.PushProperty("Source", model.Source)) {
+                var dto = new Dto.Input.ImportHtmlRequestDto {
+                    Html = model.Html,
+                    Source = model.Source
+                };
+                var recipe = await facade.ImportHtmlAsync(dto).ConfigureAwait(false);
+                return Ok(recipeMapper.Map(recipe));
             }
         }
     }

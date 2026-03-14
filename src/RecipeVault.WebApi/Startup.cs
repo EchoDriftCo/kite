@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 using Asp.Versioning.ApiExplorer;
@@ -11,6 +12,7 @@ using Cortside.AspNetCore.EntityFramework;
 using Cortside.AspNetCore.Filters;
 using Cortside.AspNetCore.Swagger;
 using Cortside.Health;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,6 +27,7 @@ using RecipeVault.BootStrap;
 using RecipeVault.Configuration;
 using RecipeVault.Data;
 using RecipeVault.Health;
+using RecipeVault.WebApi.Authentication;
 using RecipeVault.WebApi.Installers;
 using RecipeVault.WebApi.Services;
 
@@ -74,7 +77,20 @@ namespace RecipeVault.WebApi {
             var jwtIssuer = Configuration["Supabase:Auth:Issuer"] ?? Environment.GetEnvironmentVariable("SUPABASE_JWT_ISSUER");
             var jwtAudience = Configuration["Supabase:Auth:Audience"] ?? Environment.GetEnvironmentVariable("SUPABASE_JWT_AUDIENCE") ?? "authenticated";
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            services.AddAuthentication(options => {
+                    options.DefaultScheme = "ApiTokenOrJwt";
+                    options.DefaultChallengeScheme = "ApiTokenOrJwt";
+                })
+                .AddPolicyScheme("ApiTokenOrJwt", "API Token or JWT", options => {
+                    options.ForwardDefaultSelector = context => {
+                        var auth = context.Request.Headers.Authorization.ToString();
+                        if (auth.StartsWith("Bearer rv_", StringComparison.Ordinal)) {
+                            return "ApiToken";
+                        }
+                        return JwtBearerDefaults.AuthenticationScheme;
+                    };
+                })
+                .AddScheme<AuthenticationSchemeOptions, ApiTokenAuthenticationHandler>("ApiToken", null)
                 .AddJwtBearer(options => {
                     // Use Supabase JWKS endpoint to get public keys for RS256 validation
                     options.Authority = jwtIssuer;
@@ -169,7 +185,16 @@ namespace RecipeVault.WebApi {
                 ?? Environment.GetEnvironmentVariable("CORS_ORIGINS")?.Split(",")
                 ?? new[] { "http://localhost:4200", "https://localhost:4200" };
             services.AddCors(options => {
-                options.AddDefaultPolicy(policy => policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod());
+                options.AddDefaultPolicy(policy => policy
+                    .WithOrigins(corsOrigins)
+                    .SetIsOriginAllowed(origin =>
+                        corsOrigins.Contains(origin) ||
+                        origin.StartsWith("chrome-extension://", StringComparison.Ordinal) ||
+                        origin.StartsWith("moz-extension://", StringComparison.Ordinal) ||
+                        origin.StartsWith("ms-browser-extension://", StringComparison.Ordinal))
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials());
             });
 
             // add rate limiting

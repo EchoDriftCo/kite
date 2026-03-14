@@ -6,6 +6,7 @@ using Cortside.AspNetCore.EntityFramework;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RecipeVault.DomainService;
+using RecipeVault.Dto.Input;
 using RecipeVault.Dto.Output;
 using RecipeVault.Facade.Mappers;
 
@@ -78,6 +79,30 @@ namespace RecipeVault.Facade {
                     await stream.DisposeAsync().ConfigureAwait(false);
                 }
             }
+        }
+
+        public async Task<RecipeDto> ImportStructuredAsync(ImportStructuredRequestDto dto) {
+            logger.LogInformation("Starting structured import: {Title}", dto.Title);
+
+            var recipe = await importService.ImportStructuredAsync(dto).ConfigureAwait(false);
+
+            await uow.SaveChangesAsync().ConfigureAwait(false);
+
+            logger.LogInformation("Structured import completed: {Title}", recipe.Title);
+
+            return recipeMapper.MapToDto(recipe);
+        }
+
+        public async Task<RecipeDto> ImportHtmlAsync(ImportHtmlRequestDto dto) {
+            logger.LogInformation("Starting HTML import from: {Source}", dto.Source);
+
+            var recipe = await importService.ImportHtmlAsync(dto).ConfigureAwait(false);
+
+            await uow.SaveChangesAsync().ConfigureAwait(false);
+
+            logger.LogInformation("HTML import completed: {Title}", recipe.Title);
+
+            return recipeMapper.MapToDto(recipe);
         }
     }
 }
