@@ -1,4 +1,3 @@
-using System.Linq;
 using RecipeVault.Data.Searches;
 using RecipeVault.Domain.Entities;
 using RecipeVault.Dto.Output;
@@ -18,11 +17,7 @@ namespace RecipeVault.Facade.Mappers {
                 UseCount = entity.UseCount,
                 IsActive = entity.IsActive,
                 CreatedDate = entity.CreatedDate,
-                ExpiresDate = entity.ExpiresDate,
-                Redemptions = entity.Redemptions?.Select(r => new BetaInviteCodeRedemptionDto {
-                    SubjectId = r.SubjectId,
-                    RedeemedDate = r.RedeemedDate
-                }).ToList()
+                ExpiresDate = entity.ExpiresDate
             };
         }
 

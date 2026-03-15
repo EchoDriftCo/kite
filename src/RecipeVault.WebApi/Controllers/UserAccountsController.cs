@@ -53,6 +53,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// </summary>
         /// <param name="input">The tier to set</param>
         [HttpPut("tier")]
+        [Filters.AdminOnly]
         [ProducesResponseType(typeof(UserAccountModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> SetTierAsync([FromBody] SetTierModel input) {

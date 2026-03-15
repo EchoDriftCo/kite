@@ -10,12 +10,12 @@ namespace RecipeVault.Dto.Output {
         public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? ExpiresDate { get; set; }
-        public List<BetaInviteCodeRedemptionDto> Redemptions { get; set; }
     }
 
-    public class BetaInviteCodeRedemptionDto {
-        public Guid SubjectId { get; set; }
-        public DateTime RedeemedDate { get; set; }
+    public class RedeemCodeResultDto {
+        public bool Success { get; set; }
+        public string ErrorMessage { get; set; }
+        public UserAccountDto UpdatedAccount { get; set; }
     }
 
     public class ValidateInviteCodeResultDto {

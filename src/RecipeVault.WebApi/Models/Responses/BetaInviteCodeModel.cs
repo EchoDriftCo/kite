@@ -12,12 +12,12 @@ namespace RecipeVault.WebApi.Models.Responses {
         public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? ExpiresDate { get; set; }
-        public List<BetaInviteCodeRedemptionModel> Redemptions { get; set; }
     }
 
-    public class BetaInviteCodeRedemptionModel {
-        public Guid SubjectId { get; set; }
-        public DateTime RedeemedDate { get; set; }
+    public class RedeemCodeResultModel {
+        public bool Success { get; set; }
+        public string ErrorMessage { get; set; }
+        public UserAccountModel UpdatedAccount { get; set; }
     }
 
     public class ValidateInviteCodeResultModel {

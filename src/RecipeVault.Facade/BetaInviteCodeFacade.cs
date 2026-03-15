@@ -1,6 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
 using Cortside.AspNetCore.EntityFramework;
+using Cortside.Common.Security;
 using Microsoft.Extensions.Logging;
 using RecipeVault.DomainService;
 using RecipeVault.Dto.Input;
@@ -14,18 +18,27 @@ namespace RecipeVault.Facade {
         private readonly IBetaInviteCodeService betaInviteCodeService;
         private readonly BetaInviteCodeMapper mapper;
         private readonly ILogger<BetaInviteCodeFacade> logger;
+        private readonly ISubjectPrincipal subjectPrincipal;
 
-        public BetaInviteCodeFacade(ILogger<BetaInviteCodeFacade> logger, IUnitOfWork uow, IBetaInviteCodeService betaInviteCodeService, BetaInviteCodeMapper mapper) {
+        public BetaInviteCodeFacade(
+            ILogger<BetaInviteCodeFacade> logger,
+            IUnitOfWork uow,
+            IBetaInviteCodeService betaInviteCodeService,
+            BetaInviteCodeMapper mapper,
+            ISubjectPrincipal subjectPrincipal) {
             this.uow = uow;
             this.betaInviteCodeService = betaInviteCodeService;
             this.mapper = mapper;
             this.logger = logger;
+            this.subjectPrincipal = subjectPrincipal;
         }
 
-        public async Task<BetaInviteCodeDto> CreateCodeAsync(CreateBetaInviteCodeDto dto) {
-            var entity = await betaInviteCodeService.CreateCodeAsync(dto).ConfigureAwait(false);
+        private Guid CurrentSubjectId => Guid.Parse(subjectPrincipal.SubjectId);
+
+        public async Task<List<BetaInviteCodeDto>> CreateCodesAsync(CreateBetaInviteCodeDto dto) {
+            var entities = await betaInviteCodeService.CreateCodesAsync(dto).ConfigureAwait(false);
             await uow.SaveChangesAsync().ConfigureAwait(false);
-            return mapper.MapToDto(entity);
+            return entities.Select(x => mapper.MapToDto(x)).ToList();
         }
 
         public async Task<PagedList<BetaInviteCodeDto>> SearchCodesAsync(BetaInviteCodeSearchDto search) {
@@ -42,8 +55,20 @@ namespace RecipeVault.Facade {
             }
         }
 
-        public async Task<BetaInviteCodeDto> RedeemCodeAsync(RedeemInviteCodeDto dto) {
-            var entity = await betaInviteCodeService.RedeemCodeAsync(dto.Code).ConfigureAwait(false);
+        public async Task<RedeemCodeResultDto> RedeemCodeAsync(RedeemInviteCodeDto dto) {
+            var result = await betaInviteCodeService.RedeemCodeAsync(dto.Code, CurrentSubjectId).ConfigureAwait(false);
+            if (result.Success) {
+                await uow.SaveChangesAsync().ConfigureAwait(false);
+            }
+            return result;
+        }
+
+        public async Task<BetaInviteCodeDto> DeactivateCodeAsync(string code) {
+            var entity = await betaInviteCodeService.DeactivateCodeAsync(code).ConfigureAwait(false);
+            if (entity == null) {
+                return null;
+            }
+
             await uow.SaveChangesAsync().ConfigureAwait(false);
             return mapper.MapToDto(entity);
         }

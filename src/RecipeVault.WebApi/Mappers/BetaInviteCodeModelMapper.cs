@@ -1,6 +1,5 @@
 #pragma warning disable CS1591 // Missing XML comments
 
-using System.Linq;
 using RecipeVault.Dto.Input;
 using RecipeVault.Dto.Output;
 using RecipeVault.Dto.Search;
@@ -9,6 +8,12 @@ using RecipeVault.WebApi.Models.Responses;
 
 namespace RecipeVault.WebApi.Mappers {
     public class BetaInviteCodeModelMapper {
+        private readonly UserAccountModelMapper userAccountMapper;
+
+        public BetaInviteCodeModelMapper(UserAccountModelMapper userAccountMapper) {
+            this.userAccountMapper = userAccountMapper;
+        }
+
         public BetaInviteCodeModel Map(BetaInviteCodeDto dto) {
             if (dto == null) {
                 return null;
@@ -21,11 +26,19 @@ namespace RecipeVault.WebApi.Mappers {
                 UseCount = dto.UseCount,
                 IsActive = dto.IsActive,
                 CreatedDate = dto.CreatedDate,
-                ExpiresDate = dto.ExpiresDate,
-                Redemptions = dto.Redemptions?.Select(r => new BetaInviteCodeRedemptionModel {
-                    SubjectId = r.SubjectId,
-                    RedeemedDate = r.RedeemedDate
-                }).ToList()
+                ExpiresDate = dto.ExpiresDate
+            };
+        }
+
+        public RedeemCodeResultModel Map(RedeemCodeResultDto dto) {
+            if (dto == null) {
+                return null;
+            }
+
+            return new RedeemCodeResultModel {
+                Success = dto.Success,
+                ErrorMessage = dto.ErrorMessage,
+                UpdatedAccount = userAccountMapper.Map(dto.UpdatedAccount)
             };
         }
 
@@ -59,7 +72,7 @@ namespace RecipeVault.WebApi.Mappers {
             }
 
             return new CreateBetaInviteCodeDto {
-                Code = model.Code,
+                Count = model.Count,
                 MaxUses = model.MaxUses,
                 ExpiresDate = model.ExpiresDate
             };
