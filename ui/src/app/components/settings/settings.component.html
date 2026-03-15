@@ -1,0 +1,55 @@
+<div class="settings-container">
+  <h1>Settings</h1>
+
+  <mat-card class="settings-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>school</mat-icon>
+        Getting Started
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Re-run onboarding</h3>
+          <p>Go through the onboarding flow again to set up your preferences</p>
+        </div>
+        <button mat-raised-button color="primary" (click)="reRunOnboarding()">
+          <mat-icon>replay</mat-icon>
+          Re-run Setup
+        </button>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Feature tour</h3>
+          <p>Take a guided tour of RecipeVault's best features</p>
+        </div>
+        <button mat-raised-button (click)="startTour()">
+          <mat-icon>tour</mat-icon>
+          Start Tour
+        </button>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Remove sample recipes</h3>
+          <p>Delete all sample recipes added during onboarding</p>
+        </div>
+        <button mat-raised-button color="warn" (click)="removeSampleRecipes()"
+                [disabled]="removingSamples">
+          @if (removingSamples) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <mat-icon>delete</mat-icon>
+            Remove Samples
+          }
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

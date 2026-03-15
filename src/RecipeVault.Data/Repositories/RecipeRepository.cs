@@ -115,5 +115,34 @@ namespace RecipeVault.Data.Repositories {
                     .ThenInclude(x => x.CreatedSubject)
                 .FirstOrDefaultAsync(r => r.ShareToken == shareToken);
         }
+
+        public async Task<int> GetCountByOwnerAsync(Guid subjectId) {
+            return await context.Recipes
+                .Where(r => r.CreatedSubject != null && r.CreatedSubject.SubjectId == subjectId)
+                .CountAsync().ConfigureAwait(false);
+        }
+
+        public async Task<List<Recipe>> GetSampleRecipesByOwnerAsync(Guid subjectId) {
+            return await context.Recipes
+                .Where(r => r.IsSampleRecipe && r.CreatedSubject != null && r.CreatedSubject.SubjectId == subjectId)
+                .ToListAsync().ConfigureAwait(false);
+        }
+
+        public async Task<List<Recipe>> GetSampleRecipesAsync(Guid systemSubjectId) {
+            return await context.Recipes
+                .Include(x => x.Ingredients)
+                .Include(x => x.Instructions)
+                .Include(x => x.RecipeTags).ThenInclude(rt => rt.Tag)
+                .Where(r => r.IsSampleRecipe && r.CreatedSubject != null && r.CreatedSubject.SubjectId == systemSubjectId)
+                .ToListAsync().ConfigureAwait(false);
+        }
+
+        public async Task<HashSet<int>> GetForkSourceIdsAsync(Guid subjectId) {
+            var ids = await context.Recipes
+                .Where(r => r.CreatedSubject != null && r.CreatedSubject.SubjectId == subjectId && r.ForkedFromRecipeId != null)
+                .Select(r => r.ForkedFromRecipeId.Value)
+                .ToListAsync().ConfigureAwait(false);
+            return new HashSet<int>(ids);
+        }
     }
 }

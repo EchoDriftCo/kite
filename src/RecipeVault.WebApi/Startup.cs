@@ -163,6 +163,9 @@ namespace RecipeVault.WebApi {
             // runs first (hosted services start in registration order).
             services.AddHostedService<HealthWarmupService>();
 
+            // Seed system account and sample recipes for onboarding
+            services.AddHostedService<OnboardingSeedService>();
+
             // add health services
             services.AddHealth(o => {
                 o.UseConfiguration(Configuration);

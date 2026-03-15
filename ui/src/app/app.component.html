@@ -52,6 +52,11 @@
             <mat-icon>menu_book</mat-icon>
             <span>Collections</span>
           </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item routerLink="/settings">
+            <mat-icon>settings</mat-icon>
+            <span>Settings</span>
+          </button>
         </mat-menu>
       </div>
 
@@ -100,6 +105,11 @@
           <mat-icon>menu_book</mat-icon>
           <span>Collections</span>
         </button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item routerLink="/settings">
+          <mat-icon>settings</mat-icon>
+          <span>Settings</span>
+        </button>
       </mat-menu>
 
       <button mat-icon-button [matMenuTriggerFor]="userMenu">
@@ -129,4 +139,7 @@
 
   <!-- PWA install prompt -->
   <app-install-prompt></app-install-prompt>
+
+  <!-- Tour tooltip overlay -->
+  <app-tour-tooltip></app-tour-tooltip>
 </div>

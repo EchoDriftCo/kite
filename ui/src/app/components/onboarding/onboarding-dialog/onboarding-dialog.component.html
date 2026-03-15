@@ -1,0 +1,296 @@
+<!-- Step 1: Welcome -->
+@if (currentStep === 0) {
+  <h2 mat-dialog-title>
+    Welcome to RecipeVault
+    @if (!isMobile) {
+      <span class="step-indicator">Step 1/{{ totalSteps }}</span>
+    }
+  </h2>
+
+  <mat-dialog-content>
+    <div class="welcome-content">
+      <p class="subtitle">Your recipes. Smarter than you thought.</p>
+
+      <div class="feature-preview">
+        <div class="feature-card">
+          <mat-icon>tune</mat-icon>
+          <span>Recipe Scaling</span>
+        </div>
+        <div class="feature-card">
+          <mat-icon>timer</mat-icon>
+          <span>Cooking Mode</span>
+        </div>
+        <div class="feature-card">
+          <mat-icon>swap_horiz</mat-icon>
+          <span>Substitutions</span>
+        </div>
+        <div class="feature-card">
+          <mat-icon>call_split</mat-icon>
+          <span>Recipe Forking</span>
+        </div>
+        <div class="feature-card">
+          <mat-icon>cloud_upload</mat-icon>
+          <span>Multi-Import</span>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="center" class="step-actions">
+    <div class="action-column">
+      <button mat-raised-button color="primary" class="main-action" (click)="nextStep()">
+        Get Started (1 of {{ totalSteps }})
+      </button>
+      <button mat-button class="skip-btn" (click)="skip()">
+        Skip setup
+      </button>
+    </div>
+  </mat-dialog-actions>
+}
+
+<!-- Step 2: Dietary Preferences -->
+@if (currentStep === 1) {
+  <h2 mat-dialog-title>
+    Set Your Dietary Preferences
+    @if (!isMobile) {
+      <span class="step-indicator">Step 2/{{ totalSteps }}</span>
+    }
+  </h2>
+
+  <mat-dialog-content>
+    <p class="section-desc">We'll watch your back when browsing recipes.</p>
+
+    <div class="dietary-section">
+      <h3 class="section-label">
+        <mat-icon class="warn-icon">warning</mat-icon>
+        Allergies (we'll show warnings)
+      </h3>
+      <div class="checkbox-grid">
+        @for (allergy of allergies; track allergy.code) {
+          <label class="checkbox-item" [class.selected]="isRestrictionSelected(allergy.code)">
+            <mat-checkbox
+              [checked]="isRestrictionSelected(allergy.code)"
+              (change)="toggleRestriction(allergy.code)">
+              {{ allergy.label }}
+            </mat-checkbox>
+          </label>
+        }
+      </div>
+    </div>
+
+    <div class="dietary-section">
+      <h3 class="section-label">
+        <mat-icon class="accent-icon">eco</mat-icon>
+        Dietary Choices (we'll filter recipes)
+      </h3>
+      <div class="checkbox-grid">
+        @for (choice of dietaryChoices; track choice.code) {
+          <label class="checkbox-item" [class.selected]="isRestrictionSelected(choice.code)">
+            <mat-checkbox
+              [checked]="isRestrictionSelected(choice.code)"
+              (change)="toggleRestriction(choice.code)">
+              {{ choice.label }}
+            </mat-checkbox>
+          </label>
+        }
+      </div>
+    </div>
+
+    <div class="dietary-section">
+      <h3 class="section-label">
+        <mat-icon>block</mat-icon>
+        Avoid Specific Ingredients
+      </h3>
+      <div class="avoid-input-row">
+        <mat-form-field appearance="outline" class="avoid-field">
+          <mat-label>Add ingredient to avoid</mat-label>
+          <input matInput [(ngModel)]="avoidedInput"
+                 (keyup.enter)="addAvoidedIngredient()"
+                 placeholder="e.g., cilantro">
+        </mat-form-field>
+        <button mat-icon-button (click)="addAvoidedIngredient()" [disabled]="!avoidedInput.trim()">
+          <mat-icon>add_circle</mat-icon>
+        </button>
+      </div>
+      @if (avoidedIngredients.length > 0) {
+        <div class="avoided-chips">
+          @for (ingredient of avoidedIngredients; track ingredient) {
+            <span class="avoided-chip">
+              {{ ingredient }}
+              <mat-icon class="remove-chip" (click)="removeAvoidedIngredient(ingredient)">close</mat-icon>
+            </span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Conflict preview mock -->
+    @if (selectedRestrictions.length > 0) {
+      <div class="conflict-preview">
+        <div class="conflict-header">
+          <mat-icon>lightbulb</mat-icon>
+          Here's what you'll see:
+        </div>
+        <div class="conflict-mock">
+          <div class="conflict-mock-header">
+            <mat-icon class="warn-icon">warning</mat-icon>
+            <strong>Dietary Conflict</strong>
+          </div>
+          <p>This recipe contains ingredients that conflict with your dietary profile.</p>
+          <div class="conflict-mock-actions">
+            <button mat-button color="accent">Find Substitutions</button>
+            <button mat-button>Cook Anyway</button>
+          </div>
+        </div>
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="step-actions">
+    <button mat-button (click)="prevStep()">Back</button>
+    <button mat-button (click)="nextStep()">Skip</button>
+    <span class="spacer"></span>
+    <button mat-raised-button color="primary" class="main-action"
+            (click)="saveDietaryPreferences()" [disabled]="savingDietary">
+      @if (savingDietary) {
+        <mat-spinner diameter="20"></mat-spinner>
+      } @else {
+        Save & Continue
+      }
+    </button>
+  </mat-dialog-actions>
+}
+
+<!-- Step 3: Add Recipes -->
+@if (currentStep === 2) {
+  <h2 mat-dialog-title>
+    Let's Add Some Recipes
+    @if (!isMobile) {
+      <span class="step-indicator">Step 3/{{ totalSteps }}</span>
+    }
+  </h2>
+
+  <mat-dialog-content>
+    <p class="section-desc">Choose how you'd like to get started:</p>
+
+    <div class="recipe-option" (click)="addSampleRecipes()">
+      <div class="option-icon">
+        <mat-icon>inventory_2</mat-icon>
+      </div>
+      <div class="option-content">
+        <h3>Try Sample Recipes</h3>
+        <p>6 delicious recipes showcasing RecipeVault features (cooking mode, scaling, & more)</p>
+      </div>
+      <div class="option-action">
+        @if (addingSamples) {
+          <mat-spinner diameter="24"></mat-spinner>
+        } @else if (samplesAdded) {
+          <mat-icon class="done-icon">check_circle</mat-icon>
+        } @else {
+          <button mat-raised-button color="primary">Add 6 Samples</button>
+        }
+      </div>
+    </div>
+
+    <div class="recipe-option" (click)="openImportDialog()">
+      <div class="option-icon">
+        <mat-icon>link</mat-icon>
+      </div>
+      <div class="option-content">
+        <h3>Import from URL</h3>
+        <p>Paste a recipe link from any website</p>
+      </div>
+      <div class="option-action">
+        <button mat-outlined-button>Import from URL</button>
+      </div>
+    </div>
+
+    <div class="recipe-option">
+      <div class="option-icon">
+        <mat-icon>smartphone</mat-icon>
+      </div>
+      <div class="option-content">
+        <h3>Import from Paprika</h3>
+        <p>Migrate your existing Paprika collection</p>
+      </div>
+      <div class="option-action">
+        <button mat-outlined-button>Upload .paprikarecipes</button>
+      </div>
+    </div>
+
+    <p class="coming-soon">
+      <mat-icon>info</mat-icon>
+      Photo import coming soon
+    </p>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="step-actions">
+    <button mat-button (click)="prevStep()">Back</button>
+    <button mat-button (click)="nextStep()">Skip</button>
+    <span class="spacer"></span>
+    <button mat-raised-button color="primary" class="main-action" (click)="nextStep()">
+      Continue
+    </button>
+  </mat-dialog-actions>
+}
+
+<!-- Step 4: Ready for Tour -->
+@if (currentStep === 3) {
+  <h2 mat-dialog-title>
+    You're All Set!
+    @if (!isMobile) {
+      <span class="step-indicator">Step 4/{{ totalSteps }}</span>
+    }
+  </h2>
+
+  <mat-dialog-content>
+    <div class="ready-content">
+      <mat-icon class="ready-icon">rocket_launch</mat-icon>
+      <p class="ready-message">
+        Let's take a quick tour of RecipeVault's best features.
+        We'll show you 5 things that make this app special.
+      </p>
+
+      <div class="tour-preview">
+        <div class="tour-preview-item">
+          <mat-icon>tune</mat-icon>
+          <span>Recipe Scaling</span>
+        </div>
+        <div class="tour-preview-item">
+          <mat-icon>timer</mat-icon>
+          <span>Cooking Mode</span>
+        </div>
+        <div class="tour-preview-item">
+          <mat-icon>swap_horiz</mat-icon>
+          <span>Substitutions</span>
+        </div>
+        <div class="tour-preview-item">
+          <mat-icon>call_split</mat-icon>
+          <span>Forking</span>
+        </div>
+        <div class="tour-preview-item">
+          <mat-icon>cloud_upload</mat-icon>
+          <span>Import Options</span>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="center" class="step-actions">
+    <div class="action-column">
+      <button mat-raised-button color="primary" class="main-action" (click)="finish()">
+        Start Tour
+      </button>
+      <button mat-button class="skip-btn" (click)="skip()">
+        Skip tour, I'll explore on my own
+      </button>
+    </div>
+  </mat-dialog-actions>
+}
+
+<!-- Progress dots -->
+<div class="progress-dots">
+  @for (step of [0, 1, 2, 3]; track step) {
+    <span class="dot" [class.active]="step <= currentStep"></span>
+  }
+</div>
