@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
@@ -79,6 +80,17 @@ namespace RecipeVault.Data.Repositories {
                 .Include(x => x.ForkedFromRecipe)
                     .ThenInclude(x => x.CreatedSubject)
                 .FirstOrDefaultAsync(r => r.RecipeId == recipeId);
+        }
+
+        public Task<List<Recipe>> GetByIdsAsync(List<int> recipeIds) {
+            return context.Recipes
+                .Include(x => x.Ingredients)
+                .Include(x => x.RecipeTags).ThenInclude(rt => rt.Tag)
+                .Include(x => x.CreatedSubject)
+                .Include(x => x.ForkedFromRecipe)
+                    .ThenInclude(x => x.CreatedSubject)
+                .Where(r => recipeIds.Contains(r.RecipeId))
+                .ToListAsync();
         }
 
         public Task RemoveAsync(Recipe recipe) {

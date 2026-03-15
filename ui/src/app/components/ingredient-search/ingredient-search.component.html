@@ -1,0 +1,316 @@
+<div class="ingredient-search-container">
+  <h1>What's in Your Fridge?</h1>
+
+  <mat-tab-group>
+    <!-- Search Tab -->
+    <mat-tab label="Search">
+      <div class="search-content">
+        <!-- Autocomplete input -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Type an ingredient...</mat-label>
+          <input matInput
+            [formControl]="ingredientControl"
+            [matAutocomplete]="auto"
+            (keydown)="onKeydown($event)" />
+          <mat-icon matSuffix>search</mat-icon>
+          <mat-autocomplete #auto="matAutocomplete" (optionSelected)="addIngredient($event.option.value)">
+            @for (suggestion of suggestions(); track suggestion.name) {
+              <mat-option [value]="suggestion.name">
+                {{ suggestion.name }}
+                <span class="recipe-count">({{ suggestion.recipeCount }} recipes)</span>
+              </mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+
+        <!-- Selected ingredients chips -->
+        @if (selectedIngredients().length > 0) {
+          <div class="selected-ingredients">
+            <label>Your ingredients:</label>
+            <mat-chip-set aria-label="Selected ingredients">
+              @for (ingredient of selectedIngredients(); track ingredient) {
+                <mat-chip [removable]="true" (removed)="removeIngredient(ingredient)">
+                  {{ ingredient }}
+                  <button matChipRemove><mat-icon>cancel</mat-icon></button>
+                </mat-chip>
+              }
+            </mat-chip-set>
+          </div>
+        }
+
+        <!-- Filters -->
+        <mat-expansion-panel class="filters-panel">
+          <mat-expansion-panel-header>
+            <mat-panel-title>Filters</mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div class="filters-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Max missing ingredients</mat-label>
+              <mat-select [value]="maxMissing()" (selectionChange)="maxMissing.set($event.value)">
+                @for (n of [0, 1, 2, 3, 5, 10]; track n) {
+                  <mat-option [value]="n">{{ n }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Max cook time (min)</mat-label>
+              <mat-select [value]="maxCookTime()" (selectionChange)="maxCookTime.set($event.value)">
+                <mat-option [value]="null">Any</mat-option>
+                @for (t of [15, 30, 45, 60, 90, 120]; track t) {
+                  <mat-option [value]="t">{{ t }} min</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Sort by</mat-label>
+              <mat-select [value]="sortBy()" (selectionChange)="sortBy.set($event.value)">
+                <mat-option value="matchPercentage">Best Match</mat-option>
+                <mat-option value="rating">Rating</mat-option>
+                <mat-option value="cookTime">Cook Time</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div class="filter-toggles">
+              <mat-checkbox
+                [checked]="includePantryStaples()"
+                (change)="includePantryStaples.set($event.checked)">
+                Include my pantry staples
+              </mat-checkbox>
+
+              <mat-checkbox
+                [checked]="includeSubstitutions()"
+                (change)="includeSubstitutions.set($event.checked)">
+                Show substitution suggestions
+              </mat-checkbox>
+            </div>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Action buttons -->
+        <div class="action-buttons">
+          <button mat-raised-button color="primary"
+            (click)="search()"
+            [disabled]="selectedIngredients().length === 0 || loading()">
+            <mat-icon>search</mat-icon>
+            Search Recipes
+          </button>
+          <button mat-button (click)="loadPantryIntoSearch()">
+            <mat-icon>kitchen</mat-icon>
+            Load my pantry into search
+          </button>
+        </div>
+
+        @if (selectedIngredients().length === 0 && !searched()) {
+          <p class="helper-text">Add at least one ingredient to search.</p>
+        }
+
+        <!-- Results -->
+        @if (loading()) {
+          <div class="loading-container">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+        } @else if (results().length > 0) {
+          <div class="results-header">
+            <h3>{{ totalCount() }} recipes found</h3>
+          </div>
+
+          <div class="results-list">
+            @for (result of results(); track result.recipe.recipeResourceId) {
+              <mat-card class="result-card" [routerLink]="['/recipes', result.recipe.recipeResourceId]">
+                <mat-card-header>
+                  <mat-card-title>{{ result.recipe.title }}</mat-card-title>
+                  <mat-card-subtitle>
+                    <span class="match-percentage" [style.color]="getMatchColor(result.weightedMatchPercentage)">
+                      {{ result.weightedMatchPercentage | number:'1.0-0' }}% match
+                    </span>
+                    @if (result.recipe.totalTimeMinutes) {
+                      <span class="cook-time">{{ result.recipe.totalTimeMinutes }} min</span>
+                    }
+                    @if (result.recipe.rating) {
+                      <span class="rating">
+                        @for (star of [1,2,3,4,5]; track star) {
+                          <mat-icon class="star-icon" [class.filled]="star <= (result.recipe.rating ?? 0)">
+                            {{ star <= (result.recipe.rating ?? 0) ? 'star' : 'star_border' }}
+                          </mat-icon>
+                        }
+                      </span>
+                    }
+                  </mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="ingredients-breakdown">
+                    @if (result.matchedIngredients.length > 0) {
+                      <div class="matched">
+                        @for (ing of result.matchedIngredients; track ing) {
+                          <span class="ingredient-tag matched-tag">
+                            <mat-icon>check_circle</mat-icon> {{ ing }}
+                          </span>
+                        }
+                      </div>
+                    }
+                    @if (result.missingIngredients.length > 0) {
+                      <div class="missing">
+                        @for (ing of result.missingIngredients; track ing) {
+                          <span class="ingredient-tag missing-tag">
+                            <mat-icon>cancel</mat-icon> {{ ing }}
+                          </span>
+                        }
+                      </div>
+                    }
+                    @if (result.pantryStaplesUsed.length > 0) {
+                      <div class="pantry">
+                        @for (ing of result.pantryStaplesUsed; track ing) {
+                          <span class="ingredient-tag pantry-tag">
+                            <mat-icon>home</mat-icon> {{ ing }}
+                          </span>
+                        }
+                      </div>
+                    }
+                    @if (result.substitutionsAvailable && result.substitutionsAvailable.length > 0) {
+                      <div class="substitutions">
+                        @for (sub of result.substitutionsAvailable; track sub.recipeIngredient) {
+                          <span class="substitution-tag">
+                            <mat-icon>swap_horiz</mat-icon>
+                            {{ sub.recipeIngredient }} &rarr; {{ sub.possibleSubstitute }}
+                          </span>
+                        }
+                      </div>
+                    }
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            }
+          </div>
+
+          <mat-paginator
+            [length]="totalCount()"
+            [pageSize]="pageSize()"
+            [pageIndex]="pageNumber() - 1"
+            [pageSizeOptions]="[10, 25, 50]"
+            (page)="onPageChange($event)">
+          </mat-paginator>
+        } @else if (searched() && !loading()) {
+          <div class="no-results">
+            <mat-icon>search_off</mat-icon>
+            <p>No recipes match your ingredients with current filters.</p>
+            <p>Try increasing max missing ingredients or removing filters.</p>
+          </div>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- My Pantry Tab -->
+    <mat-tab label="My Pantry">
+      <div class="pantry-content">
+        <p class="pantry-description">
+          Manage your ingredient inventory. Items marked as staples are
+          automatically included in ingredient searches.
+        </p>
+
+        <!-- Add pantry item form -->
+        <div class="add-pantry-item">
+          <mat-form-field appearance="outline" class="pantry-input">
+            <mat-label>Add ingredient...</mat-label>
+            <input matInput [formControl]="newPantryItemName"
+              (keydown.enter)="addPantryItem()" />
+          </mat-form-field>
+
+          <mat-checkbox
+            [checked]="newPantryItemIsStaple()"
+            (change)="newPantryItemIsStaple.set($event.checked)">
+            Staple
+          </mat-checkbox>
+
+          <button mat-icon-button color="primary" (click)="addPantryItem()"
+            [disabled]="!newPantryItemName.value?.trim()"
+            matTooltip="Add to pantry">
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
+
+        @if (pantryLoading()) {
+          <div class="loading-container">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+        } @else {
+          <!-- Pantry Staples Section -->
+          @if (pantryStaples.length > 0) {
+            <div class="pantry-section">
+              <h3>Pantry Staples</h3>
+              <mat-list>
+                @for (item of pantryStaples; track item.userPantryItemId) {
+                  <mat-list-item>
+                    <div class="pantry-item">
+                      <mat-icon matListItemIcon>kitchen</mat-icon>
+                      <span class="item-name">{{ item.ingredientName }}</span>
+                      <div class="item-actions">
+                        <button mat-icon-button (click)="toggleStaple(item)"
+                          matTooltip="Remove from staples">
+                          <mat-icon>star</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="deletePantryItem(item)"
+                          matTooltip="Delete">
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  </mat-list-item>
+                }
+              </mat-list>
+            </div>
+          }
+
+          <!-- Current Ingredients Section -->
+          @if (pantryIngredients.length > 0) {
+            <div class="pantry-section">
+              <h3>Current Ingredients</h3>
+              <mat-list>
+                @for (item of pantryIngredients; track item.userPantryItemId) {
+                  <mat-list-item>
+                    <div class="pantry-item">
+                      <mat-icon matListItemIcon>inventory_2</mat-icon>
+                      <span class="item-name">{{ item.ingredientName }}</span>
+                      @if (item.expirationDate) {
+                        <span class="expiration">Expires: {{ item.expirationDate | date:'mediumDate' }}</span>
+                      }
+                      <div class="item-actions">
+                        <button mat-icon-button (click)="toggleStaple(item)"
+                          matTooltip="Mark as staple">
+                          <mat-icon>star_border</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="deletePantryItem(item)"
+                          matTooltip="Delete">
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  </mat-list-item>
+                }
+              </mat-list>
+            </div>
+          }
+
+          @if (pantryStaples.length === 0 && pantryIngredients.length === 0) {
+            <div class="empty-pantry">
+              <mat-icon>kitchen</mat-icon>
+              <p>Your pantry is empty. Add some ingredients to get started!</p>
+            </div>
+          }
+
+          <!-- Load pantry into search button -->
+          @if (pantryItems().length > 0) {
+            <div class="pantry-actions">
+              <button mat-raised-button color="primary" (click)="loadPantryIntoSearch()">
+                <mat-icon>search</mat-icon>
+                Load my pantry into search
+              </button>
+            </div>
+          }
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
