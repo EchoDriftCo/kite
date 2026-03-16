@@ -5,7 +5,10 @@ import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
 export interface ValidateCodeResponse {
-  valid: boolean;
+  isValid: boolean;
+  code?: string;
+  maxUses?: number;
+  currentUses?: number;
   message?: string;
 }
 

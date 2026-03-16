@@ -269,7 +269,7 @@ export class BetaInviteDialogComponent {
     this.betaInviteCodeService.validate(this.fullCode).subscribe({
       next: (response) => {
         this.validating = false;
-        if (response.valid) {
+        if (response.isValid) {
           this.validated = true;
         } else {
           this.error = response.message || 'Invalid invite code';
