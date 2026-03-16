@@ -8,7 +8,7 @@ export interface ValidateCodeResponse {
   isValid: boolean;
   code?: string;
   maxUses?: number;
-  currentUses?: number;
+  remainingUses?: number;
   message?: string;
 }
 
