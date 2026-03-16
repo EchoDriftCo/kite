@@ -33,6 +33,7 @@ namespace RecipeVault.Data.Repositories {
                 .Include(x => x.Recipe)
                 .Include(x => x.Photos)
                 .Include(x => x.CreatedSubject)
+                .Include(x => x.LastModifiedSubject)
                 .FirstOrDefaultAsync(cl => cl.CookingLogId == cookingLogId);
         }
 
@@ -62,6 +63,7 @@ namespace RecipeVault.Data.Repositories {
         public Task<List<CookingLog>> GetByRecipeIdAsync(int recipeId, Guid subjectId) {
             return context.CookingLogs
                 .Include(x => x.Photos)
+                .Include(x => x.CreatedSubject)
                 .Where(cl => cl.RecipeId == recipeId && cl.CreatedSubject.SubjectId == subjectId)
                 .OrderByDescending(cl => cl.CookedDate)
                 .ToListAsync();
