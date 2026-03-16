@@ -14,6 +14,7 @@ import { FeedbackButtonComponent } from './shared/components/feedback-button/fee
 import { InstallPromptComponent } from './shared/components/install-prompt/install-prompt.component';
 import { OnboardingDialogComponent } from './components/onboarding/onboarding-dialog/onboarding-dialog.component';
 import { TourTooltipComponent } from './components/onboarding/tour-tooltip/tour-tooltip.component';
+import { UpgradeBannerComponent } from './shared/components/upgrade-banner/upgrade-banner.component';
 
 @Component({
   selector: 'app-root',
@@ -31,7 +32,8 @@ import { TourTooltipComponent } from './components/onboarding/tour-tooltip/tour-
     MatDialogModule,
     FeedbackButtonComponent,
     InstallPromptComponent,
-    TourTooltipComponent
+    TourTooltipComponent,
+    UpgradeBannerComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

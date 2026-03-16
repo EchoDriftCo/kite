@@ -88,14 +88,14 @@ import { AuthService } from '../../../services/auth.service';
       @if (validated && !error) {
         <div class="status-row success">
           <mat-icon>check_circle</mat-icon>
-          <span>Code is valid!</span>
+          <span>Code is valid! Click Redeem to activate.</span>
         </div>
       }
 
       @if (redeemed) {
         <div class="status-row success redeemed">
           <mat-icon>celebration</mat-icon>
-          <span>Code redeemed successfully!</span>
+          <span>Code redeemed successfully! Your account has been upgraded.</span>
         </div>
       }
     </mat-dialog-content>
@@ -103,13 +103,26 @@ import { AuthService } from '../../../services/auth.service';
       <button mat-button (click)="dialogRef.close(redeemed)">
         {{ redeemed ? 'Done' : 'Cancel' }}
       </button>
-      @if (!redeemed) {
+      @if (!redeemed && !validated) {
+        <button mat-raised-button color="accent"
+                [disabled]="!isCodeComplete || validating"
+                (click)="validateCode()">
+          @if (validating) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <mat-icon>verified</mat-icon>
+            Validate
+          }
+        </button>
+      }
+      @if (!redeemed && validated) {
         <button mat-raised-button color="primary"
-                [disabled]="!validated || redeeming || !!error"
+                [disabled]="redeeming || !!error"
                 (click)="redeem()">
           @if (redeeming) {
             <mat-spinner diameter="20"></mat-spinner>
           } @else {
+            <mat-icon>redeem</mat-icon>
             Redeem Code
           }
         </button>
@@ -228,7 +241,6 @@ export class BetaInviteDialogComponent {
       this.segment1 = cleaned.substring(0, 4);
       this.segment2 = cleaned.substring(4, 8);
       this.segment3 = cleaned.substring(8, 12);
-      this.validate();
     }
   }
 
@@ -238,15 +250,9 @@ export class BetaInviteDialogComponent {
 
     // Auto-advance to next segment
     if (segment === 1 && this.segment1.length === 4) {
-      const next = document.querySelector<HTMLInputElement>('[#seg2Input], mat-form-field:nth-of-type(2) input');
-      // Use a more reliable approach
       this.focusSegment(2);
     } else if (segment === 2 && this.segment2.length === 4) {
       this.focusSegment(3);
-    }
-
-    if (this.isCodeComplete) {
-      this.validate();
     }
   }
 
@@ -259,7 +265,7 @@ export class BetaInviteDialogComponent {
     });
   }
 
-  private validate(): void {
+  validateCode(): void {
     if (!this.isCodeComplete) return;
 
     this.validating = true;

@@ -124,4 +124,12 @@ export class AuthService {
   isAuthenticated(): boolean {
     return !!this.currentUser;
   }
+
+  /**
+   * Get the user's subscription tier from JWT app_metadata.
+   * Returns 'Free' when no tier is set.
+   */
+  getUserTier(): string {
+    return (this.currentUser as any)?.app_metadata?.tier || 'Free';
+  }
 }
