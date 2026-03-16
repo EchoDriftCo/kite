@@ -52,4 +52,25 @@
       </div>
     </mat-card-content>
   </mat-card>
+
+  <mat-card class="settings-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>vpn_key</mat-icon>
+        Beta Access
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Redeem invite code</h3>
+          <p>Have a beta invite code? Redeem it to unlock additional features</p>
+        </div>
+        <button mat-raised-button color="primary" (click)="openBetaInviteDialog()">
+          <mat-icon>redeem</mat-icon>
+          Enter Code
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
 </div>

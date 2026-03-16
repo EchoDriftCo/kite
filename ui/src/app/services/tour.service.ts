@@ -56,6 +56,7 @@ export class TourService {
 
   currentStepIndex = -1;
   active = false;
+  stepReady = false;
   isMobile = false;
 
   // Store sample recipe resource IDs for navigation
@@ -91,10 +92,12 @@ export class TourService {
   async start(): Promise<void> {
     this.currentStepIndex = 0;
     this.active = true;
+    this.stepReady = false;
     await this.navigateToStep();
   }
 
   async next(): Promise<void> {
+    this.stepReady = false;
     this.currentStepIndex++;
     if (this.currentStepIndex >= this.steps.length) {
       this.end();
@@ -106,6 +109,7 @@ export class TourService {
   end(): void {
     this.currentStepIndex = -1;
     this.active = false;
+    this.stepReady = false;
     this.onboardingService.updateProgress({ tourCompleted: true }).subscribe();
   }
 
@@ -127,21 +131,47 @@ export class TourService {
 
     if (step.recipeResourceId) {
       await this.router.navigate(['/recipes', step.recipeResourceId]);
-      await new Promise(resolve => setTimeout(resolve, 500));
     } else if (step.showcases === 'import-options') {
       await this.router.navigate(['/recipes']);
-      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    // Skip if target element not found (avoid infinite recursion)
-    if (!document.querySelector(step.elementSelector)) {
+    // Poll for target element instead of a fixed timeout
+    const found = await this.waitForElement(step.elementSelector, 5000);
+
+    if (!found) {
+      // Skip if target element not found
       if (this.currentStepIndex < this.steps.length - 1) {
         this.currentStepIndex++;
         await this.navigateToStep();
       } else {
         this.end();
       }
+      return;
     }
+
+    this.stepReady = true;
+  }
+
+  private waitForElement(selector: string, timeoutMs: number): Promise<boolean> {
+    return new Promise(resolve => {
+      if (document.querySelector(selector)) {
+        resolve(true);
+        return;
+      }
+
+      const interval = 100;
+      let elapsed = 0;
+      const timer = setInterval(() => {
+        elapsed += interval;
+        if (document.querySelector(selector)) {
+          clearInterval(timer);
+          resolve(true);
+        } else if (elapsed >= timeoutMs) {
+          clearInterval(timer);
+          resolve(false);
+        }
+      }, interval);
+    });
   }
 
   calculateTooltipPosition(tooltipWidth: number, tooltipHeight: number): {

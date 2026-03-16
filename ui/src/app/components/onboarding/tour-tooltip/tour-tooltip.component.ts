@@ -9,7 +9,7 @@ import { TourService } from '../../../services/tour.service';
   standalone: true,
   imports: [CommonModule, MatButtonModule, MatIconModule],
   template: `
-    @if (tourService.currentStep; as step) {
+    @if (tourService.stepReady && tourService.currentStep; as step) {
       <div class="tour-backdrop" (click)="tourService.end()"></div>
       <div
         class="tour-tooltip"

@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { OnboardingService } from '../../services/onboarding.service';
 import { TourService } from '../../services/tour.service';
 import { OnboardingDialogComponent } from '../onboarding/onboarding-dialog/onboarding-dialog.component';
+import { BetaInviteDialogComponent } from './beta-invite-dialog/beta-invite-dialog.component';
 
 @Component({
   selector: 'app-settings',
@@ -60,6 +61,13 @@ export class SettingsComponent {
       error: () => {
         this.snackBar.open('Failed to reset onboarding', 'OK', { duration: 3000 });
       }
+    });
+  }
+
+  openBetaInviteDialog(): void {
+    this.dialog.open(BetaInviteDialogComponent, {
+      width: '450px',
+      maxWidth: '95vw'
     });
   }
 
