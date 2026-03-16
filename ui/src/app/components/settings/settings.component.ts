@@ -65,9 +65,15 @@ export class SettingsComponent {
   }
 
   openBetaInviteDialog(): void {
-    this.dialog.open(BetaInviteDialogComponent, {
+    const dialogRef = this.dialog.open(BetaInviteDialogComponent, {
       width: '450px',
       maxWidth: '95vw'
+    });
+
+    dialogRef.afterClosed().subscribe(redeemed => {
+      if (redeemed) {
+        this.snackBar.open('Beta invite code redeemed successfully!', 'OK', { duration: 5000 });
+      }
     });
   }
 
