@@ -14,7 +14,6 @@ import { TourService } from '../../../services/tour.service';
       <div
         class="tour-tooltip"
         [class.mobile]="tourService.isMobile"
-        [ngStyle]="tooltipStyle"
       >
         <div class="tour-title">
           <mat-icon class="tour-title-icon">ads_click</mat-icon>
@@ -45,6 +44,7 @@ import { TourService } from '../../../services/tour.service';
 
     .tour-tooltip {
       position: fixed;
+      visibility: hidden;
       background: #1e293b;
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
@@ -102,9 +102,8 @@ import { TourService } from '../../../services/tour.service';
   `]
 })
 export class TourTooltipComponent implements AfterViewChecked, OnDestroy {
-  tooltipStyle: { [key: string]: string } = { visibility: 'hidden' };
   private lastPositionedStep = -1;
-  private resizeListener: (() => void) | null = null;
+  private pendingRaf: number | null = null;
 
   constructor(
     public tourService: TourService,
@@ -112,47 +111,56 @@ export class TourTooltipComponent implements AfterViewChecked, OnDestroy {
   ) {}
 
   ngAfterViewChecked(): void {
-    // Guard: only position when stepReady is true AND the tooltip DOM element
-    // actually exists. Without the stepReady check, lastPositionedStep would
-    // update before the @if block renders the tooltip, and updatePosition()
-    // would never run for that step.
-    if (this.tourService.stepReady && this.tourService.currentStepIndex !== this.lastPositionedStep) {
-      const el = this.elRef.nativeElement.querySelector('.tour-tooltip') as HTMLElement;
-      if (el) {
-        this.lastPositionedStep = this.tourService.currentStepIndex;
-        // Reset visibility until position is calculated
-        this.tooltipStyle = { visibility: 'hidden' };
-        setTimeout(() => this.updatePosition(), 0);
-      }
+    if (
+      this.tourService.stepReady &&
+      this.tourService.currentStepIndex !== this.lastPositionedStep &&
+      this.pendingRaf === null
+    ) {
+      this.pendingRaf = requestAnimationFrame(() => {
+        this.pendingRaf = null;
+        this.positionTooltip();
+      });
     }
   }
 
   ngOnDestroy(): void {
-    if (this.resizeListener) {
-      window.removeEventListener('resize', this.resizeListener);
+    if (this.pendingRaf !== null) {
+      cancelAnimationFrame(this.pendingRaf);
     }
   }
 
   @HostListener('window:resize')
   onResize(): void {
-    this.updatePosition();
+    const el = this.elRef.nativeElement.querySelector('.tour-tooltip') as HTMLElement;
+    if (!el || !this.tourService.stepReady) return;
+    const rect = el.getBoundingClientRect();
+    const pos = this.tourService.calculateTooltipPosition(rect.width, rect.height);
+    el.style.top = `${pos.top}px`;
+    el.style.left = `${pos.left}px`;
   }
 
   async onNext(): Promise<void> {
     await this.tourService.next();
   }
 
-  private updatePosition(): void {
+  private positionTooltip(): void {
     const el = this.elRef.nativeElement.querySelector('.tour-tooltip') as HTMLElement;
     if (!el) return;
 
     const rect = el.getBoundingClientRect();
-    const pos = this.tourService.calculateTooltipPosition(rect.width, rect.height);
+    if (rect.width === 0 && rect.height === 0) {
+      // Element not yet laid out; retry next frame
+      this.pendingRaf = requestAnimationFrame(() => {
+        this.pendingRaf = null;
+        this.positionTooltip();
+      });
+      return;
+    }
 
-    this.tooltipStyle = {
-      top: `${pos.top}px`,
-      left: `${pos.left}px`,
-      visibility: 'visible'
-    };
+    const pos = this.tourService.calculateTooltipPosition(rect.width, rect.height);
+    el.style.top = `${pos.top}px`;
+    el.style.left = `${pos.left}px`;
+    el.style.visibility = 'visible';
+    this.lastPositionedStep = this.tourService.currentStepIndex;
   }
 }
