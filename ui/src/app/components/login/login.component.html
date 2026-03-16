@@ -1,45 +1,78 @@
 <div class="login-container">
   <mat-card>
     <mat-card-header>
-      <mat-card-title>Sign In</mat-card-title>
+      <mat-card-title>{{ magicLinkMode ? 'Sign In with Magic Link' : 'Sign In' }}</mat-card-title>
     </mat-card-header>
 
     <mat-card-content>
-      <form (ngSubmit)="signIn()">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" [(ngModel)]="email" name="email" required>
-        </mat-form-field>
+      @if (magicLinkMode) {
+        <form (ngSubmit)="sendMagicLink()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" [(ngModel)]="email" name="email" required>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Password</mat-label>
-          <input matInput type="password" [(ngModel)]="password" name="password" required>
-        </mat-form-field>
-
-        @if (error) {
-          <div class="error-message">{{ error }}</div>
-        }
-
-        @if (successMessage) {
-          <div class="success-message">{{ successMessage }}</div>
-        }
-
-        <button mat-raised-button color="primary" type="submit" class="full-width submit-button" [disabled]="loading">
-          @if (loading) {
-            <mat-spinner diameter="20"></mat-spinner>
-          } @else {
-            Sign In
+          @if (error) {
+            <div class="error-message">{{ error }}</div>
           }
-        </button>
-      </form>
 
-      <div class="forgot-password">
-        <a href="javascript:void(0)" role="button" (click)="forgotPassword()">Forgot password?</a>
-      </div>
+          @if (successMessage) {
+            <div class="success-message">{{ successMessage }}</div>
+          }
 
-      <div class="toggle-mode">
-        Don't have an account? <a href="javascript:void(0)" role="button" (click)="openSignUp()">Create one</a>
-      </div>
+          <button mat-raised-button color="primary" type="submit" class="full-width submit-button" [disabled]="loading">
+            @if (loading) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Send Magic Link
+            }
+          </button>
+        </form>
+
+        <div class="toggle-mode">
+          <a href="javascript:void(0)" role="button" (click)="magicLinkMode = false; error = ''; successMessage = ''">Sign in with password instead</a>
+        </div>
+      } @else {
+        <form (ngSubmit)="signIn()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" [(ngModel)]="email" name="email" required>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" [(ngModel)]="password" name="password" required>
+          </mat-form-field>
+
+          @if (error) {
+            <div class="error-message">{{ error }}</div>
+          }
+
+          @if (successMessage) {
+            <div class="success-message">{{ successMessage }}</div>
+          }
+
+          <button mat-raised-button color="primary" type="submit" class="full-width submit-button" [disabled]="loading">
+            @if (loading) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Sign In
+            }
+          </button>
+        </form>
+
+        <div class="forgot-password">
+          <a href="javascript:void(0)" role="button" (click)="forgotPassword()">Forgot password?</a>
+        </div>
+
+        <div class="toggle-mode">
+          <a href="javascript:void(0)" role="button" (click)="magicLinkMode = true; error = ''; successMessage = ''">Sign in with magic link</a>
+        </div>
+
+        <div class="toggle-mode">
+          Don't have an account? <a href="javascript:void(0)" role="button" (click)="openSignUp()">Create one</a>
+        </div>
+      }
     </mat-card-content>
   </mat-card>
 </div>

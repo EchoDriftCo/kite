@@ -34,6 +34,7 @@ export class LoginComponent {
   error = '';
   successMessage = '';
   returnUrl = '/';
+  magicLinkMode = false;
 
   constructor(
     private authService: AuthService,
@@ -71,6 +72,24 @@ export class LoginComponent {
       this.successMessage = 'Password reset email sent! Check your inbox.';
     } catch (err: any) {
       this.error = err.message || 'Failed to send reset email';
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async sendMagicLink() {
+    if (!this.email) {
+      this.error = 'Enter your email address first';
+      return;
+    }
+    this.error = '';
+    this.loading = true;
+    try {
+      await this.authService.signInWithOtp(this.email);
+      this.successMessage = 'Magic link sent! Check your email to sign in.';
+      this.magicLinkMode = false;
+    } catch (err: any) {
+      this.error = err.message || 'Failed to send magic link';
     } finally {
       this.loading = false;
     }

@@ -31,6 +31,10 @@ export class AuthService {
     this.supabase.client.auth.onAuthStateChange((event, session) => {
       this.sessionSubject.next(session);
       this.currentUserSubject.next(session?.user ?? null);
+
+      if (event === 'PASSWORD_RECOVERY') {
+        this.router.navigate(['/reset-password']);
+      }
     });
   }
 
@@ -95,6 +99,14 @@ export class AuthService {
    */
   async resetPassword(email: string) {
     const { error } = await this.supabase.client.auth.resetPasswordForEmail(email);
+    if (error) throw error;
+  }
+
+  /**
+   * Sign in with magic link (OTP via email)
+   */
+  async signInWithOtp(email: string) {
+    const { error } = await this.supabase.client.auth.signInWithOtp({ email });
     if (error) throw error;
   }
 
