@@ -186,12 +186,27 @@ export class TourService {
       return;
     }
 
+    // Scroll target into view so the tooltip can position relative to it
+    const targetEl = document.querySelector(step.elementSelector) as HTMLElement;
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'instant', block: 'center' });
+      // Allow one frame for scroll and layout to settle
+      await new Promise(resolve => requestAnimationFrame(resolve));
+    }
+
     this.stepReady = true;
   }
 
   private waitForElement(selector: string, timeoutMs: number): Promise<boolean> {
     return new Promise(resolve => {
-      if (document.querySelector(selector)) {
+      const isReady = (): boolean => {
+        const el = document.querySelector(selector) as HTMLElement;
+        if (!el) return false;
+        const rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      };
+
+      if (isReady()) {
         resolve(true);
         return;
       }
@@ -200,7 +215,7 @@ export class TourService {
       let elapsed = 0;
       const timer = setInterval(() => {
         elapsed += interval;
-        if (document.querySelector(selector)) {
+        if (isReady()) {
           clearInterval(timer);
           resolve(true);
         } else if (elapsed >= timeoutMs) {

@@ -111,8 +111,13 @@ export class TourTooltipComponent implements AfterViewChecked, OnDestroy {
   ) {}
 
   ngAfterViewChecked(): void {
+    // Reset tracking when tour is inactive so restarting at the same step works
+    if (!this.tourService.stepReady) {
+      this.lastPositionedStep = -1;
+      return;
+    }
+
     if (
-      this.tourService.stepReady &&
       this.tourService.currentStepIndex !== this.lastPositionedStep &&
       this.pendingRaf === null
     ) {
@@ -148,7 +153,7 @@ export class TourTooltipComponent implements AfterViewChecked, OnDestroy {
     if (!el) return;
 
     const rect = el.getBoundingClientRect();
-    if (rect.width === 0 && rect.height === 0) {
+    if (rect.width === 0 || rect.height === 0) {
       // Element not yet laid out; retry next frame
       this.pendingRaf = requestAnimationFrame(() => {
         this.pendingRaf = null;
