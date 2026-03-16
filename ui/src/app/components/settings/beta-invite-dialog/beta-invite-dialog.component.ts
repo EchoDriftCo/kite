@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BetaInviteCodeService } from '../../../services/beta-invite-code.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-beta-invite-dialog',
@@ -206,7 +207,8 @@ export class BetaInviteDialogComponent {
 
   constructor(
     public dialogRef: MatDialogRef<BetaInviteDialogComponent>,
-    private betaInviteCodeService: BetaInviteCodeService
+    private betaInviteCodeService: BetaInviteCodeService,
+    private authService: AuthService
   ) {}
 
   get fullCode(): string {
@@ -290,6 +292,8 @@ export class BetaInviteDialogComponent {
       next: () => {
         this.redeeming = false;
         this.redeemed = true;
+        // Refresh session to pick up updated user tier
+        this.authService.refreshSession().catch(() => {});
       },
       error: (err) => {
         this.redeeming = false;

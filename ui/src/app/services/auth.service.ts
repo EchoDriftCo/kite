@@ -109,6 +109,16 @@ export class AuthService {
   }
 
   /**
+   * Refresh the current session to pick up updated user metadata (e.g. tier changes).
+   */
+  async refreshSession(): Promise<void> {
+    const { data: { session }, error } = await this.supabase.client.auth.refreshSession();
+    if (error) throw error;
+    this.sessionSubject.next(session);
+    this.currentUserSubject.next(session?.user ?? null);
+  }
+
+  /**
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
