@@ -62,7 +62,7 @@
                 <span class="button-text">Edit</span>
               </button>
             } @else {
-              <button mat-raised-button color="primary" (click)="forkRecipe()" *ngIf="canForkRecipe()" data-tour="fork-indicator">
+              <button mat-raised-button color="primary" (click)="forkRecipe()" *ngIf="canForkRecipe()">
                 <mat-icon>content_copy</mat-icon>
                 <span class="button-text">Fork</span>
               </button>
@@ -140,7 +140,7 @@
         </div>
       }
 
-      <h1>{{ recipe.title }}</h1>
+      <h1 data-tour="fork-indicator">{{ recipe.title }}</h1>
 
       @if (recipe.isOwner !== false) {
         <div class="star-rating interactive">
