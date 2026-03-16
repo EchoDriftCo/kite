@@ -53,7 +53,7 @@
           <!-- Primary action buttons (responsive) -->
           <div class="primary-actions">
             @if (recipe.isOwner !== false) {
-              <button mat-raised-button color="primary" [routerLink]="['/recipes', recipe.recipeResourceId, 'cook']">
+              <button mat-raised-button color="primary" [routerLink]="['/recipes', recipe.recipeResourceId, 'cook']" data-tour="cooking-mode-button">
                 <mat-icon>restaurant</mat-icon>
                 <span class="button-text">Start Cooking</span>
               </button>
@@ -62,7 +62,7 @@
                 <span class="button-text">Edit</span>
               </button>
             } @else {
-              <button mat-raised-button color="primary" (click)="forkRecipe()" *ngIf="canForkRecipe()">
+              <button mat-raised-button color="primary" (click)="forkRecipe()" *ngIf="canForkRecipe()" data-tour="fork-indicator">
                 <mat-icon>content_copy</mat-icon>
                 <span class="button-text">Fork</span>
               </button>
@@ -105,7 +105,7 @@
 
             <!-- Desktop-only secondary actions -->
             <div class="desktop-actions">
-              <button mat-stroked-button (click)="openSubstitutionDialog()">
+              <button mat-stroked-button (click)="openSubstitutionDialog()" data-tour="substitution-button">
                 <mat-icon>sync_alt</mat-icon>
                 <span class="button-text">Substitutions</span>
               </button>
@@ -374,7 +374,7 @@
 
     <mat-divider></mat-divider>
 
-    <div class="scaling-controls">
+    <div class="scaling-controls" data-tour="serving-selector">
       <div class="scaling-label">
         <mat-icon>straighten</mat-icon>
         Scale

@@ -12,6 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { OnboardingService } from '../../../services/onboarding.service';
+import { TourService } from '../../../services/tour.service';
 import { DietaryProfileService } from '../../../services/dietary-profile.service';
 import { Router } from '@angular/router';
 
@@ -79,6 +80,7 @@ export class OnboardingDialogComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<OnboardingDialogComponent>,
     private onboardingService: OnboardingService,
+    private tourService: TourService,
     private dietaryProfileService: DietaryProfileService,
     private snackBar: MatSnackBar,
     private breakpointObserver: BreakpointObserver,
@@ -222,6 +224,9 @@ export class OnboardingDialogComponent implements OnInit {
       next: result => {
         this.samplesAdded = true;
         this.addingSamples = false;
+        if (result.recipes?.length) {
+          this.tourService.setSampleRecipeIds(result.recipes);
+        }
         this.snackBar.open(
           `${result.recipesAdded} sample recipes added to your library!`,
           'OK',

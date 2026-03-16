@@ -102,8 +102,8 @@ import { TourService } from '../../../services/tour.service';
   `]
 })
 export class TourTooltipComponent implements AfterViewChecked, OnDestroy {
-  tooltipStyle: { [key: string]: string } = {};
-  private lastStepIndex = -1;
+  tooltipStyle: { [key: string]: string } = { visibility: 'hidden' };
+  private lastPositionedStep = -1;
   private resizeListener: (() => void) | null = null;
 
   constructor(
@@ -112,10 +112,18 @@ export class TourTooltipComponent implements AfterViewChecked, OnDestroy {
   ) {}
 
   ngAfterViewChecked(): void {
-    if (this.tourService.currentStepIndex !== this.lastStepIndex) {
-      this.lastStepIndex = this.tourService.currentStepIndex;
-      // Delay to allow DOM to render the tooltip
-      setTimeout(() => this.updatePosition(), 50);
+    // Guard: only position when stepReady is true AND the tooltip DOM element
+    // actually exists. Without the stepReady check, lastPositionedStep would
+    // update before the @if block renders the tooltip, and updatePosition()
+    // would never run for that step.
+    if (this.tourService.stepReady && this.tourService.currentStepIndex !== this.lastPositionedStep) {
+      const el = this.elRef.nativeElement.querySelector('.tour-tooltip') as HTMLElement;
+      if (el) {
+        this.lastPositionedStep = this.tourService.currentStepIndex;
+        // Reset visibility until position is calculated
+        this.tooltipStyle = { visibility: 'hidden' };
+        setTimeout(() => this.updatePosition(), 0);
+      }
     }
   }
 
@@ -143,7 +151,8 @@ export class TourTooltipComponent implements AfterViewChecked, OnDestroy {
 
     this.tooltipStyle = {
       top: `${pos.top}px`,
-      left: `${pos.left}px`
+      left: `${pos.left}px`,
+      visibility: 'visible'
     };
   }
 }

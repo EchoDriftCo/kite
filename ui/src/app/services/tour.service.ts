@@ -87,9 +87,37 @@ export class TourService {
         step.recipeResourceId = recipeId;
       }
     }
+
+    // Persist to localStorage so the tour can be restarted in a new session
+    try {
+      localStorage.setItem('tour_sample_recipes', JSON.stringify(recipes));
+    } catch {
+      // Ignore storage errors
+    }
+  }
+
+  private restoreSampleRecipeIds(): boolean {
+    try {
+      const stored = localStorage.getItem('tour_sample_recipes');
+      if (stored) {
+        const recipes = JSON.parse(stored) as { recipeResourceId: string; showcases: string }[];
+        if (recipes.length > 0) {
+          this.setSampleRecipeIds(recipes);
+          return true;
+        }
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return false;
   }
 
   async start(): Promise<void> {
+    // Ensure sample recipe IDs are available for navigation
+    if (this.sampleRecipeIds.size === 0) {
+      this.restoreSampleRecipeIds();
+    }
+
     this.currentStepIndex = 0;
     this.active = true;
     this.stepReady = false;
