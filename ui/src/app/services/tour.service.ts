@@ -163,8 +163,17 @@ export class TourService {
       await this.router.navigate(['/recipes']);
     }
 
+    // Bail out if tour was ended during navigation
+    if (!this.active) return;
+
+    // Give the routed component a moment to mount and begin rendering
+    await new Promise(resolve => setTimeout(resolve, 50));
+
     // Poll for target element instead of a fixed timeout
     const found = await this.waitForElement(step.elementSelector, 5000);
+
+    // Bail out if tour was ended while waiting
+    if (!this.active) return;
 
     if (!found) {
       // Skip if target element not found
