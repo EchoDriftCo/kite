@@ -38,11 +38,18 @@ namespace RecipeVault.Facade.Mappers {
                     Status = m.Status.ToString(),
                     JoinedDate = m.JoinedDate
                 }).ToList(),
-                SharedRecipes = entity.SharedRecipes?.Select(sr => new CircleRecipeDto {
-                    RecipeResourceId = sr.Recipe?.RecipeResourceId ?? default,
-                    Title = sr.Recipe?.Title,
-                    SharedBySubjectId = sr.SharedBySubjectId,
-                    SharedDate = sr.SharedDate
+                SharedRecipes = entity.SharedRecipes?.Select(sr => {
+                    var sharer = entity.Members?.FirstOrDefault(m => m.SubjectId == sr.SharedBySubjectId);
+                    var displayName = sharer?.Subject != null
+                        ? $"{sharer.Subject.GivenName} {sharer.Subject.FamilyName}".Trim()
+                        : null;
+                    return new CircleRecipeDto {
+                        RecipeResourceId = sr.Recipe?.RecipeResourceId ?? default,
+                        Title = sr.Recipe?.Title,
+                        SharedBySubjectId = sr.SharedBySubjectId,
+                        SharedByDisplayName = displayName,
+                        SharedDate = sr.SharedDate
+                    };
                 }).ToList(),
                 MemberCount = entity.Members?.Count ?? 0,
                 RecipeCount = entity.SharedRecipes?.Count ?? 0,

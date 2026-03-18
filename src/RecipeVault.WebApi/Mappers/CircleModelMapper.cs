@@ -28,6 +28,7 @@ namespace RecipeVault.WebApi.Mappers {
                     RecipeResourceId = sr.RecipeResourceId,
                     Title = sr.Title,
                     SharedBySubjectId = sr.SharedBySubjectId,
+                    SharedByDisplayName = sr.SharedByDisplayName,
                     SharedDate = sr.SharedDate
                 }).ToList(),
                 MemberCount = dto.MemberCount,

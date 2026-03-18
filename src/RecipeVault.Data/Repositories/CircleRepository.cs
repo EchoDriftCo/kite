@@ -43,6 +43,7 @@ namespace RecipeVault.Data.Repositories {
         public Task<Circle> GetAsync(Guid id) {
             return context.Circles
                 .Include(x => x.Members)
+                    .ThenInclude(m => m.Subject)
                 .Include(x => x.SharedRecipes)
                     .ThenInclude(sr => sr.Recipe)
                 .Include(x => x.Invites)

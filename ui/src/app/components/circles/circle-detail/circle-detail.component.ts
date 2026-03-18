@@ -52,7 +52,6 @@ export class CircleDetailComponent implements OnInit {
     if (this.circleId) {
       this.loadCircle();
       this.loadMembers();
-      this.loadRecipes();
     }
   }
 
@@ -65,6 +64,7 @@ export class CircleDetailComponent implements OnInit {
     this.circleService.getCircle(this.circleId).subscribe({
       next: (circle) => {
         this.circle = circle;
+        this.recipes = circle.sharedRecipes || [];
         this.loading = false;
       },
       error: (err) => {

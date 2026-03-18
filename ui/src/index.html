@@ -25,12 +25,14 @@
   <!-- Preconnect to Google Fonts for faster loading -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  
-  <!-- Primary: Google Fonts CDN (faster for most users) -->
+
+  <!-- Preload self-hosted Material Icons font for reliable icon rendering -->
+  <link rel="preload" href="assets/fonts/MaterialIcons-Regular.woff2" as="font" type="font/woff2" crossorigin>
+
+  <!-- Roboto text font from CDN -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&amp;display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons&amp;display=swap" rel="stylesheet">
-  
-  <!-- Fallback: Self-hosted Material Icons (loaded if Google CDN is blocked) -->
+
+  <!-- Material Icons: self-hosted primary (reliable on all platforms including Chrome Android) -->
   <link href="assets/fonts/material-icons.css" rel="stylesheet">
   
   <link rel="manifest" href="manifest.webmanifest">

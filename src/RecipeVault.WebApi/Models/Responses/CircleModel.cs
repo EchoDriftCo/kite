@@ -28,6 +28,7 @@ namespace RecipeVault.WebApi.Models.Responses {
         public Guid RecipeResourceId { get; set; }
         public string Title { get; set; }
         public Guid SharedBySubjectId { get; set; }
+        public string SharedByDisplayName { get; set; }
         public DateTime SharedDate { get; set; }
     }
 
