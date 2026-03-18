@@ -18,12 +18,14 @@ namespace RecipeVault.DomainService {
         private readonly ICircleRepository circleRepository;
         private readonly IRecipeRepository recipeRepository;
         private readonly ISubjectPrincipal subjectPrincipal;
+        private readonly IEmailService emailService;
 
-        public CircleService(ICircleRepository circleRepository, IRecipeRepository recipeRepository, ILogger<CircleService> logger, ISubjectPrincipal subjectPrincipal) {
+        public CircleService(ICircleRepository circleRepository, IRecipeRepository recipeRepository, ILogger<CircleService> logger, ISubjectPrincipal subjectPrincipal, IEmailService emailService) {
             this.logger = logger;
             this.circleRepository = circleRepository;
             this.recipeRepository = recipeRepository;
             this.subjectPrincipal = subjectPrincipal;
+            this.emailService = emailService;
         }
 
         private Guid CurrentSubjectId => Guid.Parse(subjectPrincipal.SubjectId);
@@ -107,6 +109,14 @@ namespace RecipeVault.DomainService {
                     logger.LogInformation("Created circle invite");
                 }
             }
+
+            // Fire-and-forget: send invite email, log failures but don't throw
+            _ = emailService.SendCircleInviteAsync(
+                dto.InviteeEmail,
+                circle.Name,
+                subjectPrincipal.Name ?? "A RecipeVault member",
+                invite.InviteToken.ToString()
+            );
 
             return invite;
         }

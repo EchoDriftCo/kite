@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Cortside.Common.BootStrap" Version="8.0.478" />
     <PackageReference Include="DistributedLock.Postgres" Version="1.0.2" />
+    <PackageReference Include="Resend" Version="0.2.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RecipeVault.Data\RecipeVault.Data.csproj" />

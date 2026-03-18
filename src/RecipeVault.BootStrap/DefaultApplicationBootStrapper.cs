@@ -12,6 +12,7 @@ namespace RecipeVault.BootStrap {
                 new GeminiInstaller(),
                 new SupabaseInstaller(),
                 new UsdaInstaller(),
+                new ResendInstaller(),
                 new FacadeInstaller()
             ];
         }
