@@ -3,8 +3,21 @@
 }
 
 mat-dialog-content {
-  min-width: 400px;
+  min-width: 300px;
+  max-width: 100%;
   padding-top: 16px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  mat-dialog-content {
+    min-width: unset;
+    padding: 16px 12px;
+  }
+
+  mat-dialog-actions {
+    padding: 12px;
+  }
 }
 
 .error-message {

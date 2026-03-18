@@ -107,8 +107,10 @@ export class UpgradeBannerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.dismissed = sessionStorage.getItem('upgrade-banner-dismissed') === 'true';
+    const hasRedeemedCode = localStorage.getItem('beta-code-redeemed') === 'true';
     this.sub = this.authService.currentUser$.subscribe(() => {
       this.showBanner = !this.dismissed
+        && !hasRedeemedCode
         && this.authService.isAuthenticated()
         && this.authService.getUserTier() === 'Free';
     });

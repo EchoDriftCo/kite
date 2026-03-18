@@ -24,22 +24,36 @@ import { Platform } from '@angular/cdk/platform';
   `,
   styles: [`
     .install-banner {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 12px 16px;
       background-color: #334155;
       color: #f1f5f9;
-      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
-      z-index: 999;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
       .install-text {
         flex: 1;
         font-size: 14px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+
+      button[mat-raised-button] {
+        flex-shrink: 0;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .install-banner {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px 12px;
+
+        .install-text {
+          flex-basis: calc(100% - 48px);
+          font-size: 13px;
+        }
       }
     }
   `]

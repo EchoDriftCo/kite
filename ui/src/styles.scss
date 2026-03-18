@@ -1,9 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { 
-  height: 100%; 
+html, body {
+  height: 100%;
   background-color: #1e293b;
   color: #f1f5f9;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 body { 
