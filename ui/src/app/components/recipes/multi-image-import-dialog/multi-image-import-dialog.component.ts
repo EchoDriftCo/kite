@@ -23,9 +23,9 @@ import { RecipeService } from '../../../services/recipe.service';
            (drop)="onDrop($event)" 
            (dragover)="onDragOver($event)"
            (click)="fileInput.click()">
-        <input #fileInput 
-               type="file" 
-               accept="image/*" 
+        <input #fileInput
+               type="file"
+               accept="image/*,image/heic,image/heif,.heic,.heif"
                multiple 
                (change)="onFileSelected($event)"
                style="display: none"
@@ -179,8 +179,16 @@ export class MultiImageImportDialogComponent {
     event.preventDefault();
   }
 
+  private static readonly HEIC_EXTENSIONS = ['.heic', '.heif'];
+
+  private isImageFile(file: File): boolean {
+    if (file.type.startsWith('image/')) return true;
+    const ext = file.name.toLowerCase();
+    return MultiImageImportDialogComponent.HEIC_EXTENSIONS.some(e => ext.endsWith(e));
+  }
+
   addFiles(files: File[]): void {
-    const imageFiles = files.filter(f => f.type.startsWith('image/'));
+    const imageFiles = files.filter(f => this.isImageFile(f));
     const availableSlots = 4 - this.selectedFiles.length;
     const filesToAdd = imageFiles.slice(0, availableSlots);
 

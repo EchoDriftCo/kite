@@ -109,9 +109,18 @@ export class RecipeImportDialogComponent {
     this.dragOver = false;
   }
 
+  private static readonly HEIC_EXTENSIONS = ['.heic', '.heif'];
+
+  private isImageFile(file: File): boolean {
+    if (file.type.startsWith('image/')) return true;
+    // HEIC/HEIF files may have empty or non-standard MIME type on some platforms
+    const ext = file.name.toLowerCase();
+    return RecipeImportDialogComponent.HEIC_EXTENSIONS.some(e => ext.endsWith(e));
+  }
+
   handleFile(file: File) {
     // Validate file type
-    if (!file.type.startsWith('image/')) {
+    if (!this.isImageFile(file)) {
       this.error = 'Please select an image file';
       return;
     }

@@ -113,7 +113,26 @@ export class TourService {
   }
 
   async start(): Promise<void> {
+    // Don't restart the tour if the user previously skipped or completed it
+    if (this.wasSkippedOrCompleted()) {
+      return;
+    }
+
     // Ensure sample recipe IDs are available for navigation
+    if (this.sampleRecipeIds.size === 0) {
+      this.restoreSampleRecipeIds();
+    }
+
+    this.currentStepIndex = 0;
+    this.active = true;
+    this.stepReady = false;
+    await this.navigateToStep();
+  }
+
+  /** Force-start the tour regardless of skip state (e.g. from Settings). */
+  async forceStart(): Promise<void> {
+    this.clearSkipState();
+
     if (this.sampleRecipeIds.size === 0) {
       this.restoreSampleRecipeIds();
     }
@@ -138,7 +157,32 @@ export class TourService {
     this.currentStepIndex = -1;
     this.active = false;
     this.stepReady = false;
+    this.persistSkipState();
     this.onboardingService.updateProgress({ tourCompleted: true }).subscribe();
+  }
+
+  private persistSkipState(): void {
+    try {
+      localStorage.setItem('tour_skipped', 'true');
+    } catch {
+      // Ignore storage errors
+    }
+  }
+
+  private wasSkippedOrCompleted(): boolean {
+    try {
+      return localStorage.getItem('tour_skipped') === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  private clearSkipState(): void {
+    try {
+      localStorage.removeItem('tour_skipped');
+    } catch {
+      // Ignore storage errors
+    }
   }
 
   get currentStep(): TourStep | null {

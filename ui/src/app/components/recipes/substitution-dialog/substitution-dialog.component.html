@@ -82,7 +82,7 @@
               [(ngModel)]="substitution.selectedOptionIndex"
               class="options-group">
               <!-- Each option -->
-              <div *ngFor="let option of substitution.options; let i = index" class="option-item">
+              <div *ngFor="let option of substitution.options; let i = index" class="option-item" [class.selected]="substitution.selectedOptionIndex === i">
                 <mat-radio-button [value]="i">
                   <div class="option-content">
                     <div class="option-name">{{ option.name }}</div>
@@ -108,7 +108,7 @@
               </div>
 
               <!-- "None of these" option -->
-              <div class="option-item">
+              <div class="option-item" [class.selected]="substitution.selectedOptionIndex === -1">
                 <mat-radio-button [value]="-1">
                   <div class="option-content">
                     <div class="option-name">None of these</div>
