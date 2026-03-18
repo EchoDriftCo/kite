@@ -298,6 +298,8 @@ export class BetaInviteDialogComponent {
       next: () => {
         this.redeeming = false;
         this.redeemed = true;
+        // Persist redemption state so the upgrade banner stays hidden
+        localStorage.setItem('beta-code-redeemed', 'true');
         // Refresh session to pick up updated user tier
         this.authService.refreshSession().catch(() => {});
       },

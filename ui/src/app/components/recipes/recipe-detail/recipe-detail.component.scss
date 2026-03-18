@@ -40,7 +40,7 @@ mat-divider{margin:32px 0}
 .recipe-content{display:grid;grid-template-columns:1fr 2fr;gap:48px;margin-bottom:32px}
 .recipe-content h2{display:flex;align-items:center;gap:8px;font-size:1.5rem;font-weight:500;margin:0 0 24px}
 .recipe-content h2 mat-icon{color:var(--primary-color,#3f51b5)}
-.ingredients-section .ingredients-list{display:flex;flex-direction:column;gap:12px;max-height:500px;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding-right:4px}
+.ingredients-section .ingredients-list{display:flex;flex-direction:column;gap:12px;max-height:500px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:4px}
 .ingredients-section .ingredient-item{display:flex;align-items:flex-start;gap:12px;padding:8px;border-radius:4px;transition:background-color 0.2s}
 .ingredients-section .ingredient-item:hover{background-color:rgba(255,255,255,0.04)}
 .ingredients-section .ingredient-item .check-circle{color:rgba(255,255,255,0.3);font-size:20px;width:20px;height:20px;flex-shrink:0;cursor:pointer;transition:color 0.2s}
@@ -48,7 +48,7 @@ mat-divider{margin:32px 0}
 .ingredients-section .ingredient-item .ingredient-text{line-height:1.5}
 .ingredients-section .ingredient-item .ingredient-text strong{color:rgba(255,255,255,0.87)}
 .ingredients-section .ingredient-item .ingredient-text em{color:rgba(255,255,255,0.6);font-size:0.875rem}
-.instructions-section .instructions-list{display:flex;flex-direction:column;gap:24px;max-height:600px;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding-right:4px}
+.instructions-section .instructions-list{display:flex;flex-direction:column;gap:24px;max-height:600px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:4px}
 .instructions-section .instruction-item{display:flex;gap:16px}
 .instructions-section .instruction-item .step-number{flex-shrink:0;width:36px;height:36px;border-radius:50%;background-color:var(--primary-color,#3f51b5);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:1rem}
 .instructions-section .instruction-item p{margin:0;line-height:1.8;padding-top:6px}

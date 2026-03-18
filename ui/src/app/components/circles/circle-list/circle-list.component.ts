@@ -61,6 +61,7 @@ export class CircleListComponent implements OnInit {
   openCreateDialog() {
     const dialogRef = this.dialog.open(CircleFormDialogComponent, {
       width: '500px',
+      maxWidth: '95vw',
       data: { isEdit: false }
     });
 

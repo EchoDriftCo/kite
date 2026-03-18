@@ -125,6 +125,7 @@ export class CircleDetailComponent implements OnInit {
 
     const dialogRef = this.dialog.open(CircleFormDialogComponent, {
       width: '500px',
+      maxWidth: '95vw',
       data: { isEdit: true, circle: this.circle }
     });
 
