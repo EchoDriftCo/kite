@@ -9,6 +9,7 @@ export interface Circle {
   memberCount?: number;
   recipeCount?: number;
   createdDate?: string;
+  sharedRecipes?: CircleRecipe[];
 }
 
 export interface CircleMember {
@@ -41,6 +42,7 @@ export interface CircleRecipe {
   title?: string;
   recipeImageUrl?: string;
   sharedBySubjectId: string;
+  sharedByDisplayName?: string;
   sharedByEmail?: string;
   sharedDate: string;
 }

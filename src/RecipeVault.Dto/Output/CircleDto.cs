@@ -26,6 +26,7 @@ namespace RecipeVault.Dto.Output {
         public Guid RecipeResourceId { get; set; }
         public string Title { get; set; }
         public Guid SharedBySubjectId { get; set; }
+        public string SharedByDisplayName { get; set; }
         public DateTime SharedDate { get; set; }
     }
 
