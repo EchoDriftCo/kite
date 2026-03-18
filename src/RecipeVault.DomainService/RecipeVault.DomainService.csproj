@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Cortside.Common.Logging" Version="8.0.478" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
+    <PackageReference Include="Resend" Version="0.2.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RecipeVault.Data\RecipeVault.Data.csproj" />

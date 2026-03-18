@@ -17,6 +17,7 @@ namespace RecipeVault.DomainService.Tests {
         private readonly Mock<IRecipeRepository> mockRecipeRepository;
         private readonly Mock<ILogger<CircleService>> mockLogger;
         private readonly Mock<ISubjectPrincipal> mockSubjectPrincipal;
+        private readonly Mock<IEmailService> mockEmailService;
         private readonly CircleService service;
 
         private static readonly Guid SubjectId1 = Guid.Parse("11111111-1111-1111-1111-111111111111");
@@ -27,15 +28,17 @@ namespace RecipeVault.DomainService.Tests {
             mockRecipeRepository = new Mock<IRecipeRepository>();
             mockLogger = new Mock<ILogger<CircleService>>();
             mockSubjectPrincipal = new Mock<ISubjectPrincipal>();
-            
+            mockEmailService = new Mock<IEmailService>();
+
             // Default subject ID
             mockSubjectPrincipal.Setup(x => x.SubjectId).Returns(SubjectId1.ToString());
-            
+
             service = new CircleService(
                 mockCircleRepository.Object,
                 mockRecipeRepository.Object,
                 mockLogger.Object,
-                mockSubjectPrincipal.Object
+                mockSubjectPrincipal.Object,
+                mockEmailService.Object
             );
         }
 
