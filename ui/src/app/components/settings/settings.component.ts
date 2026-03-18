@@ -39,7 +39,7 @@ export class SettingsComponent {
   ) {}
 
   startTour(): void {
-    this.tourService.start();
+    this.tourService.forceStart();
   }
 
   reRunOnboarding(): void {
@@ -54,7 +54,7 @@ export class SettingsComponent {
 
         dialogRef.afterClosed().subscribe(result => {
           if (result?.startTour) {
-            setTimeout(() => this.tourService.start(), 500);
+            setTimeout(() => this.tourService.forceStart(), 500);
           }
         });
       },

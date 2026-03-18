@@ -98,6 +98,14 @@ export class DiscoverComponent implements OnInit {
     this.loadRecipes();
   }
 
+  onDropdownToggle(opened: boolean) {
+    if (opened) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+
   onPageChange(event: PageEvent) {
     this.pageNumber = event.pageIndex + 1;
     this.pageSize = event.pageSize;

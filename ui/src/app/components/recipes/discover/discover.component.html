@@ -16,7 +16,8 @@
 
       <mat-form-field appearance="outline" class="sort-field">
         <mat-label>Sort by</mat-label>
-        <mat-select [(ngModel)]="sortBy" (ngModelChange)="onSortChange()">
+        <mat-select [(ngModel)]="sortBy" (ngModelChange)="onSortChange()"
+                    (openedChange)="onDropdownToggle($event)">
           @for (opt of sortOptions; track opt.value) {
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
           }

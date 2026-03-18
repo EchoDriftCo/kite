@@ -139,6 +139,16 @@
 }
 
 .option-item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: background-color 0.2s, border-color 0.2s;
+
+  &.selected {
+    background-color: rgba(25, 118, 210, 0.12);
+    border-color: rgba(25, 118, 210, 0.6);
+  }
+
   mat-radio-button {
     width: 100%;
     align-items: flex-start;
