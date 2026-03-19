@@ -255,7 +255,7 @@ namespace RecipeVault.WebApi {
                 // and Sentry for frontend error reporting.
                 context.Response.Headers["Content-Security-Policy"] =
                     "default-src 'self'; " +
-                    "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; " +
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
                     "worker-src 'self' blob:; " +
                     "style-src 'self' 'unsafe-inline' fonts.googleapis.com; " +
                     "font-src 'self' fonts.gstatic.com; " +
