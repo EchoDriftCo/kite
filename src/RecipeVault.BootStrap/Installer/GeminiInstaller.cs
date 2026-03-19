@@ -14,7 +14,8 @@ namespace RecipeVault.BootStrap.Installer {
         public void Install(IServiceCollection services, IConfiguration configuration) {
             services.AddHttpClient<IGeminiClient, GeminiClient>(client => {
                 client.BaseAddress = new System.Uri("https://generativelanguage.googleapis.com");
-                client.Timeout = System.TimeSpan.FromSeconds(60);
+                // 180s timeout for multi-image parsing (4 images * ~30-45s each)
+                client.Timeout = System.TimeSpan.FromSeconds(180);
             });
 
             services.AddHttpClient("RecipeUrlFetcher", client => {
