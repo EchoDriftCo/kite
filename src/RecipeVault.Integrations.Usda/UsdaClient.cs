@@ -32,6 +32,13 @@ namespace RecipeVault.Integrations.Usda {
 
             try {
                 var response = await httpClient.GetAsync($"/foods/search?query={Uri.EscapeDataString(query)}&pageSize={pageSize}&api_key={configuration.ApiKey}");
+                
+                // Handle 403 Forbidden (invalid/missing API key) gracefully
+                if (response.StatusCode == System.Net.HttpStatusCode.Forbidden) {
+                    logger.LogError("USDA API returned 403 Forbidden - API key may be invalid or missing");
+                    throw new HttpRequestException("USDA API key is invalid or not authorized", null, System.Net.HttpStatusCode.Forbidden);
+                }
+                
                 response.EnsureSuccessStatusCode();
 
                 var content = await response.Content.ReadAsStringAsync();
@@ -41,6 +48,9 @@ namespace RecipeVault.Integrations.Usda {
 
                 logger.LogInformation("USDA search for '{Query}' returned {Count} results", query, result?.Foods?.Count ?? 0);
                 return result;
+            } catch (HttpRequestException) {
+                // Re-throw HttpRequestException so controller can return 503
+                throw;
             } catch (Exception ex) {
                 logger.LogError(ex, "Failed to search USDA foods for query: {Query}", query);
                 throw;
