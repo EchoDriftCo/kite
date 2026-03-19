@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.RateLimiting;
 using System.Threading.Tasks;
 using Asp.Versioning.ApiExplorer;
@@ -12,10 +13,12 @@ using Cortside.AspNetCore.EntityFramework;
 using Cortside.AspNetCore.Filters;
 using Cortside.AspNetCore.Swagger;
 using Cortside.Health;
+using Cortside.Health.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -288,10 +291,10 @@ namespace RecipeVault.WebApi {
                 // Map /health to /api/health for standard health check convention
                 // Deckard expects /health, Cortside.Health registers /api/health
                 endpoints.MapGet("/health", async context => {
-                    var healthService = context.RequestServices.GetRequiredService<Cortside.Health.IAvailabilityRecorder>();
-                    var status = healthService.Get();
+                    var healthService = context.RequestServices.GetRequiredService<IAvailabilityRecorder>();
+                    var status = healthService.Get<AvailabilityModel>();
                     context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(status));
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(status));
                 });
                 
                 endpoints.MapFallbackToFile("index.html");
