@@ -58,6 +58,9 @@ export class RecipeImportDialogComponent {
   rotation: number = 0;
   cropperReady = false;
   saveImage = true;
+  showImageTips = false;
+  showUrlTips = false;
+  showPaprikaTips = false;
 
   // URL tab state
   recipeUrl = '';

@@ -296,6 +296,13 @@
       animation: pulse 1.5s infinite;
     }
   }
+
+  @media (max-width: 600px) {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+  }
 }
 
 // Dark mode support (uses CSS variables from parent app)

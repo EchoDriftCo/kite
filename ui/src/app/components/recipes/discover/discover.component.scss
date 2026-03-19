@@ -32,12 +32,12 @@
     align-items: center;
 
     .search-field {
-      width: 280px;
+      width: min(280px, 100%);
       margin-bottom: -1.25em;
     }
 
     .sort-field {
-      width: 160px;
+      width: min(160px, 100%);
       margin-bottom: -1.25em;
     }
   }

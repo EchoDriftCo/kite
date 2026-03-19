@@ -359,6 +359,19 @@
 }
 
 // Mobile responsive
+@media (max-width: 600px) {
+  .ready-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .ready-content h2,
+  .welcome-content h2 {
+    font-size: 1.5rem;
+  }
+}
+
 @media (max-width: 767px) {
   .checkbox-grid {
     grid-template-columns: repeat(2, 1fr);

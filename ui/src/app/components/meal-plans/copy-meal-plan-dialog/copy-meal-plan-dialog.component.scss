@@ -1,6 +1,7 @@
 .copy-dialog {
-  min-width: 400px;
+  min-width: min(400px, 90vw);
   max-width: 450px;
+  box-sizing: border-box;
 
   h2 {
     display: flex;
@@ -57,5 +58,11 @@ mat-dialog-actions {
     mat-icon {
       margin-right: 8px;
     }
+  }
+}
+
+@media (max-width: 600px) {
+  .copy-dialog {
+    min-width: auto;
   }
 }

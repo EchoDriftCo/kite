@@ -1,6 +1,7 @@
 .dialog-content {
-  min-width: 400px;
+  min-width: min(400px, 90vw);
   max-width: 500px;
+  box-sizing: border-box;
 
   h3 {
     margin-top: 0;
@@ -110,5 +111,11 @@ mat-dialog-actions {
   mat-spinner {
     display: inline-block;
     margin: 0 auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .dialog-content {
+    min-width: auto;
   }
 }

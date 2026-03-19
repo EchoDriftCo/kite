@@ -80,17 +80,20 @@
           }
 
           @if (!selectedFile) {
-            <div class="tips">
-              <h4>
+            <div class="tips collapsible">
+              <h4 (click)="showImageTips = !showImageTips">
                 <mat-icon>lightbulb</mat-icon>
-                Tips for best results:
+                Tips for best results
+                <mat-icon class="expand-icon" [class.expanded]="showImageTips">expand_more</mat-icon>
               </h4>
-              <ul>
-                <li>Use good lighting and avoid shadows</li>
-                <li>Make sure text is clear and legible</li>
-                <li>Capture the entire recipe in one photo</li>
-                <li>Avoid glare or reflections</li>
-              </ul>
+              @if (showImageTips) {
+                <ul>
+                  <li>Use good lighting and avoid shadows</li>
+                  <li>Make sure text is clear and legible</li>
+                  <li>Capture the entire recipe in one photo</li>
+                  <li>Avoid glare or reflections</li>
+                </ul>
+              }
             </div>
           }
         </div>
@@ -113,16 +116,19 @@
             <mat-icon matPrefix>link</mat-icon>
           </mat-form-field>
 
-          <div class="tips">
-            <h4>
+          <div class="tips collapsible">
+            <h4 (click)="showUrlTips = !showUrlTips">
               <mat-icon>lightbulb</mat-icon>
-              Tips:
+              Tips
+              <mat-icon class="expand-icon" [class.expanded]="showUrlTips">expand_more</mat-icon>
             </h4>
-            <ul>
-              <li>Works best with popular recipe sites (AllRecipes, Food Network, etc.)</li>
-              <li>The URL must be publicly accessible (not behind a login)</li>
-              <li>Paste the full URL including https://</li>
-            </ul>
+            @if (showUrlTips) {
+              <ul>
+                <li>Works best with popular recipe sites (AllRecipes, Food Network, etc.)</li>
+                <li>The URL must be publicly accessible (not behind a login)</li>
+                <li>Paste the full URL including https://</li>
+              </ul>
+            }
           </div>
         </div>
       </mat-tab>
@@ -179,17 +185,20 @@
             </div>
           }
 
-          <div class="tips">
-            <h4>
+          <div class="tips collapsible">
+            <h4 (click)="showPaprikaTips = !showPaprikaTips">
               <mat-icon>lightbulb</mat-icon>
-              How to export from Paprika:
+              How to export from Paprika
+              <mat-icon class="expand-icon" [class.expanded]="showPaprikaTips">expand_more</mat-icon>
             </h4>
-            <ul>
-              <li><strong>iOS/Mac:</strong> Go to Settings → Export Recipes → Select recipes → Export</li>
-              <li><strong>Android:</strong> Menu → Export Recipes → Choose recipes → Save</li>
-              <li>All recipes will be imported as private (not visible to others)</li>
-              <li>Categories from Paprika will be converted to tags</li>
-            </ul>
+            @if (showPaprikaTips) {
+              <ul>
+                <li><strong>iOS/Mac:</strong> Go to Settings → Export Recipes → Select recipes → Export</li>
+                <li><strong>Android:</strong> Menu → Export Recipes → Choose recipes → Save</li>
+                <li>All recipes will be imported as private (not visible to others)</li>
+                <li>Categories from Paprika will be converted to tags</li>
+              </ul>
+            }
           </div>
         </div>
       </mat-tab>

@@ -1,6 +1,7 @@
 .substitution-dialog {
-  min-width: 600px;
+  min-width: min(600px, 90vw);
   max-width: 800px;
+  box-sizing: border-box;
 
   h2 {
     margin: 0;

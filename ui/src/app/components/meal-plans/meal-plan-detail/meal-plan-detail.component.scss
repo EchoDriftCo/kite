@@ -235,9 +235,17 @@
     padding: 8px 4px;
   }
 
-  .calendar-row .slot-label {
-    font-size: 0.7rem;
-    padding: 8px;
+  .calendar-header {
+    grid-template-columns: 60px repeat(auto-fit, minmax(0, 1fr));
+  }
+
+  .calendar-row {
+    grid-template-columns: 60px repeat(auto-fit, minmax(0, 1fr));
+
+    .slot-label {
+      font-size: 0.7rem;
+      padding: 8px;
+    }
   }
 
   .calendar-cell {

@@ -1,6 +1,7 @@
 .import-dialog {
-  min-width: 500px;
+  min-width: min(500px, 90vw);
   max-width: 600px;
+  box-sizing: border-box;
 
   h2 {
     display: flex;
@@ -185,6 +186,25 @@ mat-dialog-content {
     border-radius: 8px;
     margin-top: 24px;
 
+    &.collapsible h4 {
+      cursor: pointer;
+      user-select: none;
+      margin-bottom: 0;
+
+      .expand-icon {
+        margin-left: auto;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        transition: transform 0.2s;
+        color: inherit;
+
+        &.expanded {
+          transform: rotate(180deg);
+        }
+      }
+    }
+
     h4 {
       display: flex;
       align-items: center;
@@ -203,7 +223,7 @@ mat-dialog-content {
     }
 
     ul {
-      margin: 0;
+      margin: 12px 0 0;
       padding-left: 24px;
       
       li {

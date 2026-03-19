@@ -24,7 +24,7 @@
     align-items: center;
 
     .search-field {
-      width: 300px;
+      width: min(300px, 100%);
       margin-bottom: -1.25em; // Cancel Material field margin
     }
   }

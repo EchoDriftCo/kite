@@ -72,3 +72,12 @@ migrations/pending.sql
 
 # Local documentation (not committed)
 .local-docs/
+DEVELOPER.md
+docker-compose.qa.yml
+FORK_IMPLEMENTATION_SUMMARY.md
+HANDOFF.md
+INVITE_CODE_IMPLEMENTATION_SUMMARY.md
+INVITE_CODE_QUICK_START.md
+RECIPE_FORKING_COMPLETION_REPORT.md
+docs/design/recipe-import-migration.md
+src/RecipeVault.WebApi/appsettings.QA.json

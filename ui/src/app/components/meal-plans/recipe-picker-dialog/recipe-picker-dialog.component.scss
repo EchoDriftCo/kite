@@ -56,6 +56,6 @@
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 
   .servings-field {
-    width: 150px;
+    width: min(150px, 100%);
   }
 }
