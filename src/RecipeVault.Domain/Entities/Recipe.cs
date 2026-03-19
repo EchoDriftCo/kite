@@ -127,7 +127,11 @@ namespace RecipeVault.Domain.Entities {
         public void Update(string title, int yield, int? prepTimeMinutes, int? cookTimeMinutes, string description, string source, string originalImageUrl) {
             var messages = new MessageList();
             messages.Aggregate(() => string.IsNullOrWhiteSpace(title), () => new InvalidValueError(nameof(title), title));
+            messages.Aggregate(() => title?.Length > 250, () => new InvalidValueError(nameof(title), "Title must not exceed 250 characters"));
             messages.Aggregate(() => yield < 1, () => new InvalidValueError(nameof(yield), yield.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            messages.Aggregate(() => description?.Length > 1000, () => new InvalidValueError(nameof(description), "Description must not exceed 1000 characters"));
+            messages.Aggregate(() => source?.Length > 500, () => new InvalidValueError(nameof(source), "Source must not exceed 500 characters"));
+            messages.Aggregate(() => originalImageUrl?.Length > 1000, () => new InvalidValueError(nameof(originalImageUrl), "Image URL must not exceed 1000 characters"));
             messages.ThrowIfAny<ValidationListException>();
 
             Title = title;
