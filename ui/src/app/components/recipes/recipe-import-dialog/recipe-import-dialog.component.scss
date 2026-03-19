@@ -107,6 +107,35 @@ mat-dialog-content {
     }
   }
 
+  .image-preview {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 16px 0;
+    padding: 12px;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+
+    .thumbnail {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .preview-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      button mat-icon {
+        margin-right: 4px;
+      }
+    }
+  }
+
   .cropper-container {
     margin: 16px 0;
 

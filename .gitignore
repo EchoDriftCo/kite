@@ -81,3 +81,4 @@ INVITE_CODE_QUICK_START.md
 RECIPE_FORKING_COMPLETION_REPORT.md
 docs/design/recipe-import-migration.md
 src/RecipeVault.WebApi/appsettings.QA.json
+supabase/config.toml

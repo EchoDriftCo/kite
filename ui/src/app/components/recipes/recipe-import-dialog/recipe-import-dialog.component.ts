@@ -58,6 +58,7 @@ export class RecipeImportDialogComponent {
   rotation: number = 0;
   cropperReady = false;
   saveImage = true;
+  showCropper = false;
   showImageTips = false;
   showUrlTips = false;
   showPaprikaTips = false;
@@ -171,6 +172,15 @@ export class RecipeImportDialogComponent {
     this.croppedImageBase64 = null;
     this.rotation = 0;
     this.cropperReady = false;
+    this.showCropper = false;
+  }
+
+  openCropper() {
+    this.showCropper = true;
+  }
+
+  finishCrop() {
+    this.showCropper = false;
   }
 
   rotateLeft() {

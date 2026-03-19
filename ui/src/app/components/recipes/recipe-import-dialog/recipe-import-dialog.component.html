@@ -50,7 +50,7 @@
 
               <p class="file-info">Supports: JPG, PNG, HEIC (max 10MB)</p>
             </div>
-          } @else {
+          } @else if (showCropper) {
             <div class="cropper-container">
               <div class="cropper-toolbar">
                 <button mat-icon-button (click)="rotateLeft()" [disabled]="loading" matTooltip="Rotate left">
@@ -59,9 +59,10 @@
                 <button mat-icon-button (click)="rotateRight()" [disabled]="loading" matTooltip="Rotate right">
                   <mat-icon>rotate_right</mat-icon>
                 </button>
-                <span class="toolbar-hint">Draw a box to crop, or import as-is</span>
-                <button mat-icon-button (click)="clearFile()" [disabled]="loading" matTooltip="Remove image">
-                  <mat-icon>delete</mat-icon>
+                <span class="toolbar-hint">Draw a box to crop</span>
+                <button mat-button color="primary" (click)="finishCrop()" [disabled]="loading">
+                  <mat-icon>check</mat-icon>
+                  Done
                 </button>
               </div>
 
@@ -76,6 +77,19 @@
                 (cropperReady)="onCropperReady()"
                 (loadImageFailed)="onLoadImageFailed()">
               </image-cropper>
+            </div>
+          } @else {
+            <div class="image-preview">
+              <img [src]="croppedImageBase64 || previewUrl" alt="Recipe image" class="thumbnail" />
+              <div class="preview-actions">
+                <button mat-stroked-button (click)="openCropper()" [disabled]="loading">
+                  <mat-icon>crop</mat-icon>
+                  Crop
+                </button>
+                <button mat-icon-button (click)="clearFile()" [disabled]="loading" matTooltip="Remove image">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
             </div>
           }
 
