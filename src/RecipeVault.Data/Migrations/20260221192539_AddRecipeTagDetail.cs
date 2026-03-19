@@ -12,7 +12,9 @@ namespace RecipeVault.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP TABLE IF EXISTS public.\"UserTagAlias\"");
+            migrationBuilder.DropTable(
+                name: "UserTagAlias",
+                schema: "public");
 
             migrationBuilder.AddColumn<string>(
                 name: "Detail",
