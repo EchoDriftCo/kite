@@ -118,7 +118,7 @@ export class RecipeImportDialogComponent {
     return RecipeImportDialogComponent.HEIC_EXTENSIONS.some(e => ext.endsWith(e));
   }
 
-  handleFile(file: File) {
+  async handleFile(file: File) {
     // Validate file type
     if (!this.isImageFile(file)) {
       this.error = 'Please select an image file';
@@ -131,8 +131,27 @@ export class RecipeImportDialogComponent {
       return;
     }
 
-    this.selectedFile = file;
     this.error = '';
+
+    // Convert HEIC/HEIF to JPEG since browsers and the cropper don't support them natively
+    const ext = file.name.toLowerCase();
+    if (RecipeImportDialogComponent.HEIC_EXTENSIONS.some(e => ext.endsWith(e))) {
+      try {
+        this.loading = true;
+        const { default: heic2any } = await import('heic2any');
+        const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 }) as Blob;
+        file = new File([blob], file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'), { type: 'image/jpeg' });
+      } catch (err) {
+        this.error = 'Failed to convert HEIC image. Please try a JPG or PNG instead.';
+        this.loading = false;
+        console.error('HEIC conversion error:', err);
+        return;
+      } finally {
+        this.loading = false;
+      }
+    }
+
+    this.selectedFile = file;
 
     // Create preview
     const reader = new FileReader();

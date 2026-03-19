@@ -129,6 +129,8 @@ mat-dialog-content {
 
     image-cropper {
       display: block;
+      max-height: 400px;
+      overflow: hidden;
     }
   }
 
