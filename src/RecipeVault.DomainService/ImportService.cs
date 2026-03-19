@@ -624,13 +624,23 @@ namespace RecipeVault.DomainService {
             logger.LogInformation("Multi-image parsing complete: {IngredientCount} ingredients, {InstructionCount} instructions",
                 allIngredients.Count, allInstructions.Count);
 
+            // Validate that we got meaningful content
+            if (allIngredients.Count == 0 && allInstructions.Count == 0) {
+                logger.LogError("Gemini returned ZERO ingredients AND ZERO instructions from {ImageCount} images - cannot create empty recipe",
+                    imageStreams.Count);
+                throw new InvalidOperationException(
+                    $"Could not extract recipe data from {imageStreams.Count} image(s). " +
+                    "The images may not contain a recipe, or the recipe text may not be readable. " +
+                    "Please ensure images are clear, well-lit, and contain visible recipe text.");
+            }
+
             if (allIngredients.Count == 0) {
-                logger.LogWarning("Gemini returned ZERO ingredients from {ImageCount} images - this may indicate API failure or empty images",
+                logger.LogWarning("Gemini returned ZERO ingredients from {ImageCount} images - recipe will have no ingredients",
                     imageStreams.Count);
             }
 
             if (allInstructions.Count == 0) {
-                logger.LogWarning("Gemini returned ZERO instructions from {ImageCount} images - this may indicate API failure or empty images",
+                logger.LogWarning("Gemini returned ZERO instructions from {ImageCount} images - recipe will have no instructions",
                     imageStreams.Count);
             }
 
