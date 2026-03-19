@@ -3,10 +3,16 @@
     <h1>{{ isEditMode ? 'Edit Recipe' : 'Create New Recipe' }}</h1>
     
     @if (!isEditMode) {
-      <button mat-raised-button color="accent" type="button" (click)="openImportDialog()">
-        <mat-icon>auto_fix_high</mat-icon>
-        Import Recipe
-      </button>
+      <div class="import-buttons">
+        <button mat-raised-button color="accent" type="button" (click)="openImportDialog()" class="import-btn">
+          <mat-icon>auto_fix_high</mat-icon>
+          Import Recipe
+        </button>
+        <button mat-raised-button color="accent" type="button" (click)="openMultiImageImportDialog()" class="import-btn">
+          <mat-icon>photo_library</mat-icon>
+          Multi-Image Import
+        </button>
+      </div>
     }
   </div>
 

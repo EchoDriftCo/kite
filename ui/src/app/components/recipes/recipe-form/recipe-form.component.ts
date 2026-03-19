@@ -14,6 +14,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { RecipeService } from '../../../services/recipe.service';
 import { Recipe, CreateRecipeRequest, RecipeIngredient, RecipeInstruction, ParsedRecipe } from '../../../models/recipe.model';
 import { RecipeImportDialogComponent, ImportResult } from '../recipe-import-dialog/recipe-import-dialog.component';
+import { MultiImageImportDialogComponent } from '../multi-image-import-dialog/multi-image-import-dialog.component';
 import { TagSelectorComponent } from '../../shared/tag-selector/tag-selector.component';
 import { RecipeTag, AssignTagItem } from '../../../models/tag.model';
 import { environment } from '../../../../environments/environment';
@@ -297,6 +298,21 @@ export class RecipeFormComponent implements OnInit {
     } else {
       this.router.navigate(['/recipes']);
     }
+  }
+
+  openMultiImageImportDialog() {
+    const dialogRef = this.dialog.open(MultiImageImportDialogComponent, {
+      width: '700px',
+      maxWidth: '95vw',
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe((recipe: any) => {
+      if (!recipe) return;
+
+      // Navigate to the newly created recipe
+      this.router.navigate(['/recipes', recipe.recipeResourceId]);
+    });
   }
 
   openImportDialog() {
