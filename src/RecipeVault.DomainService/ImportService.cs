@@ -620,6 +620,20 @@ namespace RecipeVault.DomainService {
                 imageIndex++;
             }
 
+            // Log what Gemini returned
+            logger.LogInformation("Multi-image parsing complete: {IngredientCount} ingredients, {InstructionCount} instructions",
+                allIngredients.Count, allInstructions.Count);
+
+            if (allIngredients.Count == 0) {
+                logger.LogWarning("Gemini returned ZERO ingredients from {ImageCount} images - this may indicate API failure or empty images",
+                    imageStreams.Count);
+            }
+
+            if (allInstructions.Count == 0) {
+                logger.LogWarning("Gemini returned ZERO instructions from {ImageCount} images - this may indicate API failure or empty images",
+                    imageStreams.Count);
+            }
+
             // Create recipe from combined results
             var recipe = new Recipe(
                 title: title ?? "Multi-Image Recipe Import",
@@ -658,6 +672,9 @@ namespace RecipeVault.DomainService {
                 ));
             }
             recipe.SetInstructions(instructions);
+
+            logger.LogInformation("Recipe built with {IngredientCount} ingredients and {InstructionCount} instructions",
+                recipe.Ingredients.Count, recipe.Instructions.Count);
 
             // Save recipe
             await recipeRepository.AddAsync(recipe).ConfigureAwait(false);
