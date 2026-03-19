@@ -127,14 +127,21 @@ namespace RecipeVault.DomainService {
                 throw new CircleInviteNotFoundException($"Invite with token {inviteToken} not found");
             }
 
-            invite.Accept();  // This will throw if expired or already used
-
-            // Check if already a member
+            // Check if already a member BEFORE calling Accept() so we can handle idempotently
             var existingMember = await circleRepository.GetMemberAsync(invite.CircleId, CurrentSubjectId).ConfigureAwait(false);
-            if (existingMember != null) {
-                if (existingMember.Status == MemberStatus.Active) {
-                    throw new InvalidOperationException("You are already a member of this circle");
+            if (existingMember != null && existingMember.Status == MemberStatus.Active) {
+                // Already a member - silently succeed (idempotent behavior)
+                // Don't mark the invite as used since this is a duplicate request
+                using (logger.PushProperty("CircleResourceId", invite.Circle.CircleResourceId)) {
+                    logger.LogInformation("User already member of circle, ignoring duplicate invite acceptance");
                 }
+                return invite.Circle;
+            }
+
+            // Mark invite as accepted (will throw if expired or already used by someone else)
+            invite.Accept();
+
+            if (existingMember != null) {
                 // Reactivate if they previously left
                 existingMember.Activate();
             } else {

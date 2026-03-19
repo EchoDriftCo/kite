@@ -18,7 +18,9 @@ namespace RecipeVault.Data.Repositories {
         public async Task<PagedList<Circle>> SearchAsync(CircleSearch model) {
             var circles = model.Build(context.Circles
                 .Include(x => x.Members)
+                    .ThenInclude(m => m.Subject)
                 .Include(x => x.SharedRecipes)
+                    .ThenInclude(sr => sr.Recipe)
                 .Include(x => x.CreatedSubject)
                 .Include(x => x.LastModifiedSubject));
 
@@ -64,6 +66,7 @@ namespace RecipeVault.Data.Repositories {
             return context.CircleInvites
                 .Include(x => x.Circle)
                     .ThenInclude(c => c.Members)
+                        .ThenInclude(m => m.Subject)
                 .FirstOrDefaultAsync(x => x.InviteToken == inviteToken);
         }
 
