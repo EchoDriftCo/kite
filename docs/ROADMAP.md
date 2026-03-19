@@ -1077,44 +1077,145 @@ POST /api/recipes/import/images
 
 ---
 
-### 5F. Video Import (Future Exploration)
+### 5F. Video Import
 
-**Status:** Research / Future consideration
+**Status:** Priority — competitive gap (Umami, FoodiePrep, Forkee all have this)
 
-#### Idea
+#### Overview
 
-Import recipes from TikTok, Instagram Reels, and YouTube cooking videos. Extract recipe from:
-- Spoken narration (speech-to-text)
-- On-screen text/captions
-- Visual ingredient identification
+Import recipes from TikTok, Instagram Reels, and YouTube cooking videos. Users paste a URL and get a structured recipe extracted from video content.
 
-#### Synergy with Voice Features
+#### Why Now
 
-This shares infrastructure with [Section 6 - Voice & Cooking Mode](#6-voice--cooking-mode):
-- Speech-to-text (Whisper API or similar)
-- Audio processing
-- Natural language recipe extraction
+- **Competitive pressure:** Umami added video-to-recipe import in Oct 2025. FoodiePrep, Forkee, CookBook, and PantryPilot also support it. RecipeVault is behind.
+- **User demand:** Video recipes are the dominant discovery channel (TikTok, IG Reels, YouTube Shorts). Users find recipes in video form and need to save them as text.
+- **Market trend:** "Video-first recipe capture" identified by HUSTLE as the #1 feature trend in recipe app space for 2026.
 
-#### Challenges
-
-- Copyright/terms of service for scraping video platforms
-- Processing long-form video (YouTube) vs short-form (TikTok/Reels)
-- Accuracy of ingredient quantities from spoken word
-- Multiple speakers, background music, varying audio quality
-
-#### Potential Approach
+#### Technical Approach
 
 ```
-Video URL → Download audio → Whisper transcription → 
-Gemini extraction → Structured recipe → User review
+User pastes URL → Backend downloads audio → Whisper transcription →
+Gemini extraction (structured recipe) → User preview/edit → Save
 ```
+
+**Step 1: Audio Extraction**
+- Use `yt-dlp` to download audio from YouTube, TikTok, Instagram
+- Supports most video platforms without API keys
+- Extract audio-only (smaller, faster)
+
+**Step 2: Speech-to-Text**
+- Gemini audio input (preferred — already integrated, handles long audio)
+- Fallback: OpenAI Whisper API if needed for accuracy
+- Handle: background music, multiple speakers, varying audio quality
+
+**Step 3: Recipe Extraction**
+- Send transcript to Gemini with recipe extraction prompt
+- Extract: title, ingredients (with quantities), instructions, times, servings
+- Handle: informal language ("a good amount of salt"), visual-only steps ("as you can see")
+
+**Step 4: Supplemental Data**
+- Also extract on-screen text/captions if available (yt-dlp can pull subtitles)
+- Merge spoken + captioned content for better accuracy
+- Pull video thumbnail as recipe image
+
+#### Data Model
+
+Extends existing import infrastructure:
+
+```csharp
+// New import source type
+public enum ImportSourceType {
+    Url,        // Existing
+    Html,       // Existing  
+    Image,      // Existing
+    Paprika,    // Existing
+    Video       // NEW
+}
+
+// Video-specific metadata stored in existing ImportJob
+// ResultsJson includes: videoUrl, platform, duration, transcriptConfidence
+```
+
+#### API Design
+
+```
+# Import from video URL
+POST /api/recipes/import/video
+  Body: { 
+    "url": "https://www.tiktok.com/@chef/video/123",
+    "includeSubtitles": true  // Also extract captions
+  }
+  Returns: {
+    "recipe": { ...parsed recipe for preview... },
+    "transcript": "...",
+    "confidence": 0.87,
+    "platform": "tiktok",
+    "duration": "00:01:32",
+    "thumbnailUrl": "..."
+  }
+
+# Save imported video recipe (uses existing save endpoint)
+POST /api/recipes/import/save
+  Body: { parsed recipe + user edits + sourceVideoUrl }
+```
+
+#### UX Design
+
+```
+┌─────────────────────────────────────────────────────┐
+│  📹 Import from Video                               │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  Paste a video URL:                                 │
+│  ┌───────────────────────────────────────────────┐  │
+│  │ https://www.tiktok.com/@chef/video/123456     │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                     │
+│  Supported: TikTok, Instagram, YouTube, Shorts     │
+│                                                     │
+│  [Import Recipe]                                    │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+Processing view:
+```
+┌─────────────────────────────────────────────────────┐
+│  📹 Importing from TikTok...                        │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  ✅ Downloading audio...                             │
+│  ✅ Transcribing speech...                           │
+│  ⏳ Extracting recipe...                             │
+│                                                     │
+│  This may take 15-30 seconds                        │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+#### Challenges & Mitigations
+
+| Challenge | Mitigation |
+|-----------|-----------|
+| Copyright/TOS for video platforms | Use `yt-dlp` (audio only, not re-hosting), same as users downloading for personal use |
+| Long-form video (YouTube) | Segment audio, process in chunks, stitch transcript |
+| Informal spoken measurements | Gemini prompt handles "a splash of", "a good pinch" → reasonable defaults |
+| Background music / noise | Whisper/Gemini handle this well; flag low-confidence extractions |
+| Rate limiting at scale | Queue processing, limit to N imports/day per user (free tier) |
+
+#### Dependencies
+
+- `yt-dlp` installed on server (or containerized)
+- Gemini API (already integrated)
+- Existing import infrastructure (ImportJob, preview/save flow)
 
 #### Implementation Estimate
 
-TBD — requires research into:
-- Video platform API access / scraping legality
-- Whisper API costs at scale
-- Accuracy testing with real cooking videos
+- Backend (audio extraction + transcription): 8-12 hours
+- Backend (Gemini recipe extraction): 4-6 hours
+- Frontend (import UI + preview): 6-8 hours
+- Tests: 4-6 hours
+- **Total: 22-32 hours**
 
 ---
 

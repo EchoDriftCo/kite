@@ -96,6 +96,9 @@ namespace RecipeVault.WebApi {
                     options.Authority = jwtIssuer;
                     options.Audience = jwtAudience;
 
+                    // Allow HTTP for local development (Supabase runs on http://127.0.0.1:54321)
+                    options.RequireHttpsMetadata = !supabaseUrl?.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ?? true;
+
                     // Prevent ASP.NET Core from remapping JWT claim types (e.g. "sub" → long URI)
                     // so Cortside SubjectPrincipal can find the "sub" claim by its original name
                     options.MapInboundClaims = false;
@@ -281,6 +284,16 @@ namespace RecipeVault.WebApi {
             app.UseAuthorization(); // intentionally set after UseRouting
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
+                
+                // Map /health to /api/health for standard health check convention
+                // Deckard expects /health, Cortside.Health registers /api/health
+                endpoints.MapGet("/health", async context => {
+                    var healthService = context.RequestServices.GetRequiredService<Cortside.Health.IAvailabilityRecorder>();
+                    var status = healthService.Get();
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(status));
+                });
+                
                 endpoints.MapFallbackToFile("index.html");
             });
         }
