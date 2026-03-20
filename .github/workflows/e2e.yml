@@ -1,10 +1,12 @@
 name: E2E Tests
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:  # Manual trigger only - E2E needs full stack (Angular + backend + Supabase)
+  # TODO: Re-enable on push/PR when CI has docker-compose standing up the full stack
+  # push:
+  #   branches: [ main ]
+  # pull_request:
+  #   branches: [ main ]
 
 jobs:
   test:
