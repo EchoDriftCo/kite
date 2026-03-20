@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -269,6 +270,25 @@ namespace RecipeVault.WebApi {
         /// <param name="provider"></param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider) {
             
+            // Auto-apply pending EF Core migrations on startup (skip in test/CI environments)
+            if (!env.IsEnvironment("Testing")) {
+                try {
+                    using (var scope = app.ApplicationServices.CreateScope()) {
+                        var db = scope.ServiceProvider.GetRequiredService<RecipeVaultDbContext>();
+                        var pendingMigrations = db.Database.GetPendingMigrations().ToList();
+                        if (pendingMigrations.Count > 0) {
+                            var migrationLogger = scope.ServiceProvider.GetRequiredService<ILogger<Startup>>();
+                            migrationLogger.LogInformation("Applying {Count} pending migration(s): {Migrations}", pendingMigrations.Count, string.Join(", ", pendingMigrations));
+                            db.Database.Migrate();
+                            migrationLogger.LogInformation("Migrations applied successfully");
+                        }
+                    }
+                } catch (Exception ex) {
+                    var startupLogger = app.ApplicationServices.GetRequiredService<ILogger<Startup>>();
+                    startupLogger.LogWarning(ex, "Failed to apply migrations on startup — may need manual intervention");
+                }
+            }
+
             app.UseApiDefaults(Configuration);
             app.UseSwagger("RecipeVault Api", provider);
 
