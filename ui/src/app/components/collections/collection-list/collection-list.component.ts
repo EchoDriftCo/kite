@@ -114,14 +114,30 @@ import { CollectionFormDialogComponent } from '../collection-form-dialog/collect
     }
 
     .empty-state {
+      grid-column: 1 / -1;
       text-align: center;
-      padding: var(--spacing-xl);
+      padding: var(--spacing-xl) var(--spacing-lg);
+      max-width: 400px;
+      margin: 48px auto 0;
+      cursor: default;
+    }
+
+    .empty-state:hover {
+      transform: none;
+      box-shadow: none;
     }
 
     .empty-state mat-icon {
       font-size: 64px;
       width: 64px;
       height: 64px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .empty-state p {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
       color: var(--text-secondary);
     }
   `]
