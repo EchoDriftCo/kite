@@ -20,8 +20,18 @@
 
   .actions {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     align-items: center;
+    flex-wrap: wrap;
+
+    mat-button-toggle-group {
+      flex-shrink: 0; // Prevent toggle group from clipping
+    }
+
+    button[mat-raised-button] {
+      white-space: nowrap; // Never wrap button text to two lines
+      flex-shrink: 0;
+    }
 
     .search-field {
       width: min(300px, 100%);
@@ -337,38 +347,12 @@ mat-paginator {
 }
 
 // Desktop: scale up primary action buttons for better visibility
-@media (min-width: 768px) {
-  .header .actions {
-    button[mat-raised-button] {
-      height: 44px;
-      font-size: 15px;
-      padding: 0 20px;
-      line-height: 44px;
-
-      mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-        margin-right: 6px;
-      }
-    }
-  }
-}
-
 @media (min-width: 1024px) {
   .header .actions {
     button[mat-raised-button] {
-      height: 48px;
-      font-size: 16px;
-      padding: 0 24px;
-      line-height: 48px;
-
-      mat-icon {
-        font-size: 22px;
-        width: 22px;
-        height: 22px;
-        margin-right: 8px;
-      }
+      height: 42px;
+      font-size: 15px;
+      padding: 0 20px;
     }
   }
 }
@@ -376,17 +360,9 @@ mat-paginator {
 @media (min-width: 1440px) {
   .header .actions {
     button[mat-raised-button] {
-      height: 52px;
-      font-size: 17px;
-      padding: 0 28px;
-      line-height: 52px;
-
-      mat-icon {
-        font-size: 24px;
-        width: 24px;
-        height: 24px;
-        margin-right: 8px;
-      }
+      height: 44px;
+      font-size: 16px;
+      padding: 0 24px;
     }
   }
 }
