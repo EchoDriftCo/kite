@@ -1,3 +1,21 @@
+.filter-toggles {
+  display: flex;
+  width: 100%;
+  margin-bottom: 12px;
+
+  mat-button-toggle {
+    flex: 1;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+  }
+}
+
 .search-field {
   width: 100%;
   margin-bottom: 8px;

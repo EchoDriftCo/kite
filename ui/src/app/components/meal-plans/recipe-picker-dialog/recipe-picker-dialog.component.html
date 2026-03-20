@@ -1,6 +1,29 @@
 <h2 mat-dialog-title>Select a Recipe</h2>
 
 <mat-dialog-content>
+  <mat-button-toggle-group
+    [(ngModel)]="activeFilter"
+    (change)="onFilterChange($event.value)"
+    class="filter-toggles"
+    hideSingleSelectionIndicator>
+    <mat-button-toggle value="mine">
+      <mat-icon>person</mat-icon>
+      Mine
+    </mat-button-toggle>
+    <mat-button-toggle value="public">
+      <mat-icon>public</mat-icon>
+      Public
+    </mat-button-toggle>
+    <mat-button-toggle value="favorites">
+      <mat-icon>favorite</mat-icon>
+      Favorites
+    </mat-button-toggle>
+    <mat-button-toggle value="all">
+      <mat-icon>all_inclusive</mat-icon>
+      All
+    </mat-button-toggle>
+  </mat-button-toggle-group>
+
   <mat-form-field appearance="outline" class="search-field">
     <mat-label>Search recipes</mat-label>
     <input matInput

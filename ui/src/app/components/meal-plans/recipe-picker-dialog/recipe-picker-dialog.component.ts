@@ -8,9 +8,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatListModule } from '@angular/material/list';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { RecipeService } from '../../../services/recipe.service';
 import { Recipe } from '../../../models/recipe.model';
 import { Subject, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs';
+
+export type RecipeFilter = 'mine' | 'public' | 'favorites' | 'all';
 
 export interface RecipePickerData {
   date: string;
@@ -35,7 +38,8 @@ export interface RecipePickerResult {
     MatFormFieldModule,
     MatInputModule,
     MatProgressSpinnerModule,
-    MatListModule
+    MatListModule,
+    MatButtonToggleModule
   ],
   templateUrl: './recipe-picker-dialog.component.html',
   styleUrl: './recipe-picker-dialog.component.scss'
@@ -44,6 +48,7 @@ export class RecipePickerDialogComponent implements OnInit {
   recipes: Recipe[] = [];
   loading = false;
   searchTerm = '';
+  activeFilter: RecipeFilter = 'mine';
   servings: number | null = null;
   selectedRecipe: Recipe | null = null;
 
@@ -63,12 +68,7 @@ export class RecipePickerDialogComponent implements OnInit {
       distinctUntilChanged(),
       switchMap(term => {
         this.loading = true;
-        return this.recipeService.searchRecipes({
-          pageNumber: 1,
-          pageSize: 20,
-          title: term || undefined,
-          includePublic: true
-        });
+        return this.recipeService.searchRecipes(this.buildSearchParams(term));
       })
     ).subscribe({
       next: (result) => {
@@ -81,13 +81,35 @@ export class RecipePickerDialogComponent implements OnInit {
     });
   }
 
-  loadRecipes() {
-    this.loading = true;
-    this.recipeService.searchRecipes({
+  private buildSearchParams(term?: string): any {
+    const params: any = {
       pageNumber: 1,
       pageSize: 20,
-      includePublic: true
-    }).subscribe({
+      title: term || undefined
+    };
+
+    switch (this.activeFilter) {
+      case 'mine':
+        // Default — only user's own recipes
+        break;
+      case 'public':
+        params.isPublic = true;
+        params.includePublic = true;
+        break;
+      case 'favorites':
+        params.isFavorite = true;
+        break;
+      case 'all':
+        params.includePublic = true;
+        break;
+    }
+
+    return params;
+  }
+
+  loadRecipes() {
+    this.loading = true;
+    this.recipeService.searchRecipes(this.buildSearchParams(this.searchTerm || undefined)).subscribe({
       next: (result) => {
         this.recipes = result.items || [];
         this.loading = false;
@@ -96,6 +118,12 @@ export class RecipePickerDialogComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  onFilterChange(filter: RecipeFilter) {
+    this.activeFilter = filter;
+    this.selectedRecipe = null;
+    this.loadRecipes();
   }
 
   onSearch(term: string) {
