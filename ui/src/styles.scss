@@ -76,3 +76,17 @@ textarea, input {
 * {
   -webkit-overflow-scrolling: touch;
 }
+
+// Mobile minimum font size for accessibility (WCAG 2.1)
+@media (max-width: 768px) {
+  body {
+    font-size: 16px; // Ensure base is 16px on mobile
+  }
+  
+  // Ensure no text drops below 14px on mobile
+  .mat-mdc-card-content,
+  .mat-mdc-list-item,
+  p, span, li, td, th, label {
+    font-size: max(0.875rem, 14px);
+  }
+}
