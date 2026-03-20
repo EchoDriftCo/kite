@@ -1,6 +1,14 @@
 {
   "$schema": "./node_modules/@angular/service-worker/config/schema.json",
   "index": "/index.html",
+  "navigationUrls": [
+    "/**",
+    "!/**/*.*",
+    "!/**/api/**",
+    "!https://o4510909327212545.ingest.us.sentry.io/**",
+    "!https://*.ingest.sentry.io/**",
+    "!https://*.ingest.us.sentry.io/**"
+  ],
   "assetGroups": [
     {
       "name": "app",
