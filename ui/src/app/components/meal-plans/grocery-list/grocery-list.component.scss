@@ -208,24 +208,115 @@ mat-accordion {
 
 // Print styles
 @media print {
+  .grocery-list-container {
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
   .header-actions,
   .add-item-row {
     display: none !important;
   }
 
-  .remove-btn {
-    display: none !important;
+  .list-header {
+    margin-bottom: 16px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 8px;
+
+    h1 {
+      font-size: 1.5rem;
+      color: black !important;
+
+      mat-icon {
+        display: none;
+      }
+    }
+
+    .progress {
+      color: #666 !important;
+      font-size: 0.85rem;
+    }
   }
 
-  .grocery-item {
-    &.checked {
-      opacity: 0.4 !important;
-    }
+  mat-accordion {
+    mat-expansion-panel {
+      box-shadow: none !important;
+      border: none !important;
+      margin-bottom: 4px !important;
+      break-inside: avoid;
 
-    mat-checkbox {
-      width: 16px;
-      height: 16px;
+      // Force all panels open in print
+      .mat-expansion-panel-content {
+        display: block !important;
+        visibility: visible !important;
+        height: auto !important;
+      }
+
+      .mat-expansion-panel-header {
+        background: #f0f0f0 !important;
+        color: black !important;
+        font-weight: 600;
+        padding: 6px 12px !important;
+        min-height: 32px !important;
+        height: auto !important;
+      }
+
+      .grocery-item {
+        padding: 4px 12px !important;
+        border-bottom: 1px solid #e0e0e0 !important;
+        color: black !important;
+
+        &.checked {
+          opacity: 0.35 !important;
+
+          .item-text {
+            text-decoration: line-through;
+          }
+        }
+
+        .remove-btn {
+          display: none !important;
+        }
+
+        .item-text {
+          color: black !important;
+          font-size: 0.9rem;
+
+          strong {
+            color: black !important;
+          }
+        }
+
+        .item-sources {
+          color: #666 !important;
+          font-size: 0.7rem;
+        }
+
+        .manual-badge {
+          background: #ddd !important;
+          color: #333 !important;
+        }
+
+        // Print checkbox as empty square
+        mat-checkbox {
+          .mdc-checkbox {
+            width: 14px;
+            height: 14px;
+
+            &__background {
+              border-color: #333 !important;
+            }
+          }
+        }
+      }
     }
+  }
+
+  // Two-column layout for print
+  @page {
+    margin: 1cm;
+    size: portrait;
   }
 }
 

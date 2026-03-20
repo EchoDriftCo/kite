@@ -90,3 +90,29 @@ textarea, input {
     font-size: max(0.875rem, 14px);
   }
 }
+
+// Global print styles — hide app chrome
+@media print {
+  .app-toolbar,
+  mat-toolbar,
+  mat-sidenav,
+  .mat-mdc-snack-bar-container,
+  .cdk-overlay-container,
+  .fab-container,
+  button[mat-fab],
+  router-outlet {
+    display: none !important;
+  }
+
+  body, html {
+    background: white !important;
+    color: black !important;
+    overflow: visible !important;
+  }
+
+  mat-sidenav-content,
+  .mat-sidenav-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
