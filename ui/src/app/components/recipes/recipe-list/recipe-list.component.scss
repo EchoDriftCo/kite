@@ -336,6 +336,29 @@ mat-paginator {
   margin-top: 16px;
 }
 
+// Desktop: scale up primary action buttons for better visibility
+@media (min-width: 1024px) {
+  .header .actions {
+    button[mat-raised-button] {
+      height: 48px;
+      font-size: 15px;
+      padding: 0 24px;
+      line-height: 48px;
+    }
+  }
+}
+
+@media (min-width: 1440px) {
+  .header .actions {
+    button[mat-raised-button] {
+      height: 52px;
+      font-size: 16px;
+      padding: 0 28px;
+      line-height: 52px;
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .header {
     flex-direction: column;

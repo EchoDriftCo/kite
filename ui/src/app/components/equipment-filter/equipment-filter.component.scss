@@ -3,12 +3,21 @@
 
   mat-chip-option {
     cursor: pointer;
+
+    // Ensure horizontal icon+text layout (prevent vertical stacking)
+    .mdc-evolution-chip__cell--primary,
+    .mat-mdc-chip-action-label {
+      display: inline-flex;
+      align-items: center;
+      flex-direction: row;
+    }
     
     mat-icon {
       font-size: 1.2rem;
       width: 1.2rem;
       height: 1.2rem;
       margin-right: 0.25rem;
+      vertical-align: middle;
     }
 
     &.mat-mdc-chip-selected {
