@@ -14,6 +14,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { RecipeGenerationService } from '../../../services/recipe-generation.service';
 import { DietaryProfileService } from '../../../services/dietary-profile.service';
 import {
@@ -38,7 +39,8 @@ import {
     MatChipsModule,
     MatDividerModule,
     MatSnackBarModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatTooltipModule
   ],
   templateUrl: './recipe-generator.component.html',
   styleUrl: './recipe-generator.component.scss'
@@ -80,6 +82,10 @@ export class RecipeGeneratorComponent implements OnInit {
   ngOnInit() {
     this.loadQuota();
     this.loadDietaryOptions();
+  }
+
+  goBack(): void {
+    this.router.navigate(['/recipes']);
   }
 
   /**
