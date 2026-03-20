@@ -37,6 +37,20 @@ namespace RecipeVault.Integrations.Gemini.Tests {
         }
 
         [Fact]
+        public void CookTimeMinutes_AsDecimal_RoundsToInt() {
+            var json = @"{""title"":""Test"",""cookTimeMinutes"":10.5}";
+            var result = JsonSerializer.Deserialize<GeminiRecipeParseResult>(json, _options);
+            Assert.Equal(10, result.CookTimeMinutes); // 10.5 rounds to nearest even (10)
+        }
+
+        [Fact]
+        public void CookTimeMinutes_AsDecimalWhole_ReturnsInt() {
+            var json = @"{""title"":""Test"",""cookTimeMinutes"":30.0}";
+            var result = JsonSerializer.Deserialize<GeminiRecipeParseResult>(json, _options);
+            Assert.Equal(30, result.CookTimeMinutes);
+        }
+
+        [Fact]
         public void CookTimeMinutes_AsNull_ReturnsNull() {
             var json = @"{""title"":""Test"",""cookTimeMinutes"":null}";
             var result = JsonSerializer.Deserialize<GeminiRecipeParseResult>(json, _options);

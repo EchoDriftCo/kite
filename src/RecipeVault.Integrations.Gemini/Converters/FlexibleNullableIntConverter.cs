@@ -15,7 +15,14 @@ namespace RecipeVault.Integrations.Gemini.Converters {
         public override int? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
             switch (reader.TokenType) {
                 case JsonTokenType.Number:
-                    return reader.GetInt32();
+                    // Handle both integer and decimal numbers (Gemini may return 10.5 for cookTimeMinutes)
+                    if (reader.TryGetInt32(out var intValue)) {
+                        return intValue;
+                    }
+                    if (reader.TryGetDouble(out var doubleValue)) {
+                        return (int)Math.Round(doubleValue);
+                    }
+                    return null;
 
                 case JsonTokenType.Null:
                     return null;
