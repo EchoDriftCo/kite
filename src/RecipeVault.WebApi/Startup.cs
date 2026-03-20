@@ -39,6 +39,7 @@ namespace RecipeVault.WebApi {
     /// Startup
     /// </summary>
     public class Startup : IWebApiStartup {
+        private static readonly string[] ValidJwtAlgorithms = { "HS256", "RS256", "ES256" };
         /// <summary>
         /// Startup
         /// </summary>
@@ -95,19 +96,35 @@ namespace RecipeVault.WebApi {
                 })
                 .AddScheme<AuthenticationSchemeOptions, ApiTokenAuthenticationHandler>("ApiToken", null)
                 .AddJwtBearer(options => {
-                    // Use Supabase JWKS endpoint to get public keys for RS256 validation
-                    options.Authority = jwtIssuer;
-                    options.Audience = jwtAudience;
-
-                    // Allow HTTP for local development (Supabase runs on http://127.0.0.1:54321)
+                    // Allow HTTP for local development (Supabase runs on http://...)
                     options.RequireHttpsMetadata = !supabaseUrl?.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ?? true;
 
-                    // Prevent ASP.NET Core from remapping JWT claim types (e.g. "sub" → long URI)
+                    // Prevent ASP.NET Core from remapping JWT claim types (e.g. "sub" -> long URI)
                     // so Cortside SubjectPrincipal can find the "sub" claim by its original name
                     options.MapInboundClaims = false;
 
-                    // Configure JWKS endpoint
-                    options.MetadataAddress = $"{supabaseUrl}/auth/v1/.well-known/openid-configuration";
+                    // Configure OIDC discovery using the reachable Supabase URL.
+                    // When running inside Docker, the OIDC discovery doc returns 127.0.0.1 URLs
+                    // which aren't reachable from the container. We set the JWKS endpoint directly
+                    // using the reachable supabaseUrl to bypass this issue.
+                    options.Authority = $"{supabaseUrl}/auth/v1";
+                    options.Audience = jwtAudience;
+
+                    // Build OIDC configuration manually to control the JWKS endpoint URL.
+                    // Use the reachable Supabase URL for fetching keys — in Docker containers,
+                    // appsettings may have 127.0.0.1 which isn't reachable, so prefer the env var.
+                    var reachableSupabaseUrl = Environment.GetEnvironmentVariable("SUPABASE_URL") ?? supabaseUrl;
+                    var oidcConfig = new Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration {
+                        Issuer = jwtIssuer,
+                        JwksUri = $"{reachableSupabaseUrl}/auth/v1/.well-known/jwks.json"
+                    };
+                    // Fetch JWKS keys at startup
+                    var jwksJson = new System.Net.Http.HttpClient().GetStringAsync(oidcConfig.JwksUri).Result;
+                    var jwks = new Microsoft.IdentityModel.Tokens.JsonWebKeySet(jwksJson);
+                    foreach (var key in jwks.GetSigningKeys()) {
+                        oidcConfig.SigningKeys.Add(key);
+                    }
+                    options.Configuration = oidcConfig;
 
                     options.TokenValidationParameters = new TokenValidationParameters {
                         ValidateIssuer = true,
@@ -115,7 +132,9 @@ namespace RecipeVault.WebApi {
                         ValidateAudience = true,
                         ValidAudience = jwtAudience,
                         ValidateIssuerSigningKey = true,
-                        ValidateLifetime = true
+                        ValidateLifetime = true,
+                        // Accept multiple valid signing algorithms (HS256 for prod, ES256 for local Supabase)
+                        ValidAlgorithms = ValidJwtAlgorithms
                     };
 
                     // Add detailed error logging and claim mapping
@@ -151,7 +170,9 @@ namespace RecipeVault.WebApi {
                 var database = Environment.GetEnvironmentVariable("DATABASE_NAME");
                 var user = Environment.GetEnvironmentVariable("DATABASE_USER");
                 var password = Environment.GetEnvironmentVariable("DATABASE_PASSWORD");
-                var ssl = host != "localhost" && host != "127.0.0.1" ? ";SSL Mode=Require;Trust Server Certificate=true" : "";
+                var sslEnv = Environment.GetEnvironmentVariable("DATABASE_SSL");
+                var ssl = sslEnv == "disable" ? ";SSL Mode=Disable"
+                    : (host != "localhost" && host != "127.0.0.1" && host != "host.docker.internal") ? ";SSL Mode=Require;Trust Server Certificate=true" : "";
                 connectionString = $"Host={host};Port={port};Database={database};Username={user};Password={password}{ssl}";
             }
             Configuration["Database:ConnectionString"] = connectionString;
@@ -290,11 +311,9 @@ namespace RecipeVault.WebApi {
                 
                 // Map /health to /api/health for standard health check convention
                 // Deckard expects /health, Cortside.Health registers /api/health
-                endpoints.MapGet("/health", async context => {
-                    var healthService = context.RequestServices.GetRequiredService<IAvailabilityRecorder>();
-                    var status = healthService.Get<AvailabilityModel>();
-                    context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsync(JsonSerializer.Serialize(status));
+                endpoints.MapGet("/health", context => {
+                    context.Response.Redirect("/api/health");
+                    return Task.CompletedTask;
                 });
                 
                 endpoints.MapFallbackToFile("index.html");

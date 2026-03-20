@@ -22,7 +22,7 @@ namespace RecipeVault.WebApi {
             var currentDir = Directory.GetCurrentDirectory();
             var envPath = FindEnvFile(currentDir);
             if (!string.IsNullOrEmpty(envPath)) {
-                DotEnv.Load(new DotEnvOptions(envFilePaths: new[] { envPath }));
+                DotEnv.Load(new DotEnvOptions(envFilePaths: new[] { envPath }, overwriteExistingVars: false));
             }
 
             // Initialize Sentry for error tracking (before app starts)
