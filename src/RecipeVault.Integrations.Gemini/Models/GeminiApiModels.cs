@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using RecipeVault.Integrations.Gemini.Converters;
 
 namespace RecipeVault.Integrations.Gemini.Models {
     /// <summary>
@@ -128,12 +129,15 @@ namespace RecipeVault.Integrations.Gemini.Models {
         public string Title { get; set; }
 
         [JsonPropertyName("yield")]
+        [JsonConverter(typeof(FlexibleNullableIntConverter))]
         public int? Yield { get; set; }
 
         [JsonPropertyName("prepTimeMinutes")]
+        [JsonConverter(typeof(FlexibleNullableIntConverter))]
         public int? PrepTimeMinutes { get; set; }
 
         [JsonPropertyName("cookTimeMinutes")]
+        [JsonConverter(typeof(FlexibleNullableIntConverter))]
         public int? CookTimeMinutes { get; set; }
 
         [JsonPropertyName("ingredients")]
@@ -148,6 +152,7 @@ namespace RecipeVault.Integrations.Gemini.Models {
     /// </summary>
     public class GeminiRecipeIngredient {
         [JsonPropertyName("quantity")]
+        [JsonConverter(typeof(FlexibleNullableDecimalConverter))]
         public decimal? Quantity { get; set; }
 
         [JsonPropertyName("unit")]
