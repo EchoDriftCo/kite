@@ -102,7 +102,7 @@
 
         <mat-card-content>
           <div formArrayName="ingredients" class="ingredients-list">
-            @for (ingredient of ingredients.controls; track ingredient; let i = $index) {
+            @for (ingredient of ingredients.controls; track $index; let i = $index) {
               <div [formGroupName]="i" class="ingredient-row">
                 <div class="ingredient-controls">
                   <button mat-icon-button type="button" (click)="moveIngredientUp(i)" 
@@ -172,7 +172,7 @@
 
         <mat-card-content>
           <div formArrayName="instructions" class="instructions-list">
-            @for (instruction of instructions.controls; track instruction; let i = $index) {
+            @for (instruction of instructions.controls; track $index; let i = $index) {
               <div [formGroupName]="i" class="instruction-row">
                 <div class="step-number">{{ i + 1 }}</div>
 
