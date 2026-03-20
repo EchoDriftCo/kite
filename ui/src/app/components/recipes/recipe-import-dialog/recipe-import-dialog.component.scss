@@ -165,7 +165,20 @@ mat-dialog-content {
     image-cropper {
       display: block;
       max-height: min(400px, 45vh);
-      overflow: hidden;
+      overflow: visible;
+
+      ::ng-deep {
+        .ngx-ic-cropper {
+          max-width: 100% !important;
+          max-height: min(400px, 45vh) !important;
+        }
+
+        .ngx-ic-source-image {
+          max-width: 100% !important;
+          max-height: min(400px, 45vh) !important;
+          object-fit: contain;
+        }
+      }
     }
   }
 
@@ -283,9 +296,13 @@ mat-dialog-actions {
   margin: 0;
   border-top: 1px solid rgba(0, 0, 0, 0.12);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
   .save-image-toggle {
-    font-size: 0.875rem;
+    font-size: 0.8rem;
+    opacity: 0.75;
   }
 
   .action-spacer {
@@ -293,10 +310,8 @@ mat-dialog-actions {
   }
 
   button {
-    margin-left: 8px;
-
     mat-icon {
-      margin-right: 8px;
+      margin-right: 6px;
     }
 
     mat-spinner {
@@ -307,6 +322,15 @@ mat-dialog-actions {
     span {
       vertical-align: middle;
     }
+  }
+
+  button[mat-button] {
+    // Cancel button — give it more presence
+    min-width: 80px;
+  }
+
+  button[mat-raised-button] {
+    min-width: 140px;
   }
 }
 

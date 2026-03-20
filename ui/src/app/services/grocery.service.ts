@@ -7,7 +7,7 @@ import { GroceryCheckoutOptions } from '../models/grocery.model';
   providedIn: 'root'
 })
 export class GroceryService {
-  private readonly endpoint = 'api/v1/grocery';
+  private readonly endpoint = 'grocery';
 
   constructor(private api: ApiService) {}
 

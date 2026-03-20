@@ -214,4 +214,14 @@ export class RecipeService {
   importFromMultipleImages(formData: FormData): Observable<Recipe> {
     return this.api.post<Recipe>('import/multi-image', formData);
   }
+
+  /**
+   * Import recipe from video (TikTok, Instagram Reels, YouTube)
+   */
+  importFromVideo(url: string): Promise<any> {
+    return this.api.post<any>('import/video', { 
+      url: url,
+      includeSubtitles: true 
+    }).toPromise();
+  }
 }

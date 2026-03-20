@@ -1,6 +1,6 @@
 <div class="import-dialog">
   <h2 mat-dialog-title>
-    <mat-icon>{{ activeTab === 'url' ? 'link' : activeTab === 'paprika' ? 'upload_file' : 'photo_camera' }}</mat-icon>
+    <mat-icon>{{ activeTab === 'url' ? 'link' : activeTab === 'paprika' ? 'upload_file' : activeTab === 'video' ? 'videocam' : 'photo_camera' }}</mat-icon>
     Import Recipe
   </h2>
 
@@ -216,6 +216,41 @@
           </div>
         </div>
       </mat-tab>
+
+      <!-- Video Tab -->
+      <mat-tab label="From Video">
+        <div class="tab-content">
+          <p class="instructions">
+            Paste a URL from TikTok, Instagram Reels, or YouTube and AI will transcribe the video and extract the recipe.
+          </p>
+
+          <mat-form-field appearance="outline" class="url-input">
+            <mat-label>Video URL</mat-label>
+            <input matInput
+                   type="url"
+                   [(ngModel)]="videoUrl"
+                   placeholder="https://www.tiktok.com/@chef/video/..."
+                   [disabled]="loading">
+            <mat-icon matPrefix>videocam</mat-icon>
+          </mat-form-field>
+
+          <div class="tips collapsible">
+            <h4 (click)="showVideoTips = !showVideoTips">
+              <mat-icon>lightbulb</mat-icon>
+              Tips
+              <mat-icon class="expand-icon" [class.expanded]="showVideoTips">expand_more</mat-icon>
+            </h4>
+            @if (showVideoTips) {
+              <ul>
+                <li>Works with TikTok, Instagram Reels, and YouTube videos</li>
+                <li>Best results with clear audio and narrated instructions</li>
+                <li>Videos with on-screen captions improve accuracy</li>
+                <li>Paste the full URL including https://</li>
+              </ul>
+            }
+          </div>
+        </div>
+      </mat-tab>
     </mat-tab-group>
   </mat-dialog-content>
 
@@ -237,7 +272,7 @@
       @if (loading) {
         <ng-container>
           <mat-spinner diameter="20"></mat-spinner>
-          <span>{{ activeTab === 'url' ? 'Fetching recipe...' : activeTab === 'paprika' ? 'Importing recipes...' : 'Analyzing image...' }}</span>
+          <span>{{ activeTab === 'url' ? 'Fetching recipe...' : activeTab === 'paprika' ? 'Importing recipes...' : activeTab === 'video' ? 'Transcribing video...' : 'Analyzing image...' }}</span>
         </ng-container>
       } @else {
         <ng-container>

@@ -14,7 +14,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class DietaryProfileService {
-  private apiUrl = `${environment.apiUrl}/api/v1/dietary-profiles`;
+  private apiUrl = `${environment.apiUrl}/dietary-profiles`;
 
   constructor(private http: HttpClient) { }
 
@@ -55,7 +55,7 @@ export class DietaryProfileService {
   }
 
   checkRecipe(recipeId: string, profileId?: string): Observable<DietaryConflictCheck> {
-    const url = `${environment.apiUrl}/api/v1/recipes/${recipeId}/dietary-check`;
+    const url = `${environment.apiUrl}/recipes/${recipeId}/dietary-check`;
     const options = profileId ? { params: { profileId } } : {};
     return this.http.get<DietaryConflictCheck>(url, options);
   }

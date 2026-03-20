@@ -23,6 +23,12 @@ export interface ImportResult {
   imageMimeType?: string;
   sourceUrl?: string;
   paprikaResult?: any;
+  videoMetadata?: {
+    platform?: string;
+    duration?: number;
+    thumbnailUrl?: string;
+    transcript?: string;
+  };
 }
 
 @Component({
@@ -48,7 +54,7 @@ export interface ImportResult {
 export class RecipeImportDialogComponent {
   loading = false;
   error = '';
-  activeTab: 'image' | 'url' | 'paprika' = 'image';
+  activeTab: 'image' | 'url' | 'paprika' | 'video' = 'image';
 
   // Image tab state
   selectedFile: File | null = null;
@@ -70,6 +76,10 @@ export class RecipeImportDialogComponent {
   paprikaFile: File | null = null;
   paprikaDragOver = false;
 
+  // Video tab state
+  videoUrl = '';
+  showVideoTips = false;
+
   constructor(
     private dialogRef: MatDialogRef<RecipeImportDialogComponent>,
     private recipeService: RecipeService
@@ -80,8 +90,10 @@ export class RecipeImportDialogComponent {
       this.activeTab = 'image';
     } else if (index === 1) {
       this.activeTab = 'url';
-    } else {
+    } else if (index === 2) {
       this.activeTab = 'paprika';
+    } else {
+      this.activeTab = 'video';
     }
     this.error = '';
   }
@@ -211,6 +223,7 @@ export class RecipeImportDialogComponent {
     if (this.loading) return true;
     if (this.activeTab === 'image') return !this.selectedFile;
     if (this.activeTab === 'url') return !this.recipeUrl.trim();
+    if (this.activeTab === 'video') return !this.videoUrl.trim();
     return !this.paprikaFile;
   }
 
@@ -219,6 +232,8 @@ export class RecipeImportDialogComponent {
       await this.importFromUrl();
     } else if (this.activeTab === 'paprika') {
       await this.importFromPaprika();
+    } else if (this.activeTab === 'video') {
+      await this.importFromVideo();
     } else {
       await this.importFromImage();
     }
@@ -412,6 +427,36 @@ export class RecipeImportDialogComponent {
       this.error = err.error?.message || err.message || 'Failed to import from Paprika file. Please try again.';
       this.loading = false;
       console.error('Paprika import error:', err);
+    }
+  }
+
+  private async importFromVideo() {
+    if (!this.videoUrl.trim()) {
+      this.error = 'Please enter a video URL';
+      return;
+    }
+
+    this.loading = true;
+    this.error = '';
+
+    try {
+      const result = await this.recipeService.importFromVideo(this.videoUrl.trim());
+
+      this.dialogRef.close({
+        success: true,
+        parsedData: result.recipe,
+        confidence: result.transcriptConfidence,
+        sourceUrl: this.videoUrl.trim(),
+        videoMetadata: {
+          platform: result.platform,
+          duration: result.duration,
+          thumbnailUrl: result.thumbnailUrl,
+          transcript: result.transcript
+        }
+      });
+    } catch (err: any) {
+      this.loading = false;
+      this.error = err.error?.message || err.message || 'Failed to import video. Please try again.';
     }
   }
 }

@@ -16,9 +16,9 @@ import {
   providedIn: 'root'
 })
 export class IngredientSearchService {
-  private readonly searchEndpoint = 'api/v1/recipes/search/by-ingredients';
-  private readonly suggestEndpoint = 'api/v1/ingredients/suggest';
-  private readonly pantryEndpoint = 'api/v1/pantry';
+  private readonly searchEndpoint = 'recipes/search/by-ingredients';
+  private readonly suggestEndpoint = 'ingredients/suggest';
+  private readonly pantryEndpoint = 'pantry';
 
   // Client-side cache for autocomplete suggestions
   private suggestionCache = new Map<string, { suggestions: IngredientSuggestion[], timestamp: number }>();
