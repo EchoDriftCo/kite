@@ -113,18 +113,24 @@ namespace RecipeVault.WebApi {
                     // Build OIDC configuration manually to control the JWKS endpoint URL.
                     // Use the reachable Supabase URL for fetching keys — in Docker containers,
                     // appsettings may have 127.0.0.1 which isn't reachable, so prefer the env var.
+                    // Skip JWKS fetch when no Supabase URL is configured (e.g. integration tests).
                     var reachableSupabaseUrl = Environment.GetEnvironmentVariable("SUPABASE_URL") ?? supabaseUrl;
-                    var oidcConfig = new Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration {
-                        Issuer = jwtIssuer,
-                        JwksUri = $"{reachableSupabaseUrl}/auth/v1/.well-known/jwks.json"
-                    };
-                    // Fetch JWKS keys at startup
-                    var jwksJson = new System.Net.Http.HttpClient().GetStringAsync(oidcConfig.JwksUri).Result;
-                    var jwks = new Microsoft.IdentityModel.Tokens.JsonWebKeySet(jwksJson);
-                    foreach (var key in jwks.GetSigningKeys()) {
-                        oidcConfig.SigningKeys.Add(key);
+                    if (!string.IsNullOrWhiteSpace(reachableSupabaseUrl)) {
+                        try {
+                            var oidcConfig = new Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration {
+                                Issuer = jwtIssuer,
+                                JwksUri = $"{reachableSupabaseUrl}/auth/v1/.well-known/jwks.json"
+                            };
+                            var jwksJson = new System.Net.Http.HttpClient().GetStringAsync(oidcConfig.JwksUri).Result;
+                            var jwks = new Microsoft.IdentityModel.Tokens.JsonWebKeySet(jwksJson);
+                            foreach (var key in jwks.GetSigningKeys()) {
+                                oidcConfig.SigningKeys.Add(key);
+                            }
+                            options.Configuration = oidcConfig;
+                        } catch (Exception ex) {
+                            Console.WriteLine($"[WARN] JWKS fetch failed ({ex.InnerException?.Message ?? ex.Message}). JWT validation will use static key if configured.");
+                        }
                     }
-                    options.Configuration = oidcConfig;
 
                     options.TokenValidationParameters = new TokenValidationParameters {
                         ValidateIssuer = true,
