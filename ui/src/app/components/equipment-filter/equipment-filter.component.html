@@ -1,11 +1,9 @@
 <div class="equipment-filter">
-  <mat-chip-listbox>
-    <mat-chip-option
-      [selected]="filterEnabled"
-      (click)="toggleFilter()"
-      [matTooltip]="filterEnabled ? 'Showing only recipes you have equipment for' : 'Show all recipes'">
-      <mat-icon>{{ filterEnabled ? 'check_circle' : 'kitchen' }}</mat-icon>
-      {{ filterEnabled ? 'My Equipment Only' : 'Filter by Equipment' }}
-    </mat-chip-option>
-  </mat-chip-listbox>
+  <button mat-stroked-button
+          (click)="toggleFilter()"
+          [class.filter-active]="filterEnabled"
+          [matTooltip]="filterEnabled ? 'Showing only recipes you have equipment for' : 'Show all recipes'">
+    <mat-icon>{{ filterEnabled ? 'check_circle' : 'kitchen' }}</mat-icon>
+    {{ filterEnabled ? 'My Equipment Only' : 'Filter by Equipment' }}
+  </button>
 </div>
