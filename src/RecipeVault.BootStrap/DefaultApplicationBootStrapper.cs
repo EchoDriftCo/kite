@@ -1,5 +1,6 @@
 using Cortside.Common.BootStrap;
 using RecipeVault.BootStrap.Installer;
+using RecipeVault.Integrations.VideoDownload;
 
 namespace RecipeVault.BootStrap {
     public class DefaultApplicationBootStrapper : BootStrapper {
@@ -10,6 +11,7 @@ namespace RecipeVault.BootStrap {
                 new NutritionInstaller(),
                 new DistributedLockInstaller(),
                 new GeminiInstaller(),
+                new VideoDownloadInstaller(),
                 new SupabaseInstaller(),
                 new UsdaInstaller(),
                 new ResendInstaller(),

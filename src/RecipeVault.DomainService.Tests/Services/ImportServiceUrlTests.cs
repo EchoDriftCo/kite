@@ -14,6 +14,7 @@ using RecipeVault.DomainService;
 using RecipeVault.DomainService.Tests.Base;
 using RecipeVault.Integrations.Gemini;
 using RecipeVault.Integrations.Gemini.Models;
+using RecipeVault.Integrations.VideoDownload;
 
 namespace RecipeVault.DomainService.Tests.Services {
     public class ImportServiceUrlTests : DomainServiceTestBase {
@@ -92,6 +93,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 mockImageStorage.Object,
                 mockFactory.Object,
                 mockGeminiClient.Object,
+                Mock.Of<IVideoDownloadService>(),
                 mockLogger.Object
             );
 
@@ -160,6 +162,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 mockImageStorage.Object,
                 mockFactory.Object,
                 mockGeminiClient.Object,
+                Mock.Of<IVideoDownloadService>(),
                 mockLogger.Object
             );
 
@@ -218,6 +221,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 mockImageStorage.Object,
                 mockFactory.Object,
                 mockGeminiClient.Object,
+                Mock.Of<IVideoDownloadService>(),
                 mockLogger.Object
             );
 
@@ -279,6 +283,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 mockImageStorage.Object,
                 mockFactory.Object,
                 mockGeminiClient.Object,
+                Mock.Of<IVideoDownloadService>(),
                 mockLogger.Object
             );
 
@@ -336,6 +341,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 mockImageStorage.Object,
                 mockFactory.Object,
                 mockGeminiClient.Object,
+                Mock.Of<IVideoDownloadService>(),
                 mockLogger.Object
             );
 
@@ -385,6 +391,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 mockImageStorage.Object,
                 mockFactory.Object,
                 mockGeminiClient.Object,
+                Mock.Of<IVideoDownloadService>(),
                 mockLogger.Object
             );
 
@@ -430,6 +437,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 mockImageStorage.Object,
                 mockFactory.Object,
                 mockGeminiClient.Object,
+                Mock.Of<IVideoDownloadService>(),
                 mockLogger.Object
             );
 
@@ -476,6 +484,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 mockImageStorage.Object,
                 mockFactory.Object,
                 mockGeminiClient.Object,
+                Mock.Of<IVideoDownloadService>(),
                 mockLogger.Object
             );
 
@@ -506,6 +515,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 mockImageStorage.Object,
                 mockFactory.Object,
                 mockGeminiClient.Object,
+                Mock.Of<IVideoDownloadService>(),
                 mockLogger.Object
             );
 
@@ -529,6 +539,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 mockImageStorage.Object,
                 mockFactory.Object,
                 mockGeminiClient.Object,
+                Mock.Of<IVideoDownloadService>(),
                 mockLogger.Object
             );
 
@@ -571,6 +582,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 mockImageStorage.Object,
                 mockFactory.Object,
                 mockGeminiClient.Object,
+                Mock.Of<IVideoDownloadService>(),
                 mockLogger.Object
             );
 

@@ -1061,5 +1061,92 @@ Return ONLY valid JSON matching this schema:
 
             return result;
         }
+
+        /// <summary>
+        /// Transcribe audio using Gemini API
+        /// </summary>
+        public async Task<GeminiTranscriptionResponse> TranscribeAudioAsync(byte[] audioData, string audioFormat, CancellationToken cancellationToken = default) {
+            if (audioData == null || audioData.Length == 0) {
+                throw new ArgumentException("Audio data is required", nameof(audioData));
+            }
+
+            if (string.IsNullOrWhiteSpace(audioFormat)) {
+                throw new ArgumentException("Audio format is required", nameof(audioFormat));
+            }
+
+            logger.LogInformation("Transcribing audio: {Size} bytes, format: {Format}", audioData.Length, audioFormat);
+
+            // Map audio format to MIME type
+            var mimeType = audioFormat.ToLowerInvariant() switch {
+                "mp3" => "audio/mpeg",
+                "m4a" => "audio/mp4",
+                "wav" => "audio/wav",
+                "ogg" => "audio/ogg",
+                _ => $"audio/{audioFormat}"
+            };
+
+            // Convert audio to base64
+            var base64Audio = Convert.ToBase64String(audioData);
+
+            // Create request with audio and prompt
+            var request = new GeminiGenerateContentRequest {
+                Contents = new List<GeminiContent> {
+                    new GeminiContent {
+                        Parts = new List<GeminiPart> {
+                            new GeminiPart {
+                                InlineData = new GeminiInlineData {
+                                    MimeType = mimeType,
+                                    Data = base64Audio
+                                }
+                            },
+                            new GeminiPart {
+                                Text = "Transcribe this audio. Return ONLY the transcribed text."
+                            }
+                        }
+                    }
+                },
+                GenerationConfig = new GeminiGenerationConfig {
+                    ResponseMimeType = "text/plain"
+                }
+            };
+
+            var apiKey = configuration["GeminiApiKey"];
+            if (string.IsNullOrWhiteSpace(apiKey)) {
+                throw new InvalidOperationException("GeminiApiKey is not configured");
+            }
+
+            var requestJson = JsonSerializer.Serialize(request, new JsonSerializerOptions {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            });
+
+            var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+            var response = await httpClient.PostAsync($"/v1beta/models/gemini-2.0-flash:generateContent?key={apiKey}", content, cancellationToken).ConfigureAwait(false);
+
+            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode) {
+                logger.LogError("Gemini API returned error {StatusCode}: {ResponseBody}", response.StatusCode, responseBody);
+                throw new GeminiApiException($"Gemini API error: {response.StatusCode}");
+            }
+
+            var geminiResponse = JsonSerializer.Deserialize<GeminiGenerateContentResponse>(responseBody);
+
+            if (geminiResponse?.Candidates == null || geminiResponse.Candidates.Count == 0) {
+                throw new GeminiApiException("No transcription candidates returned from Gemini API");
+            }
+
+            var textPart = geminiResponse.Candidates[0].Content?.Parts?[0]?.Text;
+            if (string.IsNullOrWhiteSpace(textPart)) {
+                throw new GeminiApiException("Empty transcription text from Gemini API");
+            }
+
+            logger.LogInformation("Successfully transcribed audio: {Length} characters", textPart.Length);
+
+            return new GeminiTranscriptionResponse {
+                Text = textPart.Trim(),
+                Confidence = 0.85m // Gemini doesn't provide confidence scores, using a fixed value
+            };
+        }
     }
 }

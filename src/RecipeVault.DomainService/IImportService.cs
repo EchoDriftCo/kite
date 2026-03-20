@@ -28,5 +28,45 @@ namespace RecipeVault.DomainService {
         /// Import a recipe from raw HTML content (browser extension server-side extraction)
         /// </summary>
         Task<Recipe> ImportHtmlAsync(ImportHtmlRequestDto dto);
+
+        /// <summary>
+        /// Import a recipe from a video URL (TikTok, Instagram, YouTube)
+        /// </summary>
+        Task<VideoImportResult> ImportFromVideoAsync(string videoUrl, bool includeSubtitles = true);
+    }
+
+    /// <summary>
+    /// Result from video import operation
+    /// </summary>
+    public class VideoImportResult {
+        /// <summary>
+        /// Imported recipe entity
+        /// </summary>
+        public Recipe Recipe { get; set; }
+
+        /// <summary>
+        /// Transcribed audio text
+        /// </summary>
+        public string Transcript { get; set; }
+
+        /// <summary>
+        /// Transcript confidence score
+        /// </summary>
+        public decimal TranscriptConfidence { get; set; }
+
+        /// <summary>
+        /// Video platform name
+        /// </summary>
+        public string Platform { get; set; }
+
+        /// <summary>
+        /// Video duration (formatted string)
+        /// </summary>
+        public string Duration { get; set; }
+
+        /// <summary>
+        /// Video thumbnail URL
+        /// </summary>
+        public string ThumbnailUrl { get; set; }
     }
 }

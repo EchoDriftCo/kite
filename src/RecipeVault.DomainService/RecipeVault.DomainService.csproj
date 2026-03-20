@@ -20,5 +20,6 @@
     <ProjectReference Include="..\RecipeVault.Exceptions\RecipeVault.Exceptions.csproj" />
     <ProjectReference Include="..\RecipeVault.Integrations.Gemini\RecipeVault.Integrations.Gemini.csproj" />
     <ProjectReference Include="..\RecipeVault.Integrations.Usda\RecipeVault.Integrations.Usda.csproj" />
+    <ProjectReference Include="..\RecipeVault.Integrations.VideoDownload\RecipeVault.Integrations.VideoDownload.csproj" />
   </ItemGroup>
 </Project>

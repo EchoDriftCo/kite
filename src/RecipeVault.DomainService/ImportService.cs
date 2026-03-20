@@ -18,6 +18,7 @@ using RecipeVault.Dto.Input;
 using RecipeVault.Dto.Output;
 using Cortside.Common.Messages.MessageExceptions;
 using RecipeVault.Integrations.Gemini;
+using RecipeVault.Integrations.VideoDownload;
 
 namespace RecipeVault.DomainService {
     public class ImportService : IImportService {
@@ -27,6 +28,7 @@ namespace RecipeVault.DomainService {
         private readonly IImageStorage imageStorage;
         private readonly IHttpClientFactory httpClientFactory;
         private readonly IGeminiClient geminiClient;
+        private readonly IVideoDownloadService videoDownloadService;
 
         public ImportService(
             IRecipeRepository recipeRepository,
@@ -34,6 +36,7 @@ namespace RecipeVault.DomainService {
             IImageStorage imageStorage,
             IHttpClientFactory httpClientFactory,
             IGeminiClient geminiClient,
+            IVideoDownloadService videoDownloadService,
             ILogger<ImportService> logger) {
             this.logger = logger;
             this.recipeRepository = recipeRepository;
@@ -41,6 +44,7 @@ namespace RecipeVault.DomainService {
             this.imageStorage = imageStorage;
             this.httpClientFactory = httpClientFactory;
             this.geminiClient = geminiClient;
+            this.videoDownloadService = videoDownloadService;
         }
 
         public async Task<ImportResultDto> ImportFromPaprikaAsync(Stream fileStream) {
@@ -822,6 +826,121 @@ namespace RecipeVault.DomainService {
             text = Regex.Replace(text, @"[ \t]+", " "); // Collapse spaces
             
             return text.Trim();
+        }
+
+        public async Task<VideoImportResult> ImportFromVideoAsync(string videoUrl, bool includeSubtitles = true) {
+            using (logger.PushProperty("VideoUrl", videoUrl)) {
+                logger.LogInformation("Starting video import from: {VideoUrl}", videoUrl);
+
+                // Step 1: Download audio via yt-dlp
+                var downloadResult = await videoDownloadService.DownloadAudioAsync(videoUrl, includeSubtitles).ConfigureAwait(false);
+                
+                logger.LogInformation("Audio downloaded: {Size} bytes from {Platform}, duration: {Duration}s",
+                    downloadResult.AudioData.Length, downloadResult.Platform, downloadResult.DurationSeconds);
+
+                // Step 2: Transcribe audio with Gemini
+                var transcriptionResult = await geminiClient.TranscribeAudioAsync(
+                    downloadResult.AudioData, 
+                    downloadResult.AudioFormat
+                ).ConfigureAwait(false);
+
+                logger.LogInformation("Audio transcribed: {Length} characters, confidence: {Confidence}",
+                    transcriptionResult.Text.Length, transcriptionResult.Confidence);
+
+                // Step 3: Merge transcript + subtitles
+                var fullText = transcriptionResult.Text;
+                if (!string.IsNullOrWhiteSpace(downloadResult.Subtitles)) {
+                    fullText = $"{transcriptionResult.Text}\n\n{downloadResult.Subtitles}";
+                    logger.LogInformation("Merged subtitles with transcript");
+                }
+
+                // Step 4: Parse recipe with Gemini
+                var geminiResponse = await geminiClient.ParseRecipeTextAsync(fullText).ConfigureAwait(false);
+
+                var title = geminiResponse.Title ?? downloadResult.VideoTitle ?? "Video Recipe Import";
+                var yield = geminiResponse.Yield ?? 4;
+                var prepTime = geminiResponse.PrepTimeMinutes;
+                var cookTime = geminiResponse.CookTimeMinutes;
+
+                // Step 5: Build Recipe entity
+                var recipe = new Recipe(
+                    title: title,
+                    yield: yield,
+                    prepTimeMinutes: prepTime,
+                    cookTimeMinutes: cookTime,
+                    description: $"Imported from {downloadResult.Platform} video",
+                    source: videoUrl,
+                    originalImageUrl: downloadResult.ThumbnailUrl,
+                    isPublic: false
+                );
+
+                // Step 6: Set ingredients
+                if (geminiResponse.Ingredients != null && geminiResponse.Ingredients.Count > 0) {
+                    var ingredients = new List<RecipeIngredient>();
+                    for (int i = 0; i < geminiResponse.Ingredients.Count; i++) {
+                        var geminiIng = geminiResponse.Ingredients[i];
+                        ingredients.Add(new RecipeIngredient(
+                            sortOrder: i + 1,
+                            quantity: geminiIng.Quantity,
+                            unit: geminiIng.Unit,
+                            item: geminiIng.Item,
+                            preparation: geminiIng.Preparation,
+                            rawText: geminiIng.RawText ?? $"{geminiIng.Quantity} {geminiIng.Unit} {geminiIng.Item} {geminiIng.Preparation}".Trim()
+                        ));
+                    }
+                    recipe.SetIngredients(ingredients);
+                }
+
+                // Step 7: Set instructions
+                if (geminiResponse.Instructions != null && geminiResponse.Instructions.Count > 0) {
+                    var instructions = new List<RecipeInstruction>();
+                    foreach (var geminiInst in geminiResponse.Instructions) {
+                        instructions.Add(new RecipeInstruction(
+                            stepNumber: geminiInst.StepNumber,
+                            instruction: geminiInst.Instruction,
+                            rawText: geminiInst.RawText ?? geminiInst.Instruction
+                        ));
+                    }
+                    recipe.SetInstructions(instructions);
+                }
+
+                // Step 8: Set video URL
+                recipe.SetSourceVideoUrl(videoUrl);
+
+                // Save recipe
+                await recipeRepository.AddAsync(recipe).ConfigureAwait(false);
+
+                logger.LogInformation("Successfully imported video recipe: {Title}", recipe.Title);
+
+                // Step 9: Return VideoImportResult
+                return new VideoImportResult {
+                    Recipe = recipe,
+                    Transcript = transcriptionResult.Text,
+                    TranscriptConfidence = transcriptionResult.Confidence,
+                    Platform = downloadResult.Platform,
+                    Duration = FormatDuration(downloadResult.DurationSeconds),
+                    ThumbnailUrl = downloadResult.ThumbnailUrl
+                };
+            }
+        }
+
+        private static string FormatDuration(int? durationSeconds) {
+            if (!durationSeconds.HasValue) {
+                return null;
+            }
+
+            var duration = durationSeconds.Value;
+            var hours = duration / 3600;
+            var minutes = (duration % 3600) / 60;
+            var seconds = duration % 60;
+
+            if (hours > 0) {
+                return $"{hours}h {minutes}m {seconds}s";
+            }
+            if (minutes > 0) {
+                return $"{minutes}m {seconds}s";
+            }
+            return $"{seconds}s";
         }
     }
 }

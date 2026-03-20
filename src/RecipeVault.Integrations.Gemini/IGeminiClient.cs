@@ -87,6 +87,15 @@ namespace RecipeVault.Integrations.Gemini {
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Generated text response from Gemini</returns>
         Task<string> GenerateTextAsync(string prompt, string responseMimeType, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Transcribe audio using Gemini API
+        /// </summary>
+        /// <param name="audioData">Audio data in bytes</param>
+        /// <param name="audioFormat">Audio format (e.g., "mp3", "m4a", "wav")</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Transcription response with text and confidence</returns>
+        Task<GeminiTranscriptionResponse> TranscribeAudioAsync(byte[] audioData, string audioFormat, CancellationToken cancellationToken = default);
     }
 
     /// <summary>

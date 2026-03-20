@@ -12,5 +12,6 @@ namespace RecipeVault.Facade {
         Task<RecipeDto> ImportFromMultipleImagesAsync(List<IFormFile> images, string processingMode = "sequential");
         Task<RecipeDto> ImportStructuredAsync(ImportStructuredRequestDto dto);
         Task<RecipeDto> ImportHtmlAsync(ImportHtmlRequestDto dto);
+        Task<VideoImportResultDto> ImportFromVideoAsync(string videoUrl, bool includeSubtitles = true);
     }
 }

@@ -200,5 +200,50 @@ namespace RecipeVault.WebApi.Controllers {
                 return Ok(recipeMapper.Map(recipe));
             }
         }
+
+        /// <summary>
+        /// Import a recipe from a video URL (TikTok, Instagram, YouTube)
+        /// </summary>
+        /// <param name="request">Video URL and options</param>
+        [HttpPost("video")]
+        [ProducesResponseType(typeof(Models.Responses.VideoImportResultModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        public async Task<IActionResult> ImportFromVideoAsync([FromBody] Models.Requests.ImportVideoRequestModel request) {
+            if (request == null || string.IsNullOrWhiteSpace(request.Url)) {
+                return BadRequest("Video URL is required");
+            }
+
+            using (LogContext.PushProperty("VideoUrl", request.Url))
+            using (LogContext.PushProperty("IncludeSubtitles", request.IncludeSubtitles)) {
+                try {
+                    var resultDto = await facade.ImportFromVideoAsync(request.Url, request.IncludeSubtitles).ConfigureAwait(false);
+                    
+                    var resultModel = new Models.Responses.VideoImportResultModel {
+                        Recipe = recipeMapper.Map(resultDto.Recipe),
+                        Transcript = resultDto.Transcript,
+                        TranscriptConfidence = resultDto.TranscriptConfidence,
+                        Platform = resultDto.Platform,
+                        Duration = resultDto.Duration,
+                        ThumbnailUrl = resultDto.ThumbnailUrl
+                    };
+
+                    return Ok(resultModel);
+                } catch (ArgumentException ex) {
+                    logger.LogError(ex, "Invalid video URL: {Url}", request.Url);
+                    return BadRequest($"Invalid video URL: {ex.Message}");
+                } catch (HttpRequestException ex) {
+                    logger.LogError(ex, "Unable to download video: {Url}", request.Url);
+                    return StatusCode(StatusCodes.Status503ServiceUnavailable, $"Unable to download video: {ex.Message}");
+                } catch (InvalidOperationException ex) {
+                    logger.LogError(ex, "Failed to parse recipe from video: {Url}", request.Url);
+                    return UnprocessableEntity($"Failed to parse recipe from video: {ex.Message}");
+                } catch (Exception ex) {
+                    logger.LogError(ex, "Error importing from video: {Url}", request.Url);
+                    throw;
+                }
+            }
+        }
     }
 }

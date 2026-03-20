@@ -228,4 +228,19 @@ namespace RecipeVault.Integrations.Gemini.Models {
         [JsonPropertyName("confidence")]
         public decimal Confidence { get; set; }
     }
+
+    /// <summary>
+    /// Response from Gemini audio transcription
+    /// </summary>
+    public class GeminiTranscriptionResponse {
+        /// <summary>
+        /// Transcribed text
+        /// </summary>
+        public string Text { get; set; }
+
+        /// <summary>
+        /// Confidence score for the transcription
+        /// </summary>
+        public decimal Confidence { get; set; }
+    }
 }

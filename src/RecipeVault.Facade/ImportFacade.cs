@@ -104,5 +104,25 @@ namespace RecipeVault.Facade {
 
             return recipeMapper.MapToDto(recipe);
         }
+
+        public async Task<VideoImportResultDto> ImportFromVideoAsync(string videoUrl, bool includeSubtitles = true) {
+            logger.LogInformation("Starting video import from: {VideoUrl}", videoUrl);
+
+            var result = await importService.ImportFromVideoAsync(videoUrl, includeSubtitles).ConfigureAwait(false);
+
+            // Save the imported recipe
+            await uow.SaveChangesAsync().ConfigureAwait(false);
+
+            logger.LogInformation("Video import completed: {Title}", result.Recipe.Title);
+
+            return new VideoImportResultDto {
+                Recipe = recipeMapper.MapToDto(result.Recipe),
+                Transcript = result.Transcript,
+                TranscriptConfidence = result.TranscriptConfidence,
+                Platform = result.Platform,
+                Duration = result.Duration,
+                ThumbnailUrl = result.ThumbnailUrl
+            };
+        }
     }
 }

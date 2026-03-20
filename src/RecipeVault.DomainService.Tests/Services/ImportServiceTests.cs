@@ -15,6 +15,7 @@ using RecipeVault.Domain.Enums;
 using RecipeVault.DomainService;
 using RecipeVault.DomainService.Models;
 using RecipeVault.DomainService.Tests.Base;
+using RecipeVault.Integrations.VideoDownload;
 
 namespace RecipeVault.DomainService.Tests.Services {
     public class ImportServiceTests : DomainServiceTestBase {
@@ -31,6 +32,7 @@ namespace RecipeVault.DomainService.Tests.Services {
                 mockImageStorage.Object,
                 mockHttpClientFactory.Object,
                 mockGeminiClient.Object,
+                Mock.Of<IVideoDownloadService>(),
                 mockLogger.Object);
         }
 

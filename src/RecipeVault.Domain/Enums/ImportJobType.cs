@@ -3,6 +3,7 @@ namespace RecipeVault.Domain.Enums {
         Paprika = 1,
         UrlBatch = 2,
         MultiImage = 3,
-        Export = 4
+        Export = 4,
+        Video = 5
     }
 }

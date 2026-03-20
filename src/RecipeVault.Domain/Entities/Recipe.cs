@@ -61,6 +61,9 @@ namespace RecipeVault.Domain.Entities {
         [StringLength(1000)]
         public string SourceImageUrl { get; private set; }
 
+        [StringLength(1000)]
+        public string SourceVideoUrl { get; private set; }
+
         public bool IsPublic { get; private set; }
 
         public int? Rating { get; private set; }
@@ -145,6 +148,10 @@ namespace RecipeVault.Domain.Entities {
 
         public void SetSourceImageUrl(string sourceImageUrl) {
             SourceImageUrl = sourceImageUrl;
+        }
+
+        public void SetSourceVideoUrl(string sourceVideoUrl) {
+            SourceVideoUrl = sourceVideoUrl;
         }
 
         public void SetVisibility(bool isPublic) {

@@ -19,5 +19,6 @@
     <ProjectReference Include="..\RecipeVault.Facade\RecipeVault.Facade.csproj" />
     <ProjectReference Include="..\RecipeVault.Integrations.Supabase\RecipeVault.Integrations.Supabase.csproj" />
     <ProjectReference Include="..\RecipeVault.Integrations.Usda\RecipeVault.Integrations.Usda.csproj" />
+    <ProjectReference Include="..\RecipeVault.Integrations.VideoDownload\RecipeVault.Integrations.VideoDownload.csproj" />
   </ItemGroup>
 </Project>
