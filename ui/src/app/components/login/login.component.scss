@@ -67,7 +67,8 @@
   }
 
   // Primary CTA: Warm Orange #ff8c42 — FINAL per Vega approval of 350ebb3
-  .sign-in-btn {
+  // Uses ::ng-deep to pierce Material's shadow DOM encapsulation
+  ::ng-deep .sign-in-btn.mat-mdc-raised-button {
     width: 100%;
     height: 48px;
     margin-bottom: var(--space-md);
@@ -77,6 +78,10 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     border-radius: var(--radius-md);
+
+    .mdc-button__label {
+      color: var(--color-primary-text);
+    }
 
     &:hover:not(:disabled) {
       background-color: var(--color-primary-hover) !important;
@@ -93,7 +98,7 @@
   }
 
   // P1 fix: Magic link button — outlined teal (transparent bg, teal border)
-  .magic-link-btn {
+  ::ng-deep .magic-link-btn.mat-mdc-outlined-button {
     width: 100%;
     height: 48px;
     margin-bottom: var(--space-md);
