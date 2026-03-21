@@ -18,7 +18,10 @@
 }
 
 .logo {
-  font: 500 32px/40px var(--font-family-base);
+  font-family: var(--font-family-base);
+  font-weight: 500;
+  font-size: 32px;
+  line-height: 40px;
   color: var(--color-text-primary);
   letter-spacing: -0.02em;
   margin-bottom: var(--space-xl);
@@ -47,7 +50,10 @@
   }
 
   ::ng-deep .mat-mdc-card-title {
-    font: var(--font-h2);
+    font-family: var(--font-family-base);
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 32px;
     color: var(--color-text-primary);
     margin-bottom: var(--space-lg);
     text-align: center;
@@ -62,14 +68,52 @@
     margin-bottom: var(--space-md);
   }
 
-  button[type="submit"],
-  button[mat-stroked-button] {
+  // P0 fix: SIGN IN button — teal (#14b8a6), not gray/amber
+  .sign-in-btn {
     width: 100%;
     height: 48px;
     margin-bottom: var(--space-md);
+    background-color: var(--color-accent) !important;
+    color: #fff !important;
+    font: var(--font-button);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: var(--radius-md);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-accent-hover) !important;
+    }
+
+    &:disabled {
+      background-color: var(--color-surface-active) !important;
+      color: var(--color-text-disabled) !important;
+    }
+  }
+
+  // P1 fix: Magic link button — outlined teal (transparent bg, teal border)
+  .magic-link-btn {
+    width: 100%;
+    height: 48px;
+    margin-bottom: var(--space-md);
+    background-color: transparent !important;
+    color: var(--color-accent) !important;
+    border: 1px solid var(--color-accent) !important;
+    border-radius: var(--radius-md);
+    font: var(--font-button);
 
     mat-icon {
       margin-right: var(--space-sm);
+      color: var(--color-accent);
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(20, 184, 166, 0.08) !important;
+      border-color: var(--color-accent-hover) !important;
+    }
+
+    &:disabled {
+      border-color: var(--color-text-disabled) !important;
+      color: var(--color-text-disabled) !important;
     }
   }
 }
