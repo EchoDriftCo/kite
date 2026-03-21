@@ -227,15 +227,17 @@ body {
 
 // --- Buttons ---
 // Primary (warm orange) raised buttons
-// Override MDC internal custom properties directly — CSS class overrides alone
-// lose the specificity war against Material's compiled theme styles.
+// MDC variables cannot resolve CSS var() from _tokens.scss — use hex values directly.
+// Source of truth: _tokens.scss --color-primary: #ff8c42
 .mat-mdc-raised-button.mat-primary,
 .mat-mdc-unelevated-button.mat-primary {
-  --mdc-filled-button-container-color: var(--color-primary);
-  --mdc-filled-button-label-text-color: var(--color-primary-text);
-  --mdc-protected-button-container-color: var(--color-primary);
-  --mdc-protected-button-label-text-color: var(--color-primary-text);
-  --mat-mdc-button-persistent-ripple-color: var(--color-primary-active);
+  --mdc-filled-button-container-color: #ff8c42;
+  --mdc-filled-button-label-text-color: #1a2230;
+  --mdc-protected-button-container-color: #ff8c42;
+  --mdc-protected-button-label-text-color: #1a2230;
+  --mat-mdc-button-persistent-ripple-color: #e67a30;
+  background-color: #ff8c42 !important;
+  color: #1a2230 !important;
   border-radius: var(--radius-md);
   min-height: 40px;
   text-transform: uppercase;
@@ -243,16 +245,32 @@ body {
   font: var(--font-button);
   transition: all var(--transition-fast);
 
+  .mdc-button__label {
+    color: #1a2230 !important;
+  }
+
   &:hover:not(:disabled) {
-    --mdc-filled-button-container-color: var(--color-primary-hover);
-    --mdc-protected-button-container-color: var(--color-primary-hover);
+    --mdc-filled-button-container-color: #ffa366;
+    --mdc-protected-button-container-color: #ffa366;
+    background-color: #ffa366 !important;
     box-shadow: var(--shadow-1);
   }
-  
+
   &:active:not(:disabled) {
-    --mdc-filled-button-container-color: var(--color-primary-active);
-    --mdc-protected-button-container-color: var(--color-primary-active);
+    --mdc-filled-button-container-color: #e67a30;
+    --mdc-protected-button-container-color: #e67a30;
+    background-color: #e67a30 !important;
     transform: scale(0.98);
+  }
+
+  &:disabled {
+    --mdc-filled-button-container-color: #64748b;
+    background-color: #64748b !important;
+    color: #94a3b8 !important;
+    
+    .mdc-button__label {
+      color: #94a3b8 !important;
+    }
   }
 }
 
