@@ -27,6 +27,20 @@
   --color-accent-hover: #2dd4bf;
   --color-accent-active: #0d9488;
 
+  // Angular Material M3 system tokens — bridges M2 theme to M3 components
+  // Without these, mat-raised-button falls back to --mat-sys-surface (gray)
+  --mat-sys-primary: #ff8c42;
+  --mat-sys-on-primary: #1a2230;
+  --mat-sys-secondary: #14b8a6;
+  --mat-sys-on-secondary: #ffffff;
+  --mat-sys-surface: #334155;
+  --mat-sys-on-surface: #f1f5f9;
+  --mat-sys-on-surface-variant: #cbd5e1;
+  --mat-sys-error: #ef4444;
+  --mat-sys-on-error: #ffffff;
+  --mat-sys-outline: rgba(241, 245, 249, 0.2);
+  --mat-sys-outline-variant: rgba(241, 245, 249, 0.12);
+
   // Colors — Semantic
   --color-success: #10b981;
   --color-success-bg: rgba(16, 185, 129, 0.15);
