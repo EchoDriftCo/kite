@@ -59,3 +59,18 @@
     gap: var(--space-sm);
   }
 }
+
+.danger-text {
+  color: var(--color-error) !important;
+}
+
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+
+  a {
+    color: var(--color-accent);
+    text-transform: none;
+  }
+}

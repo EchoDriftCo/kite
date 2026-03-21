@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,6 +10,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { OnboardingService } from '../../services/onboarding.service';
 import { TourService } from '../../services/tour.service';
+import { AuthService } from '../../services/auth.service';
+import { RecipeService } from '../../services/recipe.service';
 import { OnboardingDialogComponent } from '../onboarding/onboarding-dialog/onboarding-dialog.component';
 import { BetaInviteDialogComponent } from './beta-invite-dialog/beta-invite-dialog.component';
 
@@ -28,15 +31,27 @@ import { BetaInviteDialogComponent } from './beta-invite-dialog/beta-invite-dial
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss'
 })
-export class SettingsComponent {
+export class SettingsComponent implements OnInit {
   removingSamples = false;
+  exporting = false;
+  userEmail = '';
+  appVersion = '1.0.0';
 
   constructor(
     private onboardingService: OnboardingService,
     private tourService: TourService,
+    private authService: AuthService,
+    private recipeService: RecipeService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private router: Router
   ) {}
+
+  ngOnInit(): void {
+    this.authService.session$.subscribe(session => {
+      this.userEmail = session?.user?.email || '';
+    });
+  }
 
   startTour(): void {
     this.tourService.forceStart();
@@ -97,5 +112,60 @@ export class SettingsComponent {
         this.snackBar.open('Failed to remove sample recipes', 'OK', { duration: 3000 });
       }
     });
+  }
+
+  changePassword(): void {
+    // Navigate to Supabase password reset flow
+    this.authService.resetPassword(this.userEmail).then(() => {
+      this.snackBar.open('Password reset email sent. Check your inbox.', 'OK', { duration: 5000 });
+    }).catch(() => {
+      this.snackBar.open('Failed to send password reset email', 'OK', { duration: 3000 });
+    });
+  }
+
+  async logout(): Promise<void> {
+    try {
+      await this.authService.signOut();
+      this.router.navigate(['/login']);
+    } catch {
+      this.snackBar.open('Failed to sign out', 'OK', { duration: 3000 });
+    }
+  }
+
+  exportRecipes(): void {
+    this.exporting = true;
+    // Fetch all recipes and download as JSON
+    this.recipeService.searchRecipes({ pageSize: 1000, pageNumber: 1 }).subscribe({
+      next: (data) => {
+        const blob = new Blob([JSON.stringify(data.items || data, null, 2)], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `recipevault-export-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.exporting = false;
+        this.snackBar.open('Recipes exported successfully!', 'OK', { duration: 3000 });
+      },
+      error: () => {
+        this.exporting = false;
+        this.snackBar.open('Failed to export recipes', 'OK', { duration: 3000 });
+      }
+    });
+  }
+
+  deleteAccount(): void {
+    const confirmed = confirm(
+      'Are you sure you want to delete your account? This will permanently delete all your recipes, meal plans, and data. This action CANNOT be undone.'
+    );
+    if (!confirmed) return;
+
+    const doubleConfirm = prompt('Type DELETE to confirm account deletion:');
+    if (doubleConfirm !== 'DELETE') {
+      this.snackBar.open('Account deletion cancelled', 'OK', { duration: 3000 });
+      return;
+    }
+
+    this.snackBar.open('Account deletion is not yet available. Contact support.', 'OK', { duration: 5000 });
   }
 }
