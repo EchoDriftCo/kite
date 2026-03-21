@@ -17,9 +17,19 @@
   </div>
 
   @if (loading) {
-    <div class="loading-container">
-      <mat-spinner></mat-spinner>
-      <p>Loading recipe...</p>
+    <div class="skeleton-form" aria-busy="true" aria-label="Loading recipe">
+      <div class="skeleton-bar wide tall"></div>
+      <div class="skeleton-bar wide"></div>
+      <div class="skeleton-row">
+        <div class="skeleton-bar small"></div>
+        <div class="skeleton-bar small"></div>
+        <div class="skeleton-bar small"></div>
+      </div>
+      <div class="skeleton-divider"></div>
+      <div class="skeleton-bar medium tall"></div>
+      <div class="skeleton-bar wide"></div>
+      <div class="skeleton-bar wide"></div>
+      <div class="skeleton-bar wide"></div>
     </div>
   }
 
