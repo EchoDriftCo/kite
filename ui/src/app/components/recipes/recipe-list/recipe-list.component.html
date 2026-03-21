@@ -3,14 +3,16 @@
     <h1>Recipes</h1>
 
     <div class="actions">
-      <mat-button-toggle-group [(ngModel)]="viewMode" (change)="onViewModeChange()">
-        <mat-button-toggle value="mine">My Recipes</mat-button-toggle>
-        <mat-button-toggle value="public">Public Recipes</mat-button-toggle>
+      <mat-button-toggle-group [(ngModel)]="viewMode" (change)="onViewModeChange()" aria-label="Recipe view mode">
+        <mat-button-toggle value="mine" aria-label="View my recipes">My Recipes</mat-button-toggle>
+        <mat-button-toggle value="public" aria-label="View public recipes">Public Recipes</mat-button-toggle>
       </mat-button-toggle-group>
 
       <button mat-icon-button
               (click)="toggleFavoritesFilter()"
               [matTooltip]="favoritesOnly ? 'Show all recipes' : 'Show favorites only'"
+              [attr.aria-label]="favoritesOnly ? 'Show all recipes' : 'Show favorites only'"
+              [attr.aria-pressed]="favoritesOnly"
               [class.favorites-active]="favoritesOnly">
         <mat-icon>{{ favoritesOnly ? 'favorite' : 'favorite_border' }}</mat-icon>
       </button>
@@ -55,6 +57,7 @@
             <button mat-stroked-button
                     class="tag-chip"
                     [class.selected]="isTagSelected(tag)"
+                    [attr.aria-pressed]="isTagSelected(tag)"
                     (click)="toggleTagFilter(tag)">
               {{ tag.name }}
             </button>
@@ -71,9 +74,17 @@
   }
 
   @if (loading) {
-    <div class="loading-container">
-      <mat-spinner></mat-spinner>
-      <p>Loading recipes...</p>
+    <div class="recipe-grid" aria-busy="true" aria-label="Loading recipes">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="skeleton-card">
+          <div class="skeleton-image"></div>
+          <div class="skeleton-content">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-subtitle"></div>
+            <div class="skeleton-meta"></div>
+          </div>
+        </div>
+      }
     </div>
   }
 
@@ -103,7 +114,9 @@
     } @else {
       <div class="recipe-grid">
         @for (recipe of recipes; track recipe.recipeResourceId) {
-          <mat-card class="recipe-card" (click)="viewRecipe(recipe)">
+          <mat-card class="recipe-card" (click)="viewRecipe(recipe)" 
+                    [attr.aria-label]="'View recipe: ' + recipe.title"
+                    tabindex="0" (keyup.enter)="viewRecipe(recipe)">
             <div class="card-image-wrapper">
               @if (recipe.originalImageUrl) {
                 <img mat-card-image [src]="recipe.originalImageUrl" [alt]="recipe.title">
@@ -114,7 +127,8 @@
               }
               @if (recipe.isOwner !== false) {
                 <button class="favorite-overlay" (click)="toggleFavorite(recipe, $event)"
-                        [class.favorited]="recipe.isFavorite">
+                        [class.favorited]="recipe.isFavorite"
+                        [attr.aria-label]="recipe.isFavorite ? 'Remove from favorites' : 'Add to favorites'">
                   <mat-icon>{{ recipe.isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
                 </button>
               }
