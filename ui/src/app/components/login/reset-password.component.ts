@@ -1,96 +1,125 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../services/auth.service';
+
+// Custom validator for password match
+function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+  const password = control.get('newPassword');
+  const confirmPassword = control.get('confirmPassword');
+  
+  if (!password || !confirmPassword) {
+    return null;
+  }
+  
+  return password.value === confirmPassword.value ? null : { mismatch: true };
+}
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
     RouterModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule
+    MatIconModule
   ],
   template: `
-    <div class="reset-page">
+    <div class="reset-password-page">
       <div class="reset-container">
-        <h1 class="logo">
-          <mat-icon class="logo-icon">restaurant_menu</mat-icon>
-          RecipeVault
-        </h1>
+        <h1 class="logo">RecipeVault</h1>
 
-        @if (!emailSent) {
-          <mat-card class="reset-card">
-            <mat-card-header>
-              <mat-card-title>Reset Password</mat-card-title>
-            </mat-card-header>
+        <mat-card class="reset-card">
+          <mat-card-header>
+            <mat-card-title>Set New Password</mat-card-title>
+          </mat-card-header>
 
-            <mat-card-content>
-              <p class="instructions">
-                Enter your email address and we'll send you a link to reset your password.
-              </p>
-
-              <form (ngSubmit)="sendResetLink()">
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Email</mat-label>
-                  <input matInput type="email" [(ngModel)]="email" name="email"
-                         autocomplete="email" placeholder="you@example.com" required>
+          <mat-card-content>
+            @if (success) {
+              <div class="success-container">
+                <mat-icon class="success-icon">check_circle</mat-icon>
+                <h2>Password Updated</h2>
+                <p>Your password has been successfully updated. Redirecting...</p>
+              </div>
+            } @else {
+              <form [formGroup]="resetForm" (ngSubmit)="onSubmit()">
+                <mat-form-field appearance="outline">
+                  <mat-label>New Password</mat-label>
+                  <input matInput
+                         [type]="hidePassword ? 'password' : 'text'"
+                         formControlName="newPassword"
+                         autocomplete="new-password"
+                         required />
+                  <button mat-icon-button 
+                          matSuffix 
+                          type="button"
+                          (click)="hidePassword = !hidePassword"
+                          [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'">
+                    <mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon>
+                  </button>
+                  <mat-hint>Must be at least 6 characters</mat-hint>
+                  @if (resetForm.get('newPassword')?.hasError('required')) {
+                    <mat-error>Password is required</mat-error>
+                  }
+                  @if (resetForm.get('newPassword')?.hasError('minlength')) {
+                    <mat-error>Password must be at least 6 characters</mat-error>
+                  }
                 </mat-form-field>
 
-                <button mat-raised-button color="primary" type="submit"
-                        class="full-width-button" [disabled]="loading || !email">
-                  @if (loading) {
-                    <mat-spinner diameter="20"></mat-spinner>
-                    Sending...
-                  } @else {
-                    SEND RESET LINK
+                <mat-form-field appearance="outline">
+                  <mat-label>Confirm Password</mat-label>
+                  <input matInput
+                         [type]="hideConfirmPassword ? 'password' : 'text'"
+                         formControlName="confirmPassword"
+                         autocomplete="new-password"
+                         required />
+                  <button mat-icon-button 
+                          matSuffix 
+                          type="button"
+                          (click)="hideConfirmPassword = !hideConfirmPassword"
+                          [attr.aria-label]="hideConfirmPassword ? 'Show password' : 'Hide password'">
+                    <mat-icon>{{ hideConfirmPassword ? 'visibility' : 'visibility_off' }}</mat-icon>
+                  </button>
+                  @if (resetForm.get('confirmPassword')?.hasError('required')) {
+                    <mat-error>Please confirm your password</mat-error>
                   }
-                </button>
+                  @if (resetForm.hasError('mismatch') && resetForm.get('confirmPassword')?.touched) {
+                    <mat-error>Passwords do not match</mat-error>
+                  }
+                </mat-form-field>
 
                 @if (error) {
-                  <div class="error-message" role="alert">
+                  <div class="error-message" role="alert" aria-live="assertive">
                     <mat-icon>error</mat-icon>
                     <span>{{ error }}</span>
                   </div>
                 }
-              </form>
 
-              <p class="signin-prompt">
-                Remember your password?
-                <a mat-button routerLink="/login">Sign in</a>
-              </p>
-            </mat-card-content>
-          </mat-card>
-        } @else {
-          <mat-card class="reset-card reset-success">
-            <mat-card-content>
-              <mat-icon class="success-icon">check_circle</mat-icon>
-              <h2>Check your email</h2>
-              <p>We've sent a password reset link to <strong>{{ email }}</strong>. Click the link to reset your password.</p>
-              <button mat-raised-button color="primary" routerLink="/login" class="full-width-button">
-                Back to Sign In
-              </button>
-            </mat-card-content>
-          </mat-card>
-        }
+                <button mat-raised-button
+                        color="primary"
+                        type="submit"
+                        [disabled]="loading || !resetForm.valid">
+                  {{ loading ? 'Updating password...' : 'Update Password' }}
+                </button>
+              </form>
+            }
+          </mat-card-content>
+        </mat-card>
       </div>
     </div>
   `,
   styles: [`
-    .reset-page {
+    .reset-password-page {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -114,17 +143,6 @@ import { AuthService } from '../../services/auth.service';
       color: var(--color-text-primary);
       letter-spacing: -0.02em;
       margin-bottom: var(--space-xl);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-sm);
-
-      .logo-icon {
-        font-size: 36px;
-        width: 36px;
-        height: 36px;
-        color: var(--color-primary);
-      }
 
       @media (min-width: 960px) {
         font-size: 40px;
@@ -144,116 +162,106 @@ import { AuthService } from '../../services/auth.service';
         padding: var(--space-xl);
       }
 
-      .mat-mdc-card-title {
+      ::ng-deep .mat-mdc-card-header {
+        display: block;
+        padding: 0;
+      }
+
+      ::ng-deep .mat-mdc-card-title {
         font: var(--font-h2);
         color: var(--color-text-primary);
         margin-bottom: var(--space-lg);
         text-align: center;
       }
 
-      .instructions {
-        font: var(--font-body);
-        color: var(--color-text-secondary);
-        margin-bottom: var(--space-lg);
-        text-align: center;
+      ::ng-deep .mat-mdc-card-content {
+        padding: 0;
       }
 
-      .full-width {
+      mat-form-field {
         width: 100%;
         margin-bottom: var(--space-md);
       }
-    }
 
-    .full-width-button {
-      width: 100%;
-      height: 48px;
-      margin-bottom: var(--space-md);
-
-      mat-spinner {
-        display: inline-block;
-        margin-right: var(--space-sm);
-      }
-    }
-
-    .error-message {
-      display: flex;
-      align-items: center;
-      gap: var(--space-sm);
-      margin-top: var(--space-sm);
-      padding: var(--space-sm) var(--space-md);
-      background-color: var(--color-error-bg);
-      border-radius: var(--radius-md);
-      font: var(--font-body-small);
-      color: var(--color-error);
-
-      mat-icon {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
-        flex-shrink: 0;
-      }
-    }
-
-    .signin-prompt {
-      text-align: center;
-      margin-top: var(--space-lg);
-      margin-bottom: 0;
-      font: var(--font-body);
-      color: var(--color-text-secondary);
-
-      a {
-        color: var(--color-accent);
-        text-transform: none;
-        padding: 0;
-        min-width: auto;
-
-        &:hover {
-          text-decoration: underline;
-          background: none;
-        }
-      }
-    }
-
-    .reset-success {
-      text-align: center;
-
-      .success-icon {
-        font-size: 48px;
-        width: 48px;
+      button[type="submit"] {
+        width: 100%;
         height: 48px;
-        color: var(--color-success);
+        margin-top: var(--space-sm);
+      }
+
+      .error-message {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
         margin-bottom: var(--space-md);
-      }
+        font: var(--font-caption);
+        color: var(--color-error);
+        animation: fadeIn var(--transition-fast);
 
-      h2 {
-        font: var(--font-h3);
-        color: var(--color-text-primary);
-        margin-bottom: var(--space-sm);
-      }
-
-      p {
-        font: var(--font-body);
-        color: var(--color-text-secondary);
-        margin-bottom: var(--space-lg);
-
-        strong {
-          color: var(--color-text-primary);
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
         }
+      }
+
+      .success-container {
+        text-align: center;
+
+        .success-icon {
+          font-size: 48px;
+          width: 48px;
+          height: 48px;
+          color: var(--color-success);
+          margin: 0 auto var(--space-md);
+        }
+
+        h2 {
+          font: var(--font-h3);
+          color: var(--color-text-primary);
+          margin-bottom: var(--space-sm);
+        }
+
+        p {
+          font: var(--font-body);
+          color: var(--color-text-secondary);
+        }
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
   `]
 })
 export class ResetPasswordComponent {
-  email = '';
+  resetForm: FormGroup;
   loading = false;
   error = '';
-  emailSent = false;
+  success = false;
+  hidePassword = true;
+  hideConfirmPassword = true;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
+    this.resetForm = this.fb.group({
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', Validators.required]
+    }, { validators: passwordMatchValidator });
+  }
 
-  async sendResetLink() {
-    if (!this.email.trim()) {
-      this.error = 'Email is required';
+  async onSubmit() {
+    if (!this.resetForm.valid) {
       return;
     }
 
@@ -261,10 +269,12 @@ export class ResetPasswordComponent {
     this.loading = true;
 
     try {
-      await this.authService.resetPassword(this.email);
-      this.emailSent = true;
+      const { newPassword } = this.resetForm.value;
+      await this.authService.updatePassword(newPassword);
+      this.success = true;
+      setTimeout(() => this.router.navigate(['/recipes']), 2000);
     } catch (err: any) {
-      this.error = err.message || 'Failed to send reset email';
+      this.error = err.message || 'Failed to update password';
     } finally {
       this.loading = false;
     }

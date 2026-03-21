@@ -33,7 +33,7 @@ export class AuthService {
       this.currentUserSubject.next(session?.user ?? null);
 
       if (event === 'PASSWORD_RECOVERY') {
-        this.router.navigate(['/reset-password']);
+        this.router.navigate(['/update-password']);
       }
     });
   }
