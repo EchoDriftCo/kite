@@ -14,7 +14,7 @@
       vertical-align: middle;
 
       &.has-alias {
-        border: 2px solid rgba(255, 255, 255, 0.3);
+        border: 2px solid var(--color-text-hint);
       }
 
       .tag-content {
@@ -76,7 +76,7 @@
           .alias-input {
             background: rgba(255, 255, 255, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 4px;
+            border-radius: var(--radius-sm);
             padding: 2px 6px;
             font-size: 0.875rem;
             color: inherit;
@@ -84,12 +84,12 @@
             
             &:focus {
               outline: none;
-              background: rgba(255, 255, 255, 0.3);
+              background: var(--color-text-hint);
               border-color: rgba(255, 255, 255, 0.6);
             }
 
             &::placeholder {
-              color: rgba(255, 255, 255, 0.6);
+              color: var(--color-text-secondary);
             }
           }
 
@@ -107,17 +107,17 @@
           }
 
           .alias-save-btn mat-icon {
-            color: #4caf50;
+            color: var(--color-success);
           }
 
           .alias-cancel-btn mat-icon {
-            color: #f44336;
+            color: var(--color-error);
           }
         }
       }
 
       &.tag-dietary {
-        background-color: #4caf50;
+        background-color: var(--color-success);
         color: white;
       }
 
@@ -132,7 +132,7 @@
       }
 
       &.tag-source {
-        background-color: #f44336;
+        background-color: var(--color-error);
         color: white;
       }
 
@@ -143,7 +143,7 @@
     }
 
     .alias-error {
-      color: #f44336;
+      color: var(--color-error);
       font-size: 0.75rem;
       margin-top: 0.5rem;
     }
@@ -188,6 +188,6 @@
   font-weight: 500;
 
   mat-icon {
-    color: #4caf50;
+    color: var(--color-success);
   }
 }
