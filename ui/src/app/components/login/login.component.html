@@ -1,78 +1,108 @@
-<div class="login-container">
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>{{ magicLinkMode ? 'Sign In with Magic Link' : 'Sign In' }}</mat-card-title>
-    </mat-card-header>
+<div class="login-page">
+  <div class="login-container">
+    <h1 class="logo">
+      <mat-icon class="logo-icon">restaurant_menu</mat-icon>
+      RecipeVault
+    </h1>
 
-    <mat-card-content>
-      @if (magicLinkMode) {
-        <form (ngSubmit)="sendMagicLink()">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Email</mat-label>
-            <input matInput type="email" [(ngModel)]="email" name="email" required>
-          </mat-form-field>
+    <mat-card class="login-card">
+      <mat-card-content>
+        @if (magicLinkMode) {
+          <h2 class="card-title">Sign In with Magic Link</h2>
+          <p class="card-subtitle">We'll send a sign-in link to your email</p>
 
-          @if (error) {
-            <div class="error-message">{{ error }}</div>
-          }
+          <form (ngSubmit)="sendMagicLink()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" [(ngModel)]="email" name="email" required autocomplete="email">
+            </mat-form-field>
 
-          @if (successMessage) {
-            <div class="success-message">{{ successMessage }}</div>
-          }
-
-          <button mat-raised-button color="primary" type="submit" class="full-width submit-button" [disabled]="loading">
-            @if (loading) {
-              <mat-spinner diameter="20"></mat-spinner>
-            } @else {
-              Send Magic Link
+            @if (error) {
+              <div class="message message-error">
+                <mat-icon>error</mat-icon>
+                <span>{{ error }}</span>
+              </div>
             }
-          </button>
-        </form>
 
-        <div class="toggle-mode">
-          <a href="javascript:void(0)" role="button" (click)="magicLinkMode = false; error = ''; successMessage = ''">Sign in with password instead</a>
-        </div>
-      } @else {
-        <form (ngSubmit)="signIn()">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Email</mat-label>
-            <input matInput type="email" [(ngModel)]="email" name="email" required>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Password</mat-label>
-            <input matInput type="password" [(ngModel)]="password" name="password" required>
-          </mat-form-field>
-
-          @if (error) {
-            <div class="error-message">{{ error }}</div>
-          }
-
-          @if (successMessage) {
-            <div class="success-message">{{ successMessage }}</div>
-          }
-
-          <button mat-raised-button color="primary" type="submit" class="full-width submit-button" [disabled]="loading">
-            @if (loading) {
-              <mat-spinner diameter="20"></mat-spinner>
-            } @else {
-              Sign In
+            @if (successMessage) {
+              <div class="message message-success">
+                <mat-icon>check_circle</mat-icon>
+                <span>{{ successMessage }}</span>
+              </div>
             }
-          </button>
-        </form>
 
-        <div class="forgot-password">
-          <a href="javascript:void(0)" role="button" (click)="forgotPassword()">Forgot password?</a>
-        </div>
+            <button mat-raised-button color="primary" type="submit" class="full-width submit-button" [disabled]="loading">
+              @if (loading) {
+                <mat-spinner diameter="20"></mat-spinner>
+                <span>Sending...</span>
+              } @else {
+                Send Magic Link
+              }
+            </button>
+          </form>
 
-        <div class="toggle-mode">
-          <a href="javascript:void(0)" role="button" (click)="magicLinkMode = true; error = ''; successMessage = ''">Sign in with magic link</a>
-        </div>
+          <div class="auth-link">
+            <button mat-button (click)="magicLinkMode = false; error = ''; successMessage = ''">
+              Sign in with password instead
+            </button>
+          </div>
+        } @else {
+          <h2 class="card-title">Welcome Back</h2>
+          <p class="card-subtitle">Sign in to your account</p>
 
-        <div class="toggle-mode">
-          Don't have an account? <a href="javascript:void(0)" role="button" (click)="openSignUp()">Create one</a>
-        </div>
-      }
-    </mat-card-content>
-  </mat-card>
+          <form (ngSubmit)="signIn()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" [(ngModel)]="email" name="email" required autocomplete="email">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Password</mat-label>
+              <input matInput type="password" [(ngModel)]="password" name="password" required autocomplete="current-password">
+            </mat-form-field>
+
+            <div class="forgot-password">
+              <button mat-button type="button" (click)="forgotPassword()">Forgot password?</button>
+            </div>
+
+            @if (error) {
+              <div class="message message-error">
+                <mat-icon>error</mat-icon>
+                <span>{{ error }}</span>
+              </div>
+            }
+
+            @if (successMessage) {
+              <div class="message message-success">
+                <mat-icon>check_circle</mat-icon>
+                <span>{{ successMessage }}</span>
+              </div>
+            }
+
+            <button mat-raised-button color="primary" type="submit" class="full-width submit-button" [disabled]="loading">
+              @if (loading) {
+                <mat-spinner diameter="20"></mat-spinner>
+                <span>Signing in...</span>
+              } @else {
+                Sign In
+              }
+            </button>
+          </form>
+
+          <div class="auth-links">
+            <div class="auth-link">
+              <button mat-button (click)="magicLinkMode = true; error = ''; successMessage = ''">
+                Sign in with magic link
+              </button>
+            </div>
+
+            <div class="auth-link signup-prompt">
+              Don't have an account?
+              <button mat-button color="accent" (click)="openSignUp()">Sign Up</button>
+            </div>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
 </div>
