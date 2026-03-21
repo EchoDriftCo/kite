@@ -148,7 +148,7 @@ namespace RecipeVault.WebApi.Controllers {
                 var savedRecipe = await facade.SaveGeneratedRecipeAsync(generatedRecipe).ConfigureAwait(false);
                 
                 using (LogContext.PushProperty("RecipeResourceId", savedRecipe.RecipeResourceId)) {
-                    return CreatedAtAction("GetRecipe", "Recipes", new { id = savedRecipe.RecipeResourceId }, savedRecipe);
+                    return CreatedAtAction("GetRecipeAsync", "Recipes", new { id = savedRecipe.RecipeResourceId }, savedRecipe);
                 }
             }
             catch (Exception ex) {
