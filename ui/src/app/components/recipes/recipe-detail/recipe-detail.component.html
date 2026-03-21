@@ -1,4 +1,4 @@
-<div class="recipe-detail-container">
+<div class="recipe-detail-container" role="main">
   @if (loading) {
     <div class="loading-container">
       <mat-spinner></mat-spinner>
@@ -18,13 +18,13 @@
   @if (!loading && !error && recipe) {
     <div class="recipe-header">
       <div class="header-actions">
-        <button mat-icon-button (click)="goBack()">
+        <button mat-icon-button (click)="goBack()" aria-label="Go back">
           <mat-icon>arrow_back</mat-icon>
         </button>
         
         <div class="action-buttons">
           <!-- Always visible icon buttons -->
-          <button mat-icon-button (click)="printRecipe()" matTooltip="Print Recipe">
+          <button mat-icon-button (click)="printRecipe()" matTooltip="Print Recipe" aria-label="Print recipe">
             <mat-icon>print</mat-icon>
           </button>
           @if (recipe.isOwner !== false) {
@@ -143,7 +143,7 @@
       <h1 data-tour="fork-indicator">{{ recipe.title }}</h1>
 
       @if (recipe.isOwner !== false) {
-        <div class="star-rating interactive">
+        <div class="star-rating interactive" role="img" [attr.aria-label]="'Rating: ' + (recipe.rating || 0) + ' out of 5 stars'">
           @for (star of [1, 2, 3, 4, 5]; track star) {
             <mat-icon
               (click)="setRating(star)"
@@ -158,7 +158,7 @@
           }
         </div>
       } @else if (recipe.rating) {
-        <div class="star-rating">
+        <div class="star-rating" role="img" [attr.aria-label]="'Rating: ' + recipe.rating + ' out of 5 stars'">
           @for (star of [1, 2, 3, 4, 5]; track star) {
             <mat-icon [class.filled]="star <= (recipe.rating || 0)">
               {{ star <= (recipe.rating || 0) ? 'star' : 'star_border' }}
@@ -374,7 +374,7 @@
 
     <mat-divider></mat-divider>
 
-    <div class="scaling-controls" data-tour="serving-selector">
+    <div class="scaling-controls" data-tour="serving-selector" role="group" aria-label="Recipe scaling">
       <div class="scaling-label">
         <mat-icon>straighten</mat-icon>
         Scale
@@ -400,7 +400,7 @@
 
     <div class="recipe-content">
       <div class="ingredients-section">
-        <h2>
+        <h2 id="ingredients-heading">
           <mat-icon>list</mat-icon>
           Ingredients
         </h2>
@@ -408,7 +408,7 @@
         <div class="ingredients-list">
           @for (ingredient of recipe.ingredients; track ingredient.recipeIngredientId || $index; let i = $index) {
             <div class="ingredient-item">
-              <mat-icon class="check-circle">radio_button_unchecked</mat-icon>
+              <mat-icon class="check-circle" role="checkbox" [attr.aria-checked]="false">radio_button_unchecked</mat-icon>
               <span class="ingredient-text">
                 @if (ingredient.quantity || ingredient.unit) {
                   <strong>{{ getScaledQuantity(ingredient.quantity) | fraction }} {{ ingredient.unit }}</strong>
@@ -430,7 +430,7 @@
       </div>
 
       <div class="instructions-section">
-        <h2>
+        <h2 id="instructions-heading">
           <mat-icon>format_list_numbered</mat-icon>
           Instructions
         </h2>
@@ -463,7 +463,7 @@
               <mat-icon>photo_library</mat-icon>
               Original Source Image
             </mat-panel-title>
-            <mat-panel-description>
+            <mat-panel-description aria-label="Photo used to import this recipe">
               Photo used to import this recipe
             </mat-panel-description>
           </mat-expansion-panel-header>
