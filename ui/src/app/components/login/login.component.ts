@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
@@ -17,10 +18,12 @@ import { SignUpDialogComponent } from './sign-up-dialog.component';
   imports: [
     CommonModule,
     FormsModule,
+    RouterModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatIconModule,
     MatProgressSpinnerModule,
     MatDialogModule
   ],
@@ -34,7 +37,7 @@ export class LoginComponent {
   error = '';
   successMessage = '';
   returnUrl = '/';
-  magicLinkMode = false;
+  hidePassword = true;
 
   constructor(
     private authService: AuthService,
@@ -54,24 +57,7 @@ export class LoginComponent {
       await this.authService.signIn(this.email, this.password);
       this.router.navigateByUrl(this.returnUrl);
     } catch (err: any) {
-      this.error = err.message || 'Failed to sign in';
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  async forgotPassword() {
-    if (!this.email) {
-      this.error = 'Enter your email address first';
-      return;
-    }
-    this.error = '';
-    this.loading = true;
-    try {
-      await this.authService.resetPassword(this.email);
-      this.successMessage = 'Password reset email sent! Check your inbox.';
-    } catch (err: any) {
-      this.error = err.message || 'Failed to send reset email';
+      this.error = err.message || 'Invalid email or password';
     } finally {
       this.loading = false;
     }
@@ -87,7 +73,6 @@ export class LoginComponent {
     try {
       await this.authService.signInWithOtp(this.email);
       this.successMessage = 'Magic link sent! Check your email to sign in.';
-      this.magicLinkMode = false;
     } catch (err: any) {
       this.error = err.message || 'Failed to send magic link';
     } finally {
@@ -97,7 +82,8 @@ export class LoginComponent {
 
   openSignUp() {
     const dialogRef = this.dialog.open(SignUpDialogComponent, {
-      width: '400px'
+      width: '480px',
+      maxWidth: '95vw'
     });
 
     dialogRef.afterClosed().subscribe(result => {
