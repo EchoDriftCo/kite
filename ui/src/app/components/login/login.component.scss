@@ -27,8 +27,6 @@
   margin-bottom: var(--space-xl);
 
   @media (min-width: 960px) {
-    font-size: 40px;
-    line-height: 48px;
     margin-bottom: var(--space-2xl);
   }
 }
@@ -68,24 +66,24 @@
     margin-bottom: var(--space-md);
   }
 
-  // Primary CTA: Warm Orange per Vega spec
+  // Primary CTA: Teal per Vega review
   .sign-in-btn {
     width: 100%;
     height: 48px;
     margin-bottom: var(--space-md);
-    background-color: var(--color-primary) !important;
-    color: var(--color-primary-text) !important;
+    background-color: var(--color-accent) !important;
+    color: #ffffff !important;
     font: var(--font-button);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     border-radius: var(--radius-md);
 
     &:hover:not(:disabled) {
-      background-color: var(--color-primary-hover) !important;
+      background-color: var(--color-accent-hover) !important;
     }
 
     &:active:not(:disabled) {
-      background-color: var(--color-primary-active) !important;
+      background-color: var(--color-accent-active) !important;
     }
 
     &:disabled {
