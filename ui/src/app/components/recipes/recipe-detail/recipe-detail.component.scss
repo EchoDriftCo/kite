@@ -323,17 +323,17 @@ mat-divider {
 
     .step-number {
       flex-shrink: 0;
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: var(--radius-full);
-      background-color: var(--color-primary);
-      color: var(--color-bg-primary);
+      background-color: rgba(20, 184, 166, 0.15);
+      border: 1px solid var(--color-accent);
+      color: var(--color-accent);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 600;
       font: var(--font-body);
-      font-weight: 600;
+      font-weight: 500;
     }
 
     p {
@@ -576,6 +576,105 @@ mat-expansion-panel-header mat-icon {
           }
         }
       }
+    }
+  }
+}
+
+// --- Skeleton Loading ---
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@mixin skeleton-bar {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-default) 25%,
+    var(--color-surface-hover) 50%,
+    var(--color-surface-default) 75%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-detail {
+  .skeleton-hero {
+    width: 100%;
+    height: 300px;
+    @include skeleton-bar;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-lg);
+  }
+
+  .skeleton-title {
+    width: 60%;
+    height: 32px;
+    @include skeleton-bar;
+    margin-bottom: var(--space-sm);
+  }
+
+  .skeleton-rating {
+    width: 150px;
+    height: 24px;
+    @include skeleton-bar;
+    margin-bottom: var(--space-md);
+  }
+
+  .skeleton-description {
+    width: 100%;
+    height: 16px;
+    @include skeleton-bar;
+    margin-bottom: var(--space-sm);
+
+    &.short { width: 70%; }
+  }
+
+  .skeleton-chips {
+    display: flex;
+    gap: var(--space-sm);
+    margin: var(--space-md) 0;
+
+    .skeleton-chip {
+      width: 100px;
+      height: 28px;
+      @include skeleton-bar;
+      border-radius: 16px;
+    }
+  }
+
+  .skeleton-divider {
+    height: 1px;
+    background-color: var(--color-divider);
+    margin: var(--space-lg) 0;
+  }
+
+  .skeleton-two-col {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: var(--space-2xl);
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: var(--space-lg);
+    }
+  }
+
+  .skeleton-col {
+    .skeleton-section-title {
+      width: 40%;
+      height: 24px;
+      @include skeleton-bar;
+      margin-bottom: var(--space-md);
+    }
+
+    .skeleton-line {
+      width: 100%;
+      height: 16px;
+      @include skeleton-bar;
+      margin-bottom: var(--space-sm);
+
+      &.short { width: 60%; }
     }
   }
 }
