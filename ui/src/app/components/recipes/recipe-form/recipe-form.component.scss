@@ -1,27 +1,30 @@
 .recipe-form-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 24px;
+  padding: var(--space-md);
+
+  @media (min-width: 960px) {
+    padding: var(--space-lg);
+  }
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--space-md);
 
   h1 {
-    font-size: 2rem;
-    font-weight: 500;
+    font: var(--font-h2);
     margin: 0;
   }
 
-  button {
-    mat-icon {
-      margin-right: 8px;
-    }
+  .import-buttons {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
   }
 }
 
@@ -30,38 +33,44 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 64px 0;
-  gap: 16px;
+  padding: var(--space-2xl) 0;
+  gap: var(--space-md);
 
   p {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-secondary);
+    font: var(--font-body);
   }
 }
 
 .error-message {
-  padding: 16px;
-  background-color: rgba(127, 29, 29, 0.3);
-  border-radius: 8px;
+  padding: var(--space-md);
+  background-color: var(--color-error-bg);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
 
   mat-icon {
-    color: #fca5a5;
+    color: var(--color-error);
   }
 
   p {
     margin: 0;
-    color: #fca5a5;
+    color: var(--color-error);
+    font: var(--font-body);
   }
 }
 
 .form-section {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
+  background-color: var(--color-surface-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
 
   mat-card-header {
-    padding: 16px 16px 0;
+    padding: var(--space-md) var(--space-md) 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -69,54 +78,64 @@
     mat-card-title {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 1.25rem;
+      gap: var(--space-sm);
+      font: var(--font-h4);
 
       mat-icon {
-        color: var(--primary-color, #3f51b5);
+        color: var(--color-text-hint);
       }
+    }
+
+    button mat-icon {
+      color: var(--color-accent);
     }
   }
 
   mat-card-content {
-    padding: 24px 16px 16px;
+    padding: var(--space-lg) var(--space-md) var(--space-md);
   }
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  gap: var(--space-md);
 
   .full-width {
     grid-column: 1 / -1;
   }
 }
 
-.ingredients-list, .instructions-list {
+.ingredients-list,
+.instructions-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
   max-height: 600px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-right: 4px;
+  padding-right: var(--space-xs);
 }
 
 .ingredient-row {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.05);
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-sm);
+  background-color: rgba(255, 255, 255, 0.03);
+  transition: border-color var(--transition-fast);
+
+  &:hover {
+    border-color: var(--color-border-default);
+  }
 
   .ingredient-controls {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-xs);
 
     button {
       width: 32px;
@@ -135,46 +154,56 @@
     flex: 1;
     display: grid;
     grid-template-columns: 80px 100px 1fr 150px;
-    gap: 8px;
+    gap: var(--space-sm);
 
-    .quantity-field, .unit-field, .item-field, .prep-field {
-      margin-bottom: -1.25em; // Cancel Material field margin
+    .quantity-field,
+    .unit-field,
+    .item-field,
+    .prep-field {
+      margin-bottom: -1.25em;
     }
   }
 
   > button[color="warn"] {
-    margin-top: 8px;
+    margin-top: var(--space-sm);
   }
 }
 
 .instruction-row {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.05);
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-sm);
+  background-color: rgba(255, 255, 255, 0.03);
+  transition: border-color var(--transition-fast);
+
+  &:hover {
+    border-color: var(--color-border-default);
+  }
 
   .step-number {
     flex-shrink: 0;
     width: 32px;
     height: 32px;
-    border-radius: 50%;
-    background-color: var(--primary-color, #3f51b5);
-    color: white;
+    border-radius: var(--radius-full);
+    background-color: rgba(20, 184, 166, 0.15);
+    border: 1px solid var(--color-accent);
+    color: var(--color-accent);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 0.875rem;
-    margin-top: 8px;
+    font: var(--font-body-small);
+    font-weight: 600;
+    margin-top: var(--space-sm);
   }
 
   .instruction-controls {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-xs);
 
     button {
       width: 32px;
@@ -191,9 +220,8 @@
 
   .instruction-field {
     flex: 1;
-    margin-bottom: -1.25em; // Cancel Material field margin
+    margin-bottom: -1.25em;
 
-    // iOS textarea fix - allow normal text selection, focus and scrolling
     textarea {
       -webkit-appearance: none;
       touch-action: auto;
@@ -203,57 +231,89 @@
   }
 
   > button[color="warn"] {
-    margin-top: 8px;
+    margin-top: var(--space-sm);
   }
 }
 
 .empty-message {
   text-align: center;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
   font-style: italic;
-  padding: 32px;
+  padding: var(--space-xl);
   margin: 0;
+  font: var(--font-body);
 }
 
 .tags-hint {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-hint);
   font-style: italic;
   margin: 0;
+  font: var(--font-body-small);
 }
 
 .add-button {
   width: 100%;
-  margin-top: 8px;
-
-  mat-icon {
-    margin-right: 8px;
-  }
+  margin-top: var(--space-sm);
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  padding: 24px 0;
+  gap: var(--space-sm);
+  padding: var(--space-lg) 0;
 
   button {
     min-width: 120px;
 
-    mat-icon {
-      margin-right: 8px;
-    }
-
     mat-spinner {
-      margin-right: 8px;
+      margin-right: var(--space-sm);
       display: inline-block;
     }
   }
 }
 
+// Skeleton loading
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.skeleton-form {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--space-lg);
+
+  .skeleton-bar {
+    background: linear-gradient(90deg, var(--color-surface-default) 25%, var(--color-surface-hover) 50%, var(--color-surface-default) 75%);
+    background-size: 1000px 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    border-radius: var(--radius-sm);
+    height: 20px;
+    margin-bottom: var(--space-md);
+
+    &.wide { width: 100%; }
+    &.medium { width: 60%; }
+    &.small { width: 30%; }
+    &.tall { height: 48px; }
+  }
+
+  .skeleton-row {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+  }
+
+  .skeleton-divider {
+    height: 1px;
+    background-color: var(--color-divider);
+    margin: var(--space-lg) 0;
+  }
+}
+
 // Mobile responsive
-@media (max-width: 768px) {
+@media (max-width: 599px) {
   .recipe-form-container {
-    padding: 16px;
+    padding: var(--space-md);
   }
 
   .ingredients-list,
@@ -280,7 +340,8 @@
       grid-template-columns: 1fr 1fr;
       order: 1;
 
-      .item-field, .prep-field {
+      .item-field,
+      .prep-field {
         grid-column: 1 / -1;
       }
     }

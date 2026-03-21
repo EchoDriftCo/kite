@@ -3,42 +3,42 @@
   justify-content: center;
   align-items: center;
   min-height: 80vh;
-  padding: 24px;
+  padding: var(--space-lg);
 
   .invite-card {
     max-width: 500px;
     width: 100%;
 
     mat-card-content {
-      padding: 24px;
+      padding: var(--space-lg);
     }
 
     mat-card-actions {
-      padding: 16px 24px;
+      padding: var(--space-md) var(--space-lg);
       display: flex;
-      gap: 12px;
+      gap: var(--space-sm);
     }
 
     .loading-state,
     .error-state,
     .success-state {
       text-align: center;
-      padding: 32px 16px;
+      padding: var(--space-xl) var(--space-md);
 
       mat-icon {
         font-size: 72px;
         width: 72px;
         height: 72px;
-        margin-bottom: 16px;
+        margin-bottom: var(--space-md);
       }
 
       h2 {
-        margin: 16px 0 8px;
+        margin: var(--space-md) 0 var(--space-sm);
       }
 
       p {
         color: #616161;
-        margin-bottom: 24px;
+        margin-bottom: var(--space-lg);
       }
     }
 
@@ -53,13 +53,13 @@
     .invite-details {
       .invite-message {
         font-size: 16px;
-        margin-bottom: 16px;
+        margin-bottom: var(--space-md);
       }
 
       .circle-name {
         color: #1976d2;
         font-size: 24px;
-        margin: 16px 0;
+        margin: var(--space-md) 0;
         text-align: center;
       }
 

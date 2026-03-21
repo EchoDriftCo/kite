@@ -1,8 +1,8 @@
 .dietary-profiles-container {
   display: grid;
   grid-template-columns: 280px 1fr;
-  gap: 24px;
-  padding: 24px;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
   min-height: calc(100vh - 64px);
 }
 
@@ -11,8 +11,8 @@
   .sidebar-header {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
 
     h2 {
       margin: 0;
@@ -23,8 +23,8 @@
 
   .profiles-list {
     ::ng-deep .mat-mdc-list-item {
-      border-radius: 8px;
-      margin-bottom: 4px;
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-xs);
 
       &.active {
         background: rgba(255, 167, 38, 0.15);
@@ -34,14 +34,14 @@
 
   .sidebar-empty {
     text-align: center;
-    padding: 24px;
-    color: rgba(255, 255, 255, 0.5);
+    padding: var(--space-lg);
+    color: var(--color-text-hint);
   }
 }
 
 .default-badge {
   font-size: 0.7rem;
-  padding: 2px 8px;
+  padding: 2px var(--space-sm);
   border-radius: 12px;
   background: rgba(255, 167, 38, 0.2);
   color: #ffa726;
@@ -57,8 +57,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
 
     h2 {
       margin: 0;
@@ -69,15 +69,15 @@
 }
 
 .section-card {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
 
   mat-card-header {
-    margin-bottom: 16px;
+    margin-bottom: var(--space-md);
 
     mat-card-title {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--space-sm);
       font-size: 1.1rem;
     }
   }
@@ -91,8 +91,8 @@
 .common-restrictions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
 
   button {
     border-radius: 20px;
@@ -108,32 +108,32 @@
 .add-restriction-form {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr auto;
-  gap: 12px;
+  gap: var(--space-sm);
   align-items: start;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
 }
 
 .add-ingredient-form {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
-  gap: 12px;
+  gap: var(--space-sm);
   align-items: start;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
 }
 
 // Restriction chips
 .restrictions-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .restriction-chip {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-  border-radius: 8px;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.05);
 
   .restriction-label {
@@ -142,7 +142,7 @@
   }
 
   .restriction-meta {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-hint);
     font-size: 0.85rem;
     flex: 1;
   }
@@ -164,15 +164,15 @@
 .ingredients-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .ingredient-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.05);
 
   .ingredient-info {
@@ -182,7 +182,7 @@
   }
 
   .ingredient-reason {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-hint);
     font-size: 0.85rem;
   }
 }
@@ -191,7 +191,7 @@
   color: rgba(255, 255, 255, 0.4);
   font-style: italic;
   text-align: center;
-  padding: 16px;
+  padding: var(--space-md);
 }
 
 // Empty state
@@ -201,8 +201,8 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 80px 24px;
-  gap: 16px;
+  padding: 80px var(--space-lg);
+  gap: var(--space-md);
 
   .empty-icon {
     font-size: 64px;
@@ -218,22 +218,22 @@
   }
 
   p {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-hint);
     max-width: 400px;
     margin: 0;
   }
 }
 
 // Mobile responsive
-@media (max-width: 768px) {
+@media (max-width: 599px) {
   .dietary-profiles-container {
     grid-template-columns: 1fr;
-    padding: 16px;
+    padding: var(--space-md);
   }
 
   .profiles-sidebar {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-divider);
+    padding-bottom: var(--space-md);
   }
 
   .profile-content {

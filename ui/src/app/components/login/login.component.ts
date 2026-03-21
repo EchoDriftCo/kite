@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
@@ -16,11 +17,13 @@ import { SignUpDialogComponent } from './sign-up-dialog.component';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatIconModule,
     MatProgressSpinnerModule,
     MatDialogModule
   ],
@@ -28,66 +31,62 @@ import { SignUpDialogComponent } from './sign-up-dialog.component';
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
-  email = '';
-  password = '';
+  loginForm: FormGroup;
   loading = false;
   error = '';
   successMessage = '';
   returnUrl = '/';
-  magicLinkMode = false;
+  hidePassword = true;
 
   constructor(
+    private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
     private dialog: MatDialog
   ) {
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
+    });
   }
 
-  async signIn() {
+  async onSignIn() {
+    if (!this.loginForm.valid) {
+      return;
+    }
+
     this.error = '';
     this.successMessage = '';
     this.loading = true;
 
     try {
-      await this.authService.signIn(this.email, this.password);
+      const { email, password } = this.loginForm.value;
+      await this.authService.signIn(email, password);
       this.router.navigateByUrl(this.returnUrl);
     } catch (err: any) {
-      this.error = err.message || 'Failed to sign in';
+      this.error = err.message || 'Invalid email or password';
     } finally {
       this.loading = false;
     }
   }
 
-  async forgotPassword() {
-    if (!this.email) {
+  async onMagicLink() {
+    const email = this.loginForm.get('email')?.value;
+    
+    if (!email) {
       this.error = 'Enter your email address first';
       return;
     }
+    
     this.error = '';
     this.loading = true;
+    
     try {
-      await this.authService.resetPassword(this.email);
-      this.successMessage = 'Password reset email sent! Check your inbox.';
-    } catch (err: any) {
-      this.error = err.message || 'Failed to send reset email';
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  async sendMagicLink() {
-    if (!this.email) {
-      this.error = 'Enter your email address first';
-      return;
-    }
-    this.error = '';
-    this.loading = true;
-    try {
-      await this.authService.signInWithOtp(this.email);
+      await this.authService.signInWithOtp(email);
       this.successMessage = 'Magic link sent! Check your email to sign in.';
-      this.magicLinkMode = false;
     } catch (err: any) {
       this.error = err.message || 'Failed to send magic link';
     } finally {
@@ -95,9 +94,10 @@ export class LoginComponent {
     }
   }
 
-  openSignUp() {
+  onSignUp() {
     const dialogRef = this.dialog.open(SignUpDialogComponent, {
-      width: '400px'
+      width: '480px',
+      maxWidth: '95vw'
     });
 
     dialogRef.afterClosed().subscribe(result => {

@@ -1,7 +1,52 @@
-<div class="settings-container">
+<div class="settings-container" role="main">
   <h1>Settings</h1>
 
-  <mat-card class="settings-card">
+  <!-- Account Section -->
+  <mat-card class="settings-card" role="region" aria-label="Account settings">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>account_circle</mat-icon>
+        Account
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Email</h3>
+          <p>{{ userEmail || 'Not available' }}</p>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Change password</h3>
+          <p>Update your account password</p>
+        </div>
+        <button mat-stroked-button color="accent" (click)="changePassword()">
+          <mat-icon>lock</mat-icon>
+          Change Password
+        </button>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Sign out</h3>
+          <p>Sign out of your account on this device</p>
+        </div>
+        <button mat-stroked-button (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          Sign Out
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Getting Started Section -->
+  <mat-card class="settings-card" role="region" aria-label="Getting Started settings">
     <mat-card-header>
       <mat-card-title>
         <mat-icon>school</mat-icon>
@@ -53,7 +98,8 @@
     </mat-card-content>
   </mat-card>
 
-  <mat-card class="settings-card">
+  <!-- Beta Access Section -->
+  <mat-card class="settings-card" role="region" aria-label="Beta Access settings">
     <mat-card-header>
       <mat-card-title>
         <mat-icon>vpn_key</mat-icon>
@@ -70,6 +116,77 @@
           <mat-icon>redeem</mat-icon>
           Enter Code
         </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Data Section -->
+  <mat-card class="settings-card" role="region" aria-label="Data settings">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>storage</mat-icon>
+        Data
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Export recipes</h3>
+          <p>Download all your recipes as a JSON file</p>
+        </div>
+        <button mat-stroked-button color="accent" (click)="exportRecipes()"
+                [disabled]="exporting">
+          @if (exporting) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <mat-icon>download</mat-icon>
+            Export JSON
+          }
+        </button>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Delete account</h3>
+          <p class="danger-text">Permanently delete your account and all data. This cannot be undone.</p>
+        </div>
+        <button mat-stroked-button color="warn" (click)="deleteAccount()">
+          <mat-icon>delete_forever</mat-icon>
+          Delete Account
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- About Section -->
+  <mat-card class="settings-card" role="region" aria-label="About">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>info</mat-icon>
+        About
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Version</h3>
+          <p>{{ appVersion }}</p>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="about-links">
+        <a mat-button href="https://myrecipevault.io/privacy" target="_blank">
+          <mat-icon>shield</mat-icon>
+          Privacy Policy
+        </a>
+        <a mat-button href="https://myrecipevault.io/terms" target="_blank">
+          <mat-icon>gavel</mat-icon>
+          Terms of Service
+        </a>
       </div>
     </mat-card-content>
   </mat-card>

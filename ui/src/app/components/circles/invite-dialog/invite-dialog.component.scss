@@ -1,6 +1,6 @@
 mat-dialog-content {
   min-width: min(450px, 80vw);
-  padding: 16px 24px;
+  padding: var(--space-md) var(--space-lg);
   box-sizing: border-box;
 }
 
@@ -12,7 +12,7 @@ mat-dialog-content {
   padding: 20px 0;
 
   h3 {
-    margin: 0 0 16px 0;
+    margin: 0 0 var(--space-md) 0;
     font-size: 16px;
     font-weight: 500;
   }
@@ -20,12 +20,12 @@ mat-dialog-content {
   .help-text {
     color: #757575;
     font-size: 14px;
-    margin: 0 0 16px 0;
+    margin: 0 0 var(--space-md) 0;
   }
 
   form {
     display: flex;
-    gap: 12px;
+    gap: var(--space-sm);
     align-items: flex-start;
 
     mat-form-field {
@@ -33,7 +33,7 @@ mat-dialog-content {
     }
 
     button {
-      margin-top: 8px;
+      margin-top: var(--space-sm);
     }
   }
 
@@ -46,16 +46,16 @@ mat-dialog-content {
     .expiry-note {
       color: #9e9e9e;
       font-size: 12px;
-      margin: 4px 0 0 0;
+      margin: var(--space-xs) 0 0 0;
     }
   }
 }
 
 mat-divider {
-  margin: 8px 0;
+  margin: var(--space-sm) 0;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 599px) {
   .invite-section {
     form {
       flex-direction: column;
@@ -69,10 +69,10 @@ mat-divider {
 }
 
 .error-message {
-  padding: 12px;
+  padding: var(--space-sm);
   background-color: #ffebee;
   color: #c62828;
-  border-radius: 4px;
-  margin-top: 16px;
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-md);
   font-size: 14px;
 }

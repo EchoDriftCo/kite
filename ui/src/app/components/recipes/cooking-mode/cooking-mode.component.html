@@ -11,7 +11,7 @@
     </div>
   </div>
 
-  <div *ngIf="isLoading" class="loading-container">
+  <div *ngIf="isLoading" class="loading-container" aria-busy="true">
     <mat-spinner></mat-spinner>
     <p>Preparing cooking mode...</p>
   </div>
@@ -98,7 +98,7 @@
           <button mat-icon-button *ngIf="activeTimer.isPaused" (click)="resumeTimer(activeTimer)">
             <mat-icon>play_arrow</mat-icon>
           </button>
-          <button mat-icon-button (click)="resetTimer(activeTimer)">
+          <button mat-icon-button (click)="resetTimer(activeTimer)" aria-label="Reset timer">
             <mat-icon>refresh</mat-icon>
           </button>
         </div>

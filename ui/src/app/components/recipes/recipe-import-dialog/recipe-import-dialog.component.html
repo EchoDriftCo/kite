@@ -192,7 +192,7 @@
                   <p class="file-name">{{ paprikaFile.name }}</p>
                   <p class="file-size">{{ (paprikaFile.size / 1024).toFixed(1) }} KB</p>
                 </div>
-                <button mat-icon-button (click)="clearPaprikaFile()" [disabled]="loading" matTooltip="Remove file">
+                <button mat-icon-button (click)="clearPaprikaFile()" [disabled]="loading" matTooltip="Remove file" aria-label="Remove file">
                   <mat-icon>close</mat-icon>
                 </button>
               </div>

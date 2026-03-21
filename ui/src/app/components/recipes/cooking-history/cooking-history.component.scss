@@ -1,15 +1,15 @@
 .cooking-history-container {
-  padding: 2rem;
+  padding: var(--space-xl);
   max-width: 1200px;
   margin: 0 auto;
 
   h1 {
-    margin-bottom: 1.5rem;
-    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
+    color: var(--color-text-primary);
   }
 
   .tab-content {
-    padding-top: 1.5rem;
+    padding-top: var(--space-lg);
     min-height: 400px;
   }
 
@@ -21,17 +21,17 @@
     padding: 3rem;
 
     p {
-      margin-top: 1rem;
-      color: var(--text-secondary);
+      margin-top: var(--space-md);
+      color: var(--color-text-secondary);
     }
   }
 
   .error-message {
     background-color: var(--error-light);
     color: var(--error-dark);
-    padding: 1rem;
-    border-radius: 4px;
-    margin: 1rem 0;
+    padding: var(--space-md);
+    border-radius: var(--radius-sm);
+    margin: var(--space-md) 0;
   }
 
   .empty-state {
@@ -50,20 +50,20 @@
     }
 
     h2 {
-      margin: 1rem 0;
-      color: var(--text-secondary);
+      margin: var(--space-md) 0;
+      color: var(--color-text-secondary);
     }
 
     p {
-      color: var(--text-secondary);
-      margin-bottom: 1.5rem;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-lg);
     }
   }
 
   .entries-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--space-md);
 
     .entry-card {
       mat-card-content {
@@ -71,7 +71,7 @@
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 1rem;
+          margin-bottom: var(--space-md);
 
           .entry-title {
             flex: 1;
@@ -80,7 +80,7 @@
               margin: 0 0 0.25rem 0;
 
               a {
-                color: var(--primary);
+                color: var(--color-primary);
                 text-decoration: none;
 
                 &:hover {
@@ -90,14 +90,14 @@
             }
 
             .entry-date {
-              color: var(--text-secondary);
+              color: var(--color-text-secondary);
               font-size: 0.875rem;
             }
           }
 
           .entry-actions {
             button {
-              margin-left: 0.5rem;
+              margin-left: var(--space-sm);
             }
           }
         }
@@ -105,8 +105,8 @@
         .entry-details {
           display: flex;
           flex-wrap: wrap;
-          gap: 0.5rem;
-          margin-bottom: 0.5rem;
+          gap: var(--space-sm);
+          margin-bottom: var(--space-sm);
 
           mat-chip-set {
             mat-chip {
@@ -117,7 +117,7 @@
                 color: var(--text-disabled);
 
                 &.filled {
-                  color: #ffc107;
+                  color: var(--color-warning);
                 }
               }
 
@@ -134,27 +134,27 @@
         .entry-notes {
           background-color: var(--background-light);
           padding: 0.75rem;
-          border-radius: 4px;
-          margin-top: 0.5rem;
-          border-left: 3px solid var(--primary);
+          border-radius: var(--radius-sm);
+          margin-top: var(--space-sm);
+          border-left: 3px solid var(--color-primary);
 
           p {
             margin: 0;
-            color: var(--text-primary);
+            color: var(--color-text-primary);
             font-style: italic;
           }
         }
 
         .entry-photos {
           display: flex;
-          gap: 0.5rem;
-          margin-top: 1rem;
+          gap: var(--space-sm);
+          margin-top: var(--space-md);
           flex-wrap: wrap;
 
           img {
             max-width: 200px;
             max-height: 150px;
-            border-radius: 4px;
+            border-radius: var(--radius-sm);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
           }
         }
@@ -163,7 +163,7 @@
   }
 
   mat-paginator {
-    margin-top: 1.5rem;
+    margin-top: var(--space-lg);
   }
 
   // Calendar styles
@@ -172,8 +172,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
 
       h2 {
         margin: 0;
@@ -185,28 +185,28 @@
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
+      gap: var(--radius-sm);
       max-width: 700px;
       margin: 0 auto;
 
       .day-header {
         text-align: center;
         font-weight: 600;
-        padding: 0.5rem;
-        color: var(--text-secondary);
+        padding: var(--space-sm);
+        color: var(--color-text-secondary);
         font-size: 0.875rem;
       }
 
       .calendar-day {
         aspect-ratio: 1;
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         position: relative;
         cursor: pointer;
-        transition: transform 0.2s;
+        transition: transform var(--transition-fast);
 
         &:hover:not(.empty) {
           transform: scale(1.05);
@@ -235,7 +235,7 @@
 
         .day-number {
           font-size: 0.875rem;
-          color: var(--text-primary);
+          color: var(--color-text-primary);
         }
 
         .cook-count {
@@ -244,7 +244,7 @@
           right: 2px;
           font-size: 0.625rem;
           font-weight: 600;
-          background-color: var(--primary);
+          background-color: var(--color-primary);
           color: white;
           border-radius: 50%;
           width: 16px;
@@ -260,11 +260,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      margin-top: 1.5rem;
+      gap: var(--space-sm);
+      margin-top: var(--space-lg);
 
       span {
-        color: var(--text-secondary);
+        color: var(--color-text-secondary);
         font-size: 0.875rem;
       }
 

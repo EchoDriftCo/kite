@@ -1,8 +1,8 @@
 .cooking-mode-container {
   min-height: 100vh;
-  padding: 1rem;
-  background: var(--background);
-  color: var(--text-primary);
+  padding: var(--space-md);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
   display: flex;
   flex-direction: column;
 }
@@ -11,22 +11,22 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid var(--border-color);
+  margin-bottom: var(--space-xl);
+  padding-bottom: var(--space-md);
+  border-bottom: 2px solid var(--color-divider);
 
   .recipe-title {
-    font-size: 1.5rem;
+    font: var(--font-h2);
     font-weight: 600;
     margin: 0;
   }
 
   .header-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--space-sm);
 
     button.active {
-      background-color: var(--primary);
+      background-color: var(--color-primary);
       color: white;
     }
   }
@@ -42,16 +42,16 @@
   text-align: center;
 
   mat-icon {
-    font-size: 4rem;
-    width: 4rem;
-    height: 4rem;
-    margin-bottom: 1rem;
-    color: var(--error, #f44336);
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: var(--space-md);
+    color: var(--color-error);
   }
 
   p {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
+    font: var(--font-h4);
+    margin-bottom: var(--space-md);
   }
 }
 
@@ -59,52 +59,52 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--space-xl);
 }
 
 .step-progress {
   text-align: center;
-  font-size: 1.2rem;
-  color: var(--text-secondary);
-  margin-bottom: 1rem;
+  font: var(--font-h4);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-md);
 
   .current-step {
-    font-size: 2rem;
+    font-size: 32px;
     font-weight: 700;
-    color: var(--primary);
-    margin-right: 0.5rem;
+    color: var(--color-primary);
+    margin-right: var(--space-sm);
   }
 }
 
 .step-card {
-  background: var(--surface);
-  border-radius: 12px;
-  padding: 2rem;
+  background: var(--color-surface-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   min-height: 300px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 1.5rem;
+  gap: var(--space-lg);
 
   .step-instruction {
-    font-size: 2rem;
+    font-size: 32px;
     line-height: 1.6;
     text-align: center;
     font-weight: 500;
 
     @media (max-width: 768px) {
-      font-size: 1.5rem;
+      font: var(--font-h2);
     }
   }
 
   .step-timers {
-    margin-top: 1rem;
+    margin-top: var(--space-md);
 
     .timer-chips {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: var(--space-md);
       justify-content: center;
 
       .timer-chip {
@@ -116,7 +116,7 @@
 
   .read-button {
     align-self: center;
-    margin-top: 1rem;
+    margin-top: var(--space-md);
     font-size: 1rem;
   }
 }
@@ -124,23 +124,23 @@
 .navigation-controls {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  margin: 2rem 0;
+  gap: var(--space-md);
+  margin: var(--space-xl) 0;
 
   .nav-button {
-    font-size: 1.2rem;
-    padding: 1rem 2rem;
+    font: var(--font-h4);
+    padding: var(--space-md) var(--space-xl);
     height: auto;
 
     mat-icon {
-      font-size: 1.5rem;
+      font: var(--font-h2);
       width: 1.5rem;
       height: 1.5rem;
     }
 
     &.prev-button {
-      background-color: var(--surface);
-      color: var(--text-primary);
+      background-color: var(--color-surface-default);
+      color: var(--color-text-primary);
     }
 
     @media (max-width: 768px) {
@@ -152,14 +152,14 @@
 }
 
 .active-timers-panel {
-  background: var(--surface);
-  border-radius: 12px;
-  padding: 1.5rem;
+  background: var(--color-surface-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1.2rem;
+    margin: 0 0 var(--space-md) 0;
+    font: var(--font-h4);
     font-weight: 600;
   }
 
@@ -167,9 +167,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    background: var(--background);
-    border-radius: 8px;
+    padding: var(--space-md);
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-md);
     margin-bottom: 0.75rem;
 
     &:last-child {
@@ -179,19 +179,19 @@
     .timer-info {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: var(--space-xs);
 
       .timer-label {
         font-weight: 500;
       }
 
       .timer-time {
-        font-size: 1.5rem;
+        font: var(--font-h2);
         font-weight: 700;
-        color: var(--primary);
+        color: var(--color-primary);
 
         &.warning {
-          color: var(--error, #f44336);
+          color: var(--color-error);
           animation: pulse 1s infinite;
         }
       }
@@ -199,7 +199,7 @@
 
     .timer-controls {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--space-sm);
     }
   }
 }
@@ -214,16 +214,16 @@
 }
 
 .ingredients-panel {
-  background: var(--surface);
-  border-radius: 12px;
-  padding: 1.5rem;
+  background: var(--color-surface-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   max-height: 400px;
   overflow-y: auto;
 
   h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1.2rem;
+    margin: 0 0 var(--space-md) 0;
+    font: var(--font-h4);
     font-weight: 600;
   }
 
@@ -233,9 +233,9 @@
     gap: 0.75rem;
 
     .ingredient-item {
-      padding: 0.5rem;
-      border-radius: 4px;
-      transition: background-color 0.2s;
+      padding: var(--space-sm);
+      border-radius: var(--radius-sm);
+      transition: background-color var(--transition-fast);
 
       &:hover {
         background-color: var(--hover-background);
@@ -256,13 +256,13 @@
 }
 
 .voice-help {
-  background: var(--surface);
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
+  background: var(--color-surface-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) 1.25rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   h3 {
-    margin: 0 0 0.5rem;
+    margin: 0 0 var(--space-sm);
     font-size: 1rem;
   }
 
@@ -276,31 +276,31 @@
 
 .voice-status {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  background: var(--surface);
+  bottom: var(--space-xl);
+  right: var(--space-xl);
+  background: var(--color-surface-default);
   padding: 0.75rem 1rem;
   border-radius: 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-sm);
   font-size: 0.9rem;
   z-index: 1000;
 
   mat-icon {
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
 
     &.listening {
-      color: var(--primary);
+      color: var(--color-primary);
       animation: pulse 1.5s infinite;
     }
   }
 
   @media (max-width: 600px) {
-    bottom: 1rem;
-    right: 1rem;
-    left: 1rem;
+    bottom: var(--space-md);
+    right: var(--space-md);
+    left: var(--space-md);
     width: auto;
   }
 }

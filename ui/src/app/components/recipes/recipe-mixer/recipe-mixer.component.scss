@@ -1,17 +1,17 @@
 .recipe-mixer-container {
-  padding: 2rem;
+  padding: var(--space-xl);
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .mixer-card {
   mat-card-header {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-lg);
 
     mat-card-title {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--space-sm);
       font-size: 1.8rem;
     }
   }
@@ -20,19 +20,19 @@
 .recipe-selection {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-lg);
 
   .selection-row {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: var(--space-md);
 
     .recipe-field {
       flex: 1;
     }
 
     .plus-icon {
-      color: var(--primary-color, #673ab7);
+      color: var(--color-primary);
       font-size: 2rem;
       width: 2rem;
       height: 2rem;
@@ -41,7 +41,7 @@
 
   .mode-selection {
     display: flex;
-    gap: 1rem;
+    gap: var(--space-md);
     flex-wrap: wrap;
 
     .mode-field {
@@ -56,43 +56,43 @@
 
   .mix-button {
     align-self: center;
-    padding: 0 2rem;
+    padding: 0 var(--space-xl);
     height: 48px;
     font-size: 1.1rem;
   }
 }
 
 mat-divider {
-  margin: 1.5rem 0;
+  margin: var(--space-lg) 0;
 }
 
 .preview-section {
   .preview-header {
     h2 {
-      margin: 0 0 0.5rem 0;
-      color: var(--text-color, #333);
+      margin: 0 0 var(--space-sm) 0;
+      color: var(--color-text-primary);
     }
 
     .source {
-      color: var(--muted-color, #666);
+      color: var(--color-text-secondary);
       font-style: italic;
-      margin: 0 0 0.5rem 0;
+      margin: 0 0 var(--space-sm) 0;
     }
 
     .description {
-      margin: 0.5rem 0;
+      margin: var(--space-sm) 0;
     }
 
     .recipe-meta {
       display: flex;
-      gap: 1.5rem;
-      margin-top: 1rem;
+      gap: var(--space-lg);
+      margin-top: var(--space-md);
 
       span {
         display: flex;
         align-items: center;
         gap: 0.3rem;
-        color: var(--muted-color, #666);
+        color: var(--color-text-secondary);
 
         mat-icon {
           font-size: 1.2rem;
@@ -105,61 +105,61 @@ mat-divider {
 
   .ingredients-section,
   .instructions-section {
-    margin: 1.5rem 0;
+    margin: var(--space-lg) 0;
 
     h3 {
-      margin: 0 0 1rem 0;
-      color: var(--text-color, #333);
+      margin: 0 0 var(--space-md) 0;
+      color: var(--color-text-primary);
     }
   }
 
   .ingredient-list,
   .instruction-list {
-    padding-left: 1.5rem;
+    padding-left: var(--space-lg);
 
     li {
       margin-bottom: 0.8rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.5rem;
-      border-radius: 4px;
-      transition: background-color 0.2s;
+      padding: var(--space-sm);
+      border-radius: var(--radius-sm);
+      transition: background-color var(--transition-fast);
 
       &.from-a {
         background-color: rgba(103, 58, 183, 0.05);
-        border-left: 3px solid var(--primary-color, #673ab7);
+        border-left: 3px solid var(--color-primary);
       }
 
       &.from-b {
         background-color: rgba(255, 87, 34, 0.05);
-        border-left: 3px solid var(--accent-color, #ff5722);
+        border-left: 3px solid var(--color-accent);
       }
 
       &.combined {
         background-color: rgba(76, 175, 80, 0.05);
-        border-left: 3px solid var(--success-color, #4caf50);
+        border-left: 3px solid var(--color-success);
       }
 
       .attribution {
         font-size: 0.75rem;
-        color: var(--muted-color, #999);
+        color: var(--color-text-secondary);
         font-style: italic;
         white-space: nowrap;
-        margin-left: 1rem;
+        margin-left: var(--space-md);
       }
     }
   }
 
   .mix-notes {
-    margin: 1.5rem 0;
-    padding: 1rem;
-    background-color: var(--bg-secondary, #f5f5f5);
-    border-radius: 4px;
+    margin: var(--space-lg) 0;
+    padding: var(--space-md);
+    background-color: var(--color-surface-default);
+    border-radius: var(--radius-sm);
 
     h3 {
-      margin: 0 0 0.5rem 0;
-      color: var(--text-color, #333);
+      margin: 0 0 var(--space-sm) 0;
+      color: var(--color-text-primary);
     }
 
     p {
@@ -170,24 +170,24 @@ mat-divider {
 
   .refinement-section {
     display: flex;
-    gap: 1rem;
+    gap: var(--space-md);
     align-items: flex-start;
-    margin: 1.5rem 0;
+    margin: var(--space-lg) 0;
 
     .refinement-field {
       flex: 1;
     }
 
     button {
-      margin-top: 0.5rem;
+      margin-top: var(--space-sm);
     }
   }
 
   .preview-actions {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
-    margin-top: 1.5rem;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
   }
 }
 
@@ -197,14 +197,14 @@ mat-divider {
   align-items: center;
   justify-content: center;
   padding: 3rem;
-  gap: 1rem;
+  gap: var(--space-md);
 
   mat-spinner {
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-md);
   }
 
   p {
-    color: var(--muted-color, #666);
+    color: var(--color-text-secondary);
     font-size: 1.1rem;
   }
 }
@@ -214,16 +214,16 @@ mat-divider {
   .preview-section {
     .preview-header {
       h2, h3 {
-        color: var(--text-color, #fff);
+        color: var(--color-text-primary);
       }
 
       .source,
       .description {
-        color: var(--muted-color, #aaa);
+        color: var(--color-text-secondary);
       }
 
       .recipe-meta span {
-        color: var(--muted-color, #aaa);
+        color: var(--color-text-secondary);
       }
     }
 
@@ -245,19 +245,19 @@ mat-divider {
     }
 
     .mix-notes {
-      background-color: var(--bg-secondary, #2a2a2a);
+      background-color: var(--color-surface-default);
 
       h3 {
-        color: var(--text-color, #fff);
+        color: var(--color-text-primary);
       }
     }
   }
 }
 
 // Mobile responsive
-@media (max-width: 768px) {
+@media (max-width: 599px) {
   .recipe-mixer-container {
-    padding: 1rem;
+    padding: var(--space-md);
   }
 
   .recipe-selection {
@@ -286,7 +286,7 @@ mat-divider {
   .preview-section {
     .preview-header .recipe-meta {
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--space-sm);
     }
 
     .refinement-section {

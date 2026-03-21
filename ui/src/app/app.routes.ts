@@ -20,24 +20,27 @@ import { DietaryProfileComponent } from './components/dietary-profile/dietary-pr
 import { EquipmentSetupComponent } from './components/equipment-setup/equipment-setup.component';
 import { IngredientSearchComponent } from './components/ingredient-search/ingredient-search.component';
 import { LoginComponent } from './components/login/login.component';
+import { RequestResetComponent } from './components/login/request-reset.component';
 import { ResetPasswordComponent } from './components/login/reset-password.component';
 import { SharedRecipeComponent } from './components/recipes/shared-recipe/shared-recipe.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { authGuard } from './guards/auth.guard';
+import { unsavedChangesGuard } from './guards/unsaved-changes.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/recipes', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
-  { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'reset-password', component: RequestResetComponent },
+  { path: 'update-password', component: ResetPasswordComponent },
   { path: 'share/:token', component: SharedRecipeComponent },
   { path: 'join/:token', component: AcceptInviteComponent, canActivate: [authGuard] },
   { path: 'discover', component: DiscoverComponent, canActivate: [authGuard] },
   { path: 'recipes', component: RecipeListComponent, canActivate: [authGuard] },
-  { path: 'recipes/new', component: RecipeFormComponent, canActivate: [authGuard] },
+  { path: 'recipes/new', component: RecipeFormComponent, canActivate: [authGuard], canDeactivate: [unsavedChangesGuard] },
   { path: 'recipes/generate', component: RecipeGeneratorComponent, canActivate: [authGuard] },
   { path: 'recipes/mix', component: RecipeMixerComponent, canActivate: [authGuard] },
   { path: 'recipes/:id', component: RecipeDetailComponent, canActivate: [authGuard] },
-  { path: 'recipes/:id/edit', component: RecipeFormComponent, canActivate: [authGuard] },
+  { path: 'recipes/:id/edit', component: RecipeFormComponent, canActivate: [authGuard], canDeactivate: [unsavedChangesGuard] },
   { path: 'recipes/:id/cook', component: CookingModeComponent, canActivate: [authGuard] },
   { path: 'cooking-history', component: CookingHistoryComponent, canActivate: [authGuard] },
   { path: 'cooking-stats', component: CookingStatsComponent, canActivate: [authGuard] },

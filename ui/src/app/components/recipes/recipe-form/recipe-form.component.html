@@ -4,11 +4,11 @@
     
     @if (!isEditMode) {
       <div class="import-buttons">
-        <button mat-raised-button color="accent" type="button" (click)="openImportDialog()" class="import-btn">
+        <button mat-stroked-button color="accent" type="button" (click)="openImportDialog()" class="import-btn">
           <mat-icon>auto_fix_high</mat-icon>
           Import Recipe
         </button>
-        <button mat-raised-button color="accent" type="button" (click)="openMultiImageImportDialog()" class="import-btn">
+        <button mat-stroked-button color="accent" type="button" (click)="openMultiImageImportDialog()" class="import-btn">
           <mat-icon>photo_library</mat-icon>
           Multi-Image Import
         </button>
@@ -17,24 +17,37 @@
   </div>
 
   @if (loading) {
-    <div class="loading-container">
-      <mat-spinner></mat-spinner>
-      <p>Loading recipe...</p>
+    <div class="skeleton-form" aria-busy="true" aria-label="Loading recipe">
+      <div class="skeleton-bar wide tall"></div>
+      <div class="skeleton-bar wide"></div>
+      <div class="skeleton-row">
+        <div class="skeleton-bar small"></div>
+        <div class="skeleton-bar small"></div>
+        <div class="skeleton-bar small"></div>
+      </div>
+      <div class="skeleton-divider"></div>
+      <div class="skeleton-bar medium tall"></div>
+      <div class="skeleton-bar wide"></div>
+      <div class="skeleton-bar wide"></div>
+      <div class="skeleton-bar wide"></div>
     </div>
   }
 
   @if (error && !saving) {
-    <div class="error-message">
+    <div class="error-message" role="alert" aria-live="assertive">
       <mat-icon>error</mat-icon>
       <p>{{ error }}</p>
     </div>
   }
 
   @if (!loading) {
-    <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()" role="form">
       <mat-card class="form-section">
         <mat-card-header>
-          <mat-card-title>Basic Information</mat-card-title>
+          <mat-card-title>
+            <mat-icon>info</mat-icon>
+            Basic Information
+          </mat-card-title>
         </mat-card-header>
         
         <mat-card-content>
@@ -106,11 +119,13 @@
               <div [formGroupName]="i" class="ingredient-row">
                 <div class="ingredient-controls">
                   <button mat-icon-button type="button" (click)="moveIngredientUp(i)" 
-                          [disabled]="i === 0" matTooltip="Move up">
+                          [disabled]="i === 0" matTooltip="Move up"
+                          [attr.aria-label]="'Move ingredient ' + (i+1) + ' up'">
                     <mat-icon>arrow_upward</mat-icon>
                   </button>
                   <button mat-icon-button type="button" (click)="moveIngredientDown(i)" 
-                          [disabled]="i === ingredients.length - 1" matTooltip="Move down">
+                          [disabled]="i === ingredients.length - 1" matTooltip="Move down"
+                          [attr.aria-label]="'Move ingredient ' + (i+1) + ' down'">
                     <mat-icon>arrow_downward</mat-icon>
                   </button>
                 </div>
@@ -141,7 +156,8 @@
                 </div>
 
                 <button mat-icon-button type="button" color="warn" (click)="removeIngredient(i)" 
-                        matTooltip="Remove ingredient">
+                        matTooltip="Remove ingredient"
+                        [attr.aria-label]="'Remove ingredient ' + (i+1)">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
@@ -178,11 +194,13 @@
 
                 <div class="instruction-controls">
                   <button mat-icon-button type="button" (click)="moveInstructionUp(i)" 
-                          [disabled]="i === 0" matTooltip="Move up">
+                          [disabled]="i === 0" matTooltip="Move up"
+                          [attr.aria-label]="'Move instruction ' + (i+1) + ' up'">
                     <mat-icon>arrow_upward</mat-icon>
                   </button>
                   <button mat-icon-button type="button" (click)="moveInstructionDown(i)" 
-                          [disabled]="i === instructions.length - 1" matTooltip="Move down">
+                          [disabled]="i === instructions.length - 1" matTooltip="Move down"
+                          [attr.aria-label]="'Move instruction ' + (i+1) + ' down'">
                     <mat-icon>arrow_downward</mat-icon>
                   </button>
                 </div>
@@ -197,7 +215,8 @@
                 </mat-form-field>
 
                 <button mat-icon-button type="button" color="warn" (click)="removeInstruction(i)" 
-                        matTooltip="Remove instruction">
+                        matTooltip="Remove instruction"
+                        [attr.aria-label]="'Remove instruction ' + (i+1)">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
@@ -238,7 +257,7 @@
       </mat-card>
 
       <div class="form-actions">
-        <button mat-button type="button" (click)="cancel()">Cancel</button>
+        <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
         <button mat-raised-button color="primary" type="submit" [disabled]="saving">
           @if (saving) {
             <mat-spinner diameter="20"></mat-spinner>
@@ -251,3 +270,4 @@
     </form>
   }
 </div>
+iv>

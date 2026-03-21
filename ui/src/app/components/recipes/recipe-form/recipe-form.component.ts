@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { RecipeService } from '../../../services/recipe.service';
 import { Recipe, CreateRecipeRequest, RecipeIngredient, RecipeInstruction, ParsedRecipe } from '../../../models/recipe.model';
@@ -34,6 +35,7 @@ import { environment } from '../../../../environments/environment';
     MatProgressSpinnerModule,
     MatDividerModule,
     MatSlideToggleModule,
+    MatTooltipModule,
     TagSelectorComponent
   ],
   templateUrl: './recipe-form.component.html',
@@ -49,6 +51,7 @@ export class RecipeFormComponent implements OnInit {
   currentRecipeTags: RecipeTag[] = [];
   pendingImageData: string | null = null;
   pendingImageMimeType: string | null = null;
+  hasUnsavedChanges = false;
 
   constructor(
     private fb: FormBuilder,
@@ -71,6 +74,11 @@ export class RecipeFormComponent implements OnInit {
       this.addIngredient();
       this.addInstruction();
     }
+
+    // Track unsaved changes
+    this.recipeForm.valueChanges.subscribe(() => {
+      this.hasUnsavedChanges = true;
+    });
   }
 
   initForm() {
@@ -277,6 +285,7 @@ export class RecipeFormComponent implements OnInit {
       operation.subscribe({
         next: (recipe) => {
           this.saving = false;
+          this.hasUnsavedChanges = false;
           this.router.navigate(['/recipes', recipe.recipeResourceId]);
         },
         error: (err) => {
@@ -290,6 +299,24 @@ export class RecipeFormComponent implements OnInit {
       this.saving = false;
       console.error('Error uploading image:', err);
     }
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    // Ctrl+Enter or Cmd+Enter to submit form
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault();
+      if (this.recipeForm.valid && !this.saving) {
+        this.onSubmit();
+      }
+    }
+  }
+
+  canDeactivate(): boolean {
+    if (this.hasUnsavedChanges) {
+      return confirm('You have unsaved changes. Are you sure you want to leave?');
+    }
+    return true;
   }
 
   cancel() {

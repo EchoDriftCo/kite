@@ -7,36 +7,36 @@
   float: right;
   font-size: 14px;
   font-weight: 400;
-  color: #94a3b8;
+  color: var(--color-text-disabled);
 }
 
 // Welcome step
 .welcome-content {
   text-align: center;
-  padding: 16px 0;
+  padding: var(--space-md) 0;
 }
 
 .subtitle {
   font-size: 18px;
-  color: #94a3b8;
-  margin-bottom: 32px;
+  color: var(--color-text-disabled);
+  margin-bottom: var(--space-xl);
 }
 
 .feature-preview {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 16px;
-  margin: 24px 0;
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
 }
 
 .feature-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 16px;
-  border-radius: 12px;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.05);
   min-width: 90px;
 
@@ -55,14 +55,14 @@
 
 // Actions
 .step-actions {
-  padding: 16px 24px !important;
+  padding: var(--space-md) var(--space-lg) !important;
 }
 
 .action-column {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-sm);
   width: 100%;
 }
 
@@ -74,7 +74,7 @@
 
 .skip-btn {
   min-height: 48px;
-  color: #94a3b8 !important;
+  color: var(--color-text-disabled) !important;
 }
 
 .spacer {
@@ -83,23 +83,23 @@
 
 // Dietary step
 .section-desc {
-  color: #94a3b8;
-  margin-bottom: 16px;
+  color: var(--color-text-disabled);
+  margin-bottom: var(--space-md);
 }
 
 .dietary-section {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
 }
 
 .section-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-sm);
   color: #e2e8f0;
 
   .warn-icon {
@@ -120,21 +120,21 @@
 .checkbox-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .checkbox-item {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: var(--space-sm) var(--space-sm);
+  border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background var(--transition-fast);
   min-height: 48px;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--color-divider);
   }
 
   &.selected {
@@ -146,7 +146,7 @@
 .avoid-input-row {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .avoid-field {
@@ -156,17 +156,17 @@
 .avoided-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
 }
 
 .avoided-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 16px;
-  background: rgba(239, 83, 80, 0.15);
+  gap: var(--space-xs);
+  padding: 6px var(--space-sm);
+  border-radius: var(--radius-md);
+  background: var(--color-error-bg);
   color: #ef9a9a;
   font-size: 13px;
 
@@ -185,23 +185,23 @@
 
 // Conflict preview
 .conflict-preview {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-divider);
 }
 
 .conflict-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   font-weight: 600;
-  margin-bottom: 12px;
-  color: #fbbf24;
+  margin-bottom: var(--space-sm);
+  color: var(--color-primary);
 }
 
 .conflict-mock {
-  padding: 16px;
-  border-radius: 8px;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
   background: rgba(239, 83, 80, 0.1);
   border-left: 3px solid #ef5350;
 }
@@ -209,8 +209,8 @@
 .conflict-mock-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
 
   .warn-icon {
     color: #ef5350;
@@ -219,21 +219,21 @@
 
 .conflict-mock-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
 }
 
 // Recipe options step
 .recipe-option {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  border-radius: 12px;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.05);
-  margin-bottom: 12px;
+  margin-bottom: var(--space-sm);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background var(--transition-fast);
   min-height: 48px;
 
   &:hover {
@@ -254,7 +254,7 @@
   flex: 1;
 
   h3 {
-    margin: 0 0 4px;
+    margin: 0 0 var(--space-xs);
     font-size: 16px;
     font-weight: 500;
   }
@@ -262,7 +262,7 @@
   p {
     margin: 0;
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--color-text-disabled);
   }
 }
 
@@ -280,10 +280,10 @@
 .coming-soon {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   color: #64748b;
   font-size: 13px;
-  margin-top: 8px;
+  margin-top: var(--space-sm);
 
   mat-icon {
     font-size: 18px;
@@ -295,7 +295,7 @@
 // Ready step
 .ready-content {
   text-align: center;
-  padding: 24px 0;
+  padding: var(--space-lg) 0;
 }
 
 .ready-icon {
@@ -303,13 +303,13 @@
   width: 64px;
   height: 64px;
   color: #f59e0b;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
 }
 
 .ready-message {
   font-size: 16px;
   color: #cbd5e1;
-  margin-bottom: 32px;
+  margin-bottom: var(--space-xl);
   line-height: 1.6;
 }
 
@@ -317,14 +317,14 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 .tour-preview-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: var(--space-sm);
+  padding: 10px var(--space-md);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.05);
   font-size: 13px;
@@ -342,16 +342,16 @@
 .progress-dots {
   display: flex;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 0 16px;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0 var(--space-md);
 }
 
 .dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: rgba(255, 255, 255, 0.2);
-  transition: background 0.3s;
+  transition: background var(--transition-normal);
 
   &.active {
     background: #f59e0b;
@@ -359,7 +359,7 @@
 }
 
 // Mobile responsive
-@media (max-width: 600px) {
+@media (max-width: 599px) {
   .ready-icon {
     font-size: 48px;
     width: 48px;
@@ -372,17 +372,17 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 599px) {
   .checkbox-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
   .feature-preview {
-    gap: 8px;
+    gap: var(--space-sm);
   }
 
   .feature-card {
-    padding: 12px;
+    padding: var(--space-sm);
     min-width: 70px;
   }
 

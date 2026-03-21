@@ -1,74 +1,189 @@
-.login-container {
+.login-page {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   min-height: 100vh;
-  padding: 20px;
+  background-color: var(--color-bg-secondary);
+  padding: var(--space-md);
+
+  @media (min-width: 960px) {
+    padding: var(--space-xl);
+  }
 }
 
-mat-card {
+.login-container {
+  width: 100%;
   max-width: 400px;
-  width: 100%;
+  text-align: center;
 }
 
-.full-width {
-  width: 100%;
-  margin-bottom: 16px;
+.logo-img {
+  display: block;
+  width: 300px;
+  height: auto;
+  margin: 0 auto var(--space-xl);
+
+  @media (min-width: 960px) {
+    width: 400px;
+    margin-bottom: var(--space-2xl);
+  }
 }
 
-.submit-button {
-  margin-top: 8px;
-  height: 48px;
-  font-size: 16px;
-}
+.login-card {
+  background-color: var(--color-surface-default);
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-3);
+  padding: var(--space-lg);
+  text-align: left;
 
-.error-message {
-  color: #f44336;
-  margin-bottom: 16px;
-  padding: 8px;
-  background-color: rgba(244, 67, 54, 0.1);
-  border-radius: 4px;
-}
+  @media (min-width: 960px) {
+    padding: var(--space-xl);
+  }
 
-.success-message {
-  color: #4caf50;
-  margin-bottom: 16px;
-  padding: 8px;
-  background-color: rgba(76, 175, 80, 0.1);
-  border-radius: 4px;
-}
+  ::ng-deep .mat-mdc-card-header {
+    display: block;
+    padding: 0;
+  }
 
-.forgot-password {
-  text-align: right;
-  margin-top: 4px;
-  margin-bottom: 8px;
+  ::ng-deep .mat-mdc-card-title {
+    font-family: var(--font-family-base);
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 32px;
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-lg);
+    text-align: center;
+  }
 
-  a {
-    color: rgba(255, 255, 255, 0.5);
-    cursor: pointer;
-    text-decoration: none;
-    font-size: 0.85rem;
+  ::ng-deep .mat-mdc-card-content {
+    padding: 0;
+  }
 
-    &:hover {
-      color: #69f0ae;
-      text-decoration: underline;
+  mat-form-field {
+    width: 100%;
+    margin-bottom: var(--space-md);
+  }
+
+  // Primary CTA: Warm Orange #ff8c42 — color applied via theme.scss MDC overrides
+  // Layout/sizing handled here; color from global .mat-mdc-raised-button.mat-primary
+  .sign-in-btn {
+    width: 100%;
+    height: 48px;
+    margin-bottom: var(--space-md);
+
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+
+  // P1 fix: Magic link button — outlined teal (transparent bg, teal border)
+  ::ng-deep .magic-link-btn.mat-mdc-outlined-button {
+    width: 100%;
+    height: 48px;
+    margin-bottom: var(--space-md);
+    background-color: transparent !important;
+    color: var(--color-accent) !important;
+    border: 1px solid var(--color-accent) !important;
+    border-radius: var(--radius-md);
+    font: var(--font-button);
+
+    mat-icon {
+      margin-right: var(--space-sm);
+      color: var(--color-accent);
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(20, 184, 166, 0.08) !important;
+      border-color: var(--color-accent-hover) !important;
+    }
+
+    &:disabled {
+      border-color: var(--color-text-disabled) !important;
+      color: var(--color-text-disabled) !important;
     }
   }
 }
 
-.toggle-mode {
-  text-align: center;
-  margin-top: 16px;
-  color: rgba(255, 255, 255, 0.7);
+.forgot-password {
+  text-align: right;
+  margin-bottom: var(--space-md);
 
   a {
-    color: #69f0ae;
-    cursor: pointer;
+    font: var(--font-body);
+    color: var(--color-accent);
     text-decoration: none;
-    font-weight: 500;
 
     &:hover {
       text-decoration: underline;
+      color: var(--color-accent-hover);
     }
+  }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+  font: var(--font-caption);
+  color: var(--color-error);
+  animation: fadeIn var(--transition-fast);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: var(--space-md) 0;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: var(--color-divider);
+  }
+
+  span {
+    padding: 0 var(--space-sm);
+    font: var(--font-caption);
+    color: var(--color-text-hint);
+    text-transform: lowercase;
+  }
+}
+
+.signup-prompt {
+  text-align: center;
+  margin-top: var(--space-lg);
+  margin-bottom: 0;
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+
+  button {
+    color: var(--color-accent);
+    text-transform: none;
+    padding: 0;
+    min-width: auto;
+
+    &:hover {
+      text-decoration: underline;
+      background: none;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
