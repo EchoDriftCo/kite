@@ -97,7 +97,7 @@ namespace RecipeVault.WebApi.Controllers {
                 logger.LogInformation("Saving mixed recipe: {Title}", preview.Title);
 
                 var recipe = await facade.SaveMixedRecipeAsync(preview);
-                return CreatedAtAction("GetRecipe", "Recipes", new { id = recipe.RecipeResourceId }, recipe);
+                return CreatedAtAction("GetRecipeAsync", "Recipes", new { id = recipe.RecipeResourceId }, recipe);
             } catch (ArgumentException ex) {
                 logger.LogWarning(ex, "Invalid save request");
                 return BadRequest(new { error = ex.Message });
