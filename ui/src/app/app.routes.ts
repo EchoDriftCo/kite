@@ -25,6 +25,7 @@ import { ResetPasswordComponent } from './components/login/reset-password.compon
 import { SharedRecipeComponent } from './components/recipes/shared-recipe/shared-recipe.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { authGuard } from './guards/auth.guard';
+import { unsavedChangesGuard } from './guards/unsaved-changes.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/recipes', pathMatch: 'full' },
@@ -35,11 +36,11 @@ export const routes: Routes = [
   { path: 'join/:token', component: AcceptInviteComponent, canActivate: [authGuard] },
   { path: 'discover', component: DiscoverComponent, canActivate: [authGuard] },
   { path: 'recipes', component: RecipeListComponent, canActivate: [authGuard] },
-  { path: 'recipes/new', component: RecipeFormComponent, canActivate: [authGuard] },
+  { path: 'recipes/new', component: RecipeFormComponent, canActivate: [authGuard], canDeactivate: [unsavedChangesGuard] },
   { path: 'recipes/generate', component: RecipeGeneratorComponent, canActivate: [authGuard] },
   { path: 'recipes/mix', component: RecipeMixerComponent, canActivate: [authGuard] },
   { path: 'recipes/:id', component: RecipeDetailComponent, canActivate: [authGuard] },
-  { path: 'recipes/:id/edit', component: RecipeFormComponent, canActivate: [authGuard] },
+  { path: 'recipes/:id/edit', component: RecipeFormComponent, canActivate: [authGuard], canDeactivate: [unsavedChangesGuard] },
   { path: 'recipes/:id/cook', component: CookingModeComponent, canActivate: [authGuard] },
   { path: 'cooking-history', component: CookingHistoryComponent, canActivate: [authGuard] },
   { path: 'cooking-stats', component: CookingStatsComponent, canActivate: [authGuard] },
