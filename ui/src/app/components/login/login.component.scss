@@ -66,24 +66,24 @@
     margin-bottom: var(--space-md);
   }
 
-  // Primary CTA: Teal per Vega review
+  // Primary CTA: Warm Orange #ff8c42 — FINAL per Vega approval of 350ebb3
   .sign-in-btn {
     width: 100%;
     height: 48px;
     margin-bottom: var(--space-md);
-    background-color: var(--color-accent) !important;
-    color: #ffffff !important;
+    background-color: var(--color-primary) !important;
+    color: var(--color-primary-text) !important;
     font: var(--font-button);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     border-radius: var(--radius-md);
 
     &:hover:not(:disabled) {
-      background-color: var(--color-accent-hover) !important;
+      background-color: var(--color-primary-hover) !important;
     }
 
     &:active:not(:disabled) {
-      background-color: var(--color-accent-active) !important;
+      background-color: var(--color-primary-active) !important;
     }
 
     &:disabled {
