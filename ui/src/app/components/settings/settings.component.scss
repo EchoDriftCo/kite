@@ -1,26 +1,25 @@
 .settings-container {
-  padding: 24px;
+  padding: var(--space-lg);
   max-width: 800px;
   margin: 0 auto;
 
   h1 {
-    font-size: 1.8rem;
-    font-weight: 500;
-    margin-bottom: 24px;
+    font: var(--font-h1);
+    margin-bottom: var(--space-lg);
   }
 }
 
 .settings-card {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
 
   mat-card-header {
-    margin-bottom: 16px;
+    margin-bottom: var(--space-md);
 
     mat-card-title {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 1.1rem;
+      gap: var(--space-sm);
+      font: var(--font-h4);
     }
   }
 }
@@ -29,34 +28,34 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 0;
-  gap: 24px;
+  padding: var(--space-md) 0;
+  gap: var(--space-lg);
 }
 
 .setting-info {
   flex: 1;
 
   h3 {
-    margin: 0 0 4px;
-    font-size: 15px;
+    margin: 0 0 var(--space-xs);
+    font: var(--font-body);
     font-weight: 500;
   }
 
   p {
     margin: 0;
-    font-size: 13px;
-    color: #94a3b8;
+    font: var(--font-body-small);
+    color: var(--color-text-disabled);
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 599px) {
   .settings-container {
-    padding: 16px;
+    padding: var(--space-md);
   }
 
   .setting-row {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: var(--space-sm);
   }
 }

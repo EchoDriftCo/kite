@@ -1,5 +1,5 @@
 .meal-plan-detail-container {
-  padding: 24px;
+  padding: var(--space-lg);
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -9,11 +9,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 64px 0;
-  gap: 16px;
+  padding: var(--space-2xl) 0;
+  gap: var(--space-md);
 
   p {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-secondary);
   }
 }
 
@@ -21,50 +21,49 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 48px;
-  background-color: rgba(127, 29, 29, 0.3);
-  border-radius: 8px;
-  gap: 8px;
+  padding: var(--space-2xl);
+  background-color: var(--color-error-bg);
+  border-radius: var(--radius-md);
+  gap: var(--space-sm);
 
   mat-icon {
-    color: #fca5a5;
+    color: var(--color-error);
     font-size: 48px;
     width: 48px;
     height: 48px;
   }
 
   p {
-    color: #fca5a5;
+    color: var(--color-error);
     margin: 0;
   }
 }
 
 .plan-header {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
 
   .header-actions {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-md);
 
     .action-buttons {
       display: flex;
-      gap: 8px;
+      gap: var(--space-sm);
     }
   }
 
   h1 {
-    font-size: 2rem;
-    font-weight: 500;
-    margin: 0 0 8px;
+    font: var(--font-h1);
+    margin: 0 0 var(--space-sm);
   }
 
   .date-range {
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: rgba(255, 255, 255, 0.6);
+    gap: var(--space-sm);
+    color: var(--color-text-secondary);
     margin: 0;
 
     mat-icon {
@@ -77,25 +76,25 @@
 
 .calendar {
   overflow-x: auto;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
 }
 
 .calendar-header {
   display: grid;
   grid-template-columns: 100px repeat(auto-fit, minmax(0, 1fr));
-  border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 2px solid var(--color-divider);
 
   .slot-label-col {
-    padding: 12px;
+    padding: var(--space-sm);
   }
 
   .day-header {
-    padding: 12px 8px;
+    padding: var(--space-sm) var(--space-sm);
     text-align: center;
     font-weight: 500;
-    font-size: 0.875rem;
-    border-left: 1px solid rgba(255, 255, 255, 0.12);
+    font: var(--font-body);
+    border-left: 1px solid var(--color-divider);
   }
 }
 
@@ -109,27 +108,27 @@
   }
 
   .slot-label {
-    padding: 12px;
+    padding: var(--space-sm);
     font-weight: 500;
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.7);
+    font: var(--font-body-small);
+    color: var(--color-text-secondary);
     display: flex;
     align-items: flex-start;
-    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    border-right: 1px solid var(--color-divider);
   }
 }
 
 .calendar-cell {
-  padding: 8px;
+  padding: var(--space-sm);
   min-height: 80px;
   border-left: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-xs);
 
   .add-entry-btn {
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity var(--transition-fast);
     align-self: center;
     width: 28px;
     height: 28px;
@@ -154,9 +153,9 @@
 .entry-card {
   background-color: rgba(63, 81, 181, 0.2);
   border: 1px solid rgba(63, 81, 181, 0.4);
-  border-radius: 4px;
-  padding: 6px 8px;
-  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  padding: 6px var(--space-sm);
+  font: var(--font-caption);
   position: relative;
 
   &.leftover {
@@ -175,7 +174,7 @@
 
   .entry-servings {
     display: block;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-hint);
     font-size: 0.7rem;
   }
 
@@ -185,7 +184,7 @@
     gap: 2px;
     margin-top: 2px;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity var(--transition-fast);
 
     .entry-action-btn {
       width: 22px;
@@ -205,15 +204,15 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 599px) {
   .meal-plan-detail-container {
-    padding: 16px;
+    padding: var(--space-md);
   }
 
   .plan-header {
     .header-actions {
       flex-direction: column;
-      gap: 12px;
+      gap: var(--space-sm);
       align-items: flex-start;
 
       .action-buttons {
@@ -222,7 +221,7 @@
     }
 
     h1 {
-      font-size: 1.5rem;
+      font: var(--font-h2);
     }
   }
 
@@ -231,8 +230,8 @@
   }
 
   .calendar-header .day-header {
-    font-size: 0.75rem;
-    padding: 8px 4px;
+    font: var(--font-caption);
+    padding: var(--space-sm) var(--space-xs);
   }
 
   .calendar-header {
@@ -244,12 +243,12 @@
 
     .slot-label {
       font-size: 0.7rem;
-      padding: 8px;
+      padding: var(--space-sm);
     }
   }
 
   .calendar-cell {
     min-height: 60px;
-    padding: 4px;
+    padding: var(--space-xs);
   }
 }

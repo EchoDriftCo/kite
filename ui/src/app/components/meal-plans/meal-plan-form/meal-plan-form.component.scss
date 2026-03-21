@@ -1,18 +1,17 @@
 .meal-plan-form-container {
   max-width: 700px;
   margin: 0 auto;
-  padding: 24px;
+  padding: var(--space-lg);
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
 
   h1 {
-    font-size: 2rem;
-    font-weight: 500;
+    font: var(--font-h1);
     margin: 0;
   }
 }
@@ -22,53 +21,53 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 64px 0;
-  gap: 16px;
+  padding: var(--space-2xl) 0;
+  gap: var(--space-md);
 
   p {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-secondary);
   }
 }
 
 .error-message {
-  padding: 16px;
-  background-color: rgba(127, 29, 29, 0.3);
-  border-radius: 8px;
+  padding: var(--space-md);
+  background-color: var(--color-error-bg);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
 
   mat-icon {
-    color: #fca5a5;
+    color: var(--color-error);
   }
 
   p {
     margin: 0;
-    color: #fca5a5;
+    color: var(--color-error);
   }
 }
 
 .form-section {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
 
   mat-card-header {
-    padding: 16px 16px 0;
+    padding: var(--space-md) var(--space-md) 0;
 
     mat-card-title {
-      font-size: 1.25rem;
+      font: var(--font-h4);
     }
   }
 
   mat-card-content {
-    padding: 24px 16px 16px;
+    padding: var(--space-lg) var(--space-md) var(--space-md);
   }
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: var(--space-md);
 
   .full-width {
     grid-column: 1 / -1;
@@ -78,26 +77,26 @@
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  padding: 24px 0;
+  gap: var(--space-sm);
+  padding: var(--space-lg) 0;
 
   button {
     min-width: 120px;
 
     mat-icon {
-      margin-right: 8px;
+      margin-right: var(--space-sm);
     }
 
     mat-spinner {
-      margin-right: 8px;
+      margin-right: var(--space-sm);
       display: inline-block;
     }
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 599px) {
   .meal-plan-form-container {
-    padding: 16px;
+    padding: var(--space-md);
   }
 
   .form-grid {

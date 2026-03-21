@@ -1,5 +1,5 @@
 .meal-plan-list-container {
-  padding: 24px;
+  padding: var(--space-lg);
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -8,14 +8,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: var(--space-xl);
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--space-md);
 
   h1 {
     margin: 0;
-    font-size: 2rem;
-    font-weight: 500;
+    font: var(--font-h1);
   }
 }
 
@@ -24,11 +23,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 64px 0;
-  gap: 16px;
+  padding: var(--space-2xl) 0;
+  gap: var(--space-md);
 
   p {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-secondary);
   }
 }
 
@@ -36,20 +35,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 48px;
-  background-color: rgba(127, 29, 29, 0.3);
-  border-radius: 8px;
-  gap: 8px;
+  padding: var(--space-2xl);
+  background-color: var(--color-error-bg);
+  border-radius: var(--radius-md);
+  gap: var(--space-sm);
 
   mat-icon {
-    color: #fca5a5;
+    color: var(--color-error);
     font-size: 48px;
     width: 48px;
     height: 48px;
   }
 
   p {
-    color: #fca5a5;
+    color: var(--color-error);
     margin: 0;
   }
 }
@@ -58,37 +57,37 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 64px 24px;
+  padding: var(--space-2xl) var(--space-lg);
   text-align: center;
 
   mat-icon {
     font-size: 96px;
     width: 96px;
     height: 96px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--color-text-hint);
   }
 
   h2 {
-    margin: 16px 0 8px;
+    margin: var(--space-md) 0 var(--space-sm);
     font-weight: 400;
   }
 
   p {
-    color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 24px;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-lg);
   }
 }
 
 .plan-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
-  margin-bottom: 32px;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
 }
 
 .plan-card {
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 
   &:hover {
     transform: translateY(-4px);
@@ -96,21 +95,20 @@
   }
 
   mat-card-content {
-    padding: 16px !important;
+    padding: var(--space-md) !important;
 
     h3 {
-      margin: 0 0 12px;
-      font-size: 1.25rem;
-      font-weight: 500;
+      margin: 0 0 var(--space-sm);
+      font: var(--font-h4);
     }
 
     .date-range, .entry-count {
       display: flex;
       align-items: center;
-      gap: 8px;
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 0.875rem;
-      margin: 0 0 8px;
+      gap: var(--space-sm);
+      color: var(--color-text-secondary);
+      font: var(--font-body);
+      margin: 0 0 var(--space-sm);
 
       mat-icon {
         font-size: 18px;
@@ -121,17 +119,17 @@
   }
 
   mat-card-actions {
-    padding: 8px 16px !important;
+    padding: var(--space-sm) var(--space-md) !important;
     display: flex;
     justify-content: flex-end;
-    gap: 8px;
+    gap: var(--space-sm);
 
     button {
       mat-icon {
         font-size: 18px;
         width: 18px;
         height: 18px;
-        margin-right: 4px;
+        margin-right: var(--space-xs);
       }
     }
   }
@@ -139,10 +137,10 @@
 
 mat-paginator {
   background: transparent;
-  margin-top: 16px;
+  margin-top: var(--space-md);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 599px) {
   .header {
     flex-direction: column;
     align-items: flex-start;
