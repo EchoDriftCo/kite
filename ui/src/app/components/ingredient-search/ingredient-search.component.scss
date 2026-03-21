@@ -1,10 +1,10 @@
 .ingredient-search-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: var(--space-lg) var(--space-md);
 
   h1 {
-    margin-bottom: 24px;
+    margin-bottom: var(--space-lg);
     font-weight: 300;
     font-size: 2rem;
   }
@@ -16,16 +16,16 @@
 
 .search-content,
 .pantry-content {
-  padding: 16px 0;
+  padding: var(--space-md) 0;
 }
 
 // Selected ingredients
 .selected-ingredients {
-  margin: 8px 0 16px;
+  margin: var(--space-sm) 0 var(--space-md);
 
   label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: var(--space-sm);
     font-size: 0.875rem;
     color: rgba(0, 0, 0, 0.6);
   }
@@ -33,19 +33,19 @@
 
 // Filters
 .filters-panel {
-  margin: 16px 0;
+  margin: var(--space-md) 0;
 }
 
 .filters-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  padding: 8px 0;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
 
   .filter-toggles {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-sm);
     justify-content: center;
   }
 }
@@ -53,15 +53,15 @@
 // Action buttons
 .action-buttons {
   display: flex;
-  gap: 12px;
-  margin: 16px 0;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0;
   flex-wrap: wrap;
 }
 
 .helper-text {
   text-align: center;
   color: rgba(0, 0, 0, 0.5);
-  margin: 32px 0;
+  margin: var(--space-xl) 0;
   font-style: italic;
 }
 
@@ -69,13 +69,13 @@
 .loading-container {
   display: flex;
   justify-content: center;
-  padding: 48px 0;
+  padding: var(--space-2xl) 0;
 }
 
 // Results
 .results-header {
-  margin: 16px 0 8px;
-  padding-bottom: 8px;
+  margin: var(--space-md) 0 var(--space-sm);
+  padding-bottom: var(--space-sm);
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 
   h3 {
@@ -87,13 +87,13 @@
 .results-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
 }
 
 .result-card {
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: box-shadow var(--transition-fast);
 
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -106,7 +106,7 @@
 }
 
 .cook-time {
-  margin-left: 12px;
+  margin-left: var(--space-sm);
   color: rgba(0, 0, 0, 0.6);
 
   &::before {
@@ -115,7 +115,7 @@
 }
 
 .rating {
-  margin-left: 8px;
+  margin-left: var(--space-sm);
 
   .star-icon {
     font-size: 16px;
@@ -124,7 +124,7 @@
     color: rgba(0, 0, 0, 0.3);
 
     &.filled {
-      color: #ffc107;
+      color: var(--color-primary);
     }
   }
 }
@@ -132,7 +132,7 @@
 .recipe-count {
   color: rgba(0, 0, 0, 0.5);
   font-size: 0.85em;
-  margin-left: 8px;
+  margin-left: var(--space-sm);
 }
 
 // Ingredient breakdown
@@ -140,7 +140,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: var(--space-sm);
 
   .matched,
   .missing,
@@ -148,7 +148,7 @@
   .substitutions {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: var(--space-xs);
   }
 }
 
@@ -156,7 +156,7 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: 2px 8px;
+  padding: 2px var(--space-sm);
   border-radius: 12px;
   font-size: 0.8rem;
 
@@ -185,8 +185,8 @@
 .substitution-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
+  gap: var(--space-xs);
+  padding: 2px var(--space-sm);
   border-radius: 12px;
   font-size: 0.8rem;
   background: #fff3e0;
@@ -202,28 +202,28 @@
 // No results
 .no-results {
   text-align: center;
-  padding: 48px 16px;
+  padding: var(--space-2xl) var(--space-md);
   color: rgba(0, 0, 0, 0.5);
 
   mat-icon {
     font-size: 48px;
     width: 48px;
     height: 48px;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-md);
   }
 }
 
 // Pantry
 .pantry-description {
   color: rgba(0, 0, 0, 0.6);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
 }
 
 .add-pantry-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
   flex-wrap: wrap;
 
   .pantry-input {
@@ -233,11 +233,11 @@
 }
 
 .pantry-section {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
 
   h3 {
-    margin: 0 0 8px;
-    padding-bottom: 4px;
+    margin: 0 0 var(--space-sm);
+    padding-bottom: var(--space-xs);
     border-bottom: 1px solid rgba(0, 0, 0, 0.12);
     color: rgba(0, 0, 0, 0.7);
   }
@@ -247,7 +247,7 @@
   display: flex;
   align-items: center;
   width: 100%;
-  gap: 8px;
+  gap: var(--space-sm);
 
   .item-name {
     flex: 1;
@@ -267,27 +267,27 @@
 
 .empty-pantry {
   text-align: center;
-  padding: 48px 16px;
+  padding: var(--space-2xl) var(--space-md);
   color: rgba(0, 0, 0, 0.5);
 
   mat-icon {
     font-size: 48px;
     width: 48px;
     height: 48px;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-md);
   }
 }
 
 .pantry-actions {
   display: flex;
   justify-content: center;
-  margin-top: 24px;
+  margin-top: var(--space-lg);
 }
 
 // Mobile layout
-@media (max-width: 600px) {
+@media (max-width: 599px) {
   .ingredient-search-container {
-    padding: 16px 8px;
+    padding: var(--space-md) var(--space-sm);
 
     h1 {
       font-size: 1.5rem;
