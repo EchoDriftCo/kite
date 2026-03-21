@@ -226,20 +226,32 @@ body {
 }
 
 // --- Buttons ---
-// Primary (amber) raised buttons
-.mat-mdc-raised-button.mat-primary {
+// Primary (warm orange) raised buttons
+// Override MDC internal custom properties directly — CSS class overrides alone
+// lose the specificity war against Material's compiled theme styles.
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary {
+  --mdc-filled-button-container-color: var(--color-primary);
+  --mdc-filled-button-label-text-color: var(--color-primary-text);
+  --mdc-protected-button-container-color: var(--color-primary);
+  --mdc-protected-button-label-text-color: var(--color-primary-text);
+  --mat-mdc-button-persistent-ripple-color: var(--color-primary-active);
   border-radius: var(--radius-md);
   min-height: 40px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font: var(--font-button);
   transition: all var(--transition-fast);
-  
+
   &:hover:not(:disabled) {
+    --mdc-filled-button-container-color: var(--color-primary-hover);
+    --mdc-protected-button-container-color: var(--color-primary-hover);
     box-shadow: var(--shadow-1);
   }
   
   &:active:not(:disabled) {
+    --mdc-filled-button-container-color: var(--color-primary-active);
+    --mdc-protected-button-container-color: var(--color-primary-active);
     transform: scale(0.98);
   }
 }
