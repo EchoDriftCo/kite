@@ -17,16 +17,14 @@
   text-align: center;
 }
 
-.logo {
-  font-family: var(--font-family-base);
-  font-weight: 500;
-  font-size: 32px;
-  line-height: 40px;
-  color: var(--color-text-primary);
-  letter-spacing: -0.02em;
-  margin-bottom: var(--space-xl);
+.logo-img {
+  display: block;
+  width: 300px;
+  height: auto;
+  margin: 0 auto var(--space-xl);
 
   @media (min-width: 960px) {
+    width: 400px;
     margin-bottom: var(--space-2xl);
   }
 }
