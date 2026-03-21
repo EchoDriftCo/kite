@@ -1,14 +1,14 @@
 .dietary-warning {
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  margin: 1rem 0;
+  margin: var(--space-md) 0;
 }
 
 .warning-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem;
+  padding: var(--space-md);
   font-weight: 500;
 
   i {
@@ -18,13 +18,13 @@
   &.can-eat {
     background: var(--success-container, #d4edda);
     color: var(--on-success-container, #155724);
-    border: 1px solid var(--success, #28a745);
+    border: 1px solid var(--color-success);
   }
 
   &.cannot-eat {
     background: var(--error-container, #f8d7da);
     color: var(--on-error-container, #721c24);
-    border: 1px solid var(--error, #dc3545);
+    border: 1px solid var(--color-error);
   }
 }
 
@@ -32,22 +32,22 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 1rem;
+  padding: var(--space-md);
   background: var(--surface-variant);
 }
 
 .conflict-item {
-  padding: 1rem;
-  border-radius: 0.5rem;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
   border-left: 4px solid;
-  background: var(--surface);
+  background: var(--color-surface-default);
 
   &.severity-strict {
-    border-left-color: var(--error, #dc3545);
+    border-left-color: var(--color-error);
   }
 
   &.severity-flexible {
-    border-left-color: var(--warning, #ffc107);
+    border-left-color: var(--color-warning);
   }
 }
 
@@ -55,11 +55,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-sm);
 
   .conflict-ingredient {
     font-weight: 500;
-    color: var(--text-primary);
+    color: var(--color-text-primary);
   }
 
   .conflict-badge {
@@ -92,30 +92,30 @@
 
 .conflict-details {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
   font-size: 0.875rem;
 
   .conflict-type {
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
   }
 
   .conflict-severity {
     font-weight: 500;
 
     &.severity-strict {
-      color: var(--error, #dc3545);
+      color: var(--color-error);
     }
 
     &.severity-flexible {
-      color: var(--warning, #ffc107);
+      color: var(--color-warning);
     }
   }
 }
 
 .conflict-message {
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   font-style: italic;
 }
 
@@ -123,17 +123,17 @@
 .error-state {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  border-radius: 0.5rem;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
   background: var(--surface-variant);
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 
 .error-state {
   background: var(--error-container, #f8d7da);
   color: var(--on-error-container, #721c24);
-  border: 1px solid var(--error, #dc3545);
+  border: 1px solid var(--color-error);
 }
 
 // Dark mode support
