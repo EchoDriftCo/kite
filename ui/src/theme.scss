@@ -325,14 +325,47 @@ body {
 // --- Tabs ---
 .mat-mdc-tab-group {
   .mat-mdc-tab {
+    --mdc-secondary-navigation-tab-container-color: transparent;
+    --mat-tab-header-inactive-label-text-color: var(--color-text-secondary);
+    --mat-tab-header-active-label-text-color: var(--color-accent);
+    --mat-tab-header-inactive-ripple-color: rgba(20, 184, 166, 0.08);
+    --mat-tab-header-active-ripple-color: rgba(20, 184, 166, 0.12);
     color: var(--color-text-secondary);
-    
+
     &.mdc-tab--active {
       color: var(--color-accent);
     }
   }
-  
+
   .mdc-tab-indicator__content--underline {
     border-color: var(--color-accent) !important;
+  }
+}
+
+// --- Button Toggle Group ---
+// Fix: black/invisible toggles on dark background
+.mat-button-toggle-group {
+  --mat-standard-button-toggle-selected-state-background-color: var(--color-accent);
+  --mat-standard-button-toggle-selected-state-text-color: #ffffff;
+  --mat-standard-button-toggle-text-color: var(--color-text-secondary);
+  --mat-standard-button-toggle-background-color: var(--color-surface-default);
+  --mat-standard-button-toggle-divider-color: var(--color-divider);
+  --mat-standard-button-toggle-shape: var(--radius-md);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+
+  .mat-button-toggle {
+    background-color: var(--color-surface-default);
+    color: var(--color-text-secondary);
+
+    &.mat-button-toggle-checked {
+      background-color: var(--color-accent);
+      color: #ffffff;
+    }
+
+    .mat-button-toggle-label-content {
+      padding: 0 var(--space-md);
+      font: var(--font-button);
+    }
   }
 }

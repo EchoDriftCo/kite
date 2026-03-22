@@ -41,15 +41,30 @@
 
     button {
       margin-left: 4px;
+      color: var(--color-text-secondary);
 
       mat-icon {
         margin-right: 4px;
+        color: var(--color-text-secondary);
+      }
+
+      &:hover {
+        color: var(--color-text-primary);
+
+        mat-icon {
+          color: var(--color-text-primary);
+        }
       }
     }
 
     .active-link {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
+      background: rgba(20, 184, 166, 0.15);
+      border-radius: var(--radius-md);
+      color: var(--color-accent);
+
+      mat-icon {
+        color: var(--color-accent);
+      }
     }
   }
 

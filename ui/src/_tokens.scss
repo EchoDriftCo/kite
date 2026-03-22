@@ -31,11 +31,22 @@
   // Without these, mat-raised-button falls back to --mat-sys-surface (gray)
   --mat-sys-primary: #ff8c42;
   --mat-sys-on-primary: #1a2230;
+  --mat-sys-primary-container: rgba(255, 140, 66, 0.15);
+  --mat-sys-on-primary-container: #ff8c42;
   --mat-sys-secondary: #14b8a6;
   --mat-sys-on-secondary: #ffffff;
+  --mat-sys-secondary-container: rgba(20, 184, 166, 0.15);
+  --mat-sys-on-secondary-container: #14b8a6;
   --mat-sys-surface: #334155;
   --mat-sys-on-surface: #f1f5f9;
   --mat-sys-on-surface-variant: #cbd5e1;
+  --mat-sys-surface-container: #1e293b;
+  --mat-sys-surface-container-low: #1e293b;
+  --mat-sys-surface-container-high: #475569;
+  --mat-sys-surface-container-highest: #64748b;
+  --mat-sys-surface-variant: #475569;
+  --mat-sys-inverse-surface: #f1f5f9;
+  --mat-sys-inverse-on-surface: #1e293b;
   --mat-sys-error: #ef4444;
   --mat-sys-on-error: #ffffff;
   --mat-sys-outline: rgba(241, 245, 249, 0.2);
