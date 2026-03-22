@@ -4,7 +4,7 @@
 #
 
 app = 'recipevault-morning-dawn-6796'
-primary_region = 'dfw'
+primary_region = 'iad'
 
 [build]
   # Default build args - overridden by CI via --build-arg flags
