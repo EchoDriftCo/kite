@@ -142,6 +142,16 @@ body {
 
 // --- Form Fields ---
 .mat-mdc-form-field {
+  // Focused label color: teal, not orange (--mat-sys-primary leaks orange)
+  --mdc-filled-text-field-focus-label-text-color: var(--color-accent);
+  --mdc-outlined-text-field-focus-label-text-color: var(--color-accent);
+  --mdc-filled-text-field-focus-active-indicator-color: var(--color-accent);
+  --mdc-outlined-text-field-focus-outline-color: var(--color-accent);
+  --mdc-filled-text-field-label-text-color: var(--color-text-secondary);
+  --mdc-outlined-text-field-label-text-color: var(--color-text-secondary);
+  --mdc-filled-text-field-caret-color: var(--color-accent);
+  --mdc-outlined-text-field-caret-color: var(--color-accent);
+
   .mat-mdc-text-field-wrapper {
     background-color: rgba(51, 65, 85, 0.5);
     border-radius: var(--radius-md);
