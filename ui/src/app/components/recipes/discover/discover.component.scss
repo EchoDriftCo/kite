@@ -130,16 +130,25 @@
 
   .placeholder-image {
     height: 200px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
     align-items: center;
     justify-content: center;
+    background: linear-gradient(135deg, #e8915a 0%, #d4724a 100%); // default warm orange
+
+    &.gradient-warm-orange { background: linear-gradient(135deg, #e8915a 0%, #d4724a 100%); }
+    &.gradient-sage-herb { background: linear-gradient(135deg, #7c9885 0%, #5a7a65 100%); }
+    &.gradient-golden-honey { background: linear-gradient(135deg, #d4a24e 0%, #c4883a 100%); }
+    &.gradient-terracotta { background: linear-gradient(135deg, #c67b5c 0%, #a8624a 100%); }
+    &.gradient-deep-olive { background: linear-gradient(135deg, #8b956d 0%, #6e7a54 100%); }
+    &.gradient-warm-berry { background: linear-gradient(135deg, #b56576 0%, #944e5e 100%); }
+    &.gradient-spiced-rust { background: linear-gradient(135deg, #c4724a 0%, #a85a38 100%); }
+    &.gradient-ocean-slate { background: linear-gradient(135deg, #5a8a8f 0%, #4a7175 100%); }
 
     mat-icon {
       font-size: 72px;
       width: 72px;
       height: 72px;
-      color: var(--color-text-high-emphasis);
+      color: rgba(255, 255, 255, 0.6);
     }
   }
 

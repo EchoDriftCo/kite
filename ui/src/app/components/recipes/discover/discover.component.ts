@@ -153,4 +153,20 @@ export class DiscoverComponent implements OnInit {
       ? `${(recipe as any).createdSubject.givenName || ''} ${(recipe as any).createdSubject.familyName || ''}`.trim()
       : 'Unknown';
   }
+
+  getPlaceholderClass(recipe: Recipe): string {
+    const gradients = [
+      'gradient-warm-orange', 'gradient-sage-herb', 'gradient-golden-honey',
+      'gradient-terracotta', 'gradient-deep-olive', 'gradient-warm-berry',
+      'gradient-spiced-rust', 'gradient-ocean-slate'
+    ];
+    // Deterministic hash from title so same recipe always gets same gradient
+    const title = recipe.title || '';
+    let hash = 0;
+    for (let i = 0; i < title.length; i++) {
+      hash = ((hash << 5) - hash) + title.charCodeAt(i);
+      hash |= 0;
+    }
+    return gradients[Math.abs(hash) % gradients.length];
+  }
 }

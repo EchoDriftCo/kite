@@ -121,7 +121,7 @@
               @if (recipe.originalImageUrl) {
                 <img mat-card-image [src]="recipe.originalImageUrl" [alt]="recipe.title">
               } @else {
-                <div class="placeholder-image">
+                <div class="placeholder-image" [ngClass]="getPlaceholderClass(recipe)">
                   <mat-icon>restaurant</mat-icon>
                 </div>
               }

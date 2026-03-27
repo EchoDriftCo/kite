@@ -225,4 +225,19 @@ export class RecipeListComponent implements OnInit {
       }
     });
   }
+
+  getPlaceholderClass(recipe: Recipe): string {
+    const gradients = [
+      'gradient-warm-orange', 'gradient-sage-herb', 'gradient-golden-honey',
+      'gradient-terracotta', 'gradient-deep-olive', 'gradient-warm-berry',
+      'gradient-spiced-rust', 'gradient-ocean-slate'
+    ];
+    const title = recipe.title || '';
+    let hash = 0;
+    for (let i = 0; i < title.length; i++) {
+      hash = ((hash << 5) - hash) + title.charCodeAt(i);
+      hash |= 0;
+    }
+    return gradients[Math.abs(hash) % gradients.length];
+  }
 }
