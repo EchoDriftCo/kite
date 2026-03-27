@@ -177,17 +177,17 @@ body {
 
 // --- Chips ---
 .mat-mdc-chip {
-  background-color: rgba(124, 152, 133, 0.15) !important;
-  color: var(--color-accent-active) !important;
-  border: 1px solid rgba(124, 152, 133, 0.3);
+  background-color: rgba(124, 152, 133, 0.1) !important;
+  color: #4a6354 !important; // Dark sage — WCAG AA on light bg
+  border: 1px solid rgba(124, 152, 133, 0.35);
   border-radius: 16px;
   
   &:hover {
-    background-color: rgba(124, 152, 133, 0.25) !important;
+    background-color: rgba(124, 152, 133, 0.2) !important;
   }
 
   mat-icon {
-    color: var(--color-accent) !important;
+    color: #4a6354 !important;
   }
 }
 
@@ -195,6 +195,10 @@ body {
   background-color: rgba(124, 152, 133, 0.2) !important;
   color: var(--color-accent) !important;
   border-color: rgba(124, 152, 133, 0.3);
+
+  mat-icon {
+    color: var(--color-accent) !important;
+  }
 }
 
 // --- Snackbar ---
