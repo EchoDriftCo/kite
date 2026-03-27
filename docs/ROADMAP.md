@@ -907,7 +907,74 @@ POST /api/recipes/import/save
   Returns: Created RecipeDto
 ```
 
-### 5B. Paprika Import
+### 🚨 5B. Whisk Migration Tool (URGENT — 35-Day Deadline)
+
+**Status:** Not started  
+**Deadline:** April 30, 2026 (Whisk shutdown)  
+**Priority:** CRITICAL — First-mover advantage for displaced users  
+**Competitive Intel:** No other app has shipped this yet (as of March 26, 2026)
+
+#### Business Context
+
+- **Whisk shutting down April 30, 2026** — Samsung Food rebrand failed, users abandoning platform
+- **35 days remaining** to capture displaced user base
+- **Zero competitors have migration tools** — whoever ships first wins this cohort
+- **Stringer flagged March 18** — window actively closing
+- **Reddit/social:** Whisk users actively searching for alternatives now
+
+#### User Story
+
+"I have 500 recipes in Whisk. Samsung Food is a disaster and I don't trust it. I need to export my library before April 30 and move to a new app. RecipeVault says they can import my entire Whisk library in 60 seconds."
+
+#### Technical Approach
+
+Whisk export format unknown — need to:
+1. **Reverse-engineer Whisk export** (JSON? CSV? proprietary?)
+2. **Test with real Whisk account** or find sample exports online
+3. **Build parser** for Whisk → RecipeVault schema
+4. **Handle edge cases:** missing fields, image URLs, malformed data
+
+**Deliverable:** Simple upload form that accepts Whisk exports and batch-imports recipes.
+
+#### Landing Page Copy
+
+**Headline:** "Switching from Whisk? Import everything in 60 seconds."
+
+**Subhead:** "Whisk is shutting down April 30. We've got you covered. Drag your export file, import your recipes, and get cooking."
+
+**CTA:** "Import from Whisk (Free)" → Upload form
+
+**SEO keywords:** Whisk alternative, Whisk shutdown, migrate from Whisk, Samsung Food alternative
+
+#### Metrics to Track
+
+- Landing page visits (organic + Reddit/social)
+- Upload attempts
+- Successful imports (# users, # recipes)
+- Conversion: Whisk import → active RecipeVault user
+- Social mentions: "Whisk alternative" + "RecipeVault"
+
+#### Implementation Estimate
+
+- **Research/reverse-engineer Whisk format:** 2-4 hours
+- **Backend parser + import logic:** 4-6 hours
+- **Frontend upload UI:** 2-3 hours
+- **Landing page copy + SEO:** 1-2 hours
+- **Testing with real Whisk data:** 2-3 hours
+- **Total:** ~15-18 hours (2-week sprint window)
+
+#### Design Decisions Needed
+
+- Batch vs. one-at-a-time import preview?
+- Image handling (Whisk URLs may expire post-shutdown)
+- Category/tag mapping (Whisk → RecipeVault taxonomy)
+- Duplicate detection (if user re-imports)
+
+**Next Step:** Kovacs + Vega — design the import flow and UI, then build.
+
+---
+
+### 5C. Paprika Import
 
 Paprika exports to `.paprikarecipes` format (gzipped JSON).
 
