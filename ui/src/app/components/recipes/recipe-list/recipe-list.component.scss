@@ -85,7 +85,7 @@
       transition: all var(--transition-fast);
 
       &.selected {
-        background-color: rgba(20, 184, 166, 0.2);
+        background-color: rgba(124, 152, 133, 0.2);
         border-color: var(--color-accent);
         color: var(--color-accent);
       }
@@ -230,7 +230,7 @@
       transition: all var(--transition-fast);
 
       mat-icon {
-        color: rgba(255, 255, 255, 0.8);
+        color: var(--color-text-high-emphasis);
         font-size: 20px;
         width: 20px;
         height: 20px;

@@ -137,7 +137,7 @@ mat-divider {
   align-items: center;
   gap: var(--space-md);
   padding: var(--space-sm) var(--space-md);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--color-overlay-subtle);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-lg);
 
@@ -222,7 +222,7 @@ mat-divider {
     transition: background-color var(--transition-fast);
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.04);
+      background-color: var(--color-overlay-subtle);
     }
 
     .check-circle {
@@ -237,7 +237,7 @@ mat-divider {
       line-height: 1.5;
 
       strong {
-        color: rgba(255, 255, 255, 0.87);
+        color: var(--color-text-high-emphasis);
       }
 
       em {

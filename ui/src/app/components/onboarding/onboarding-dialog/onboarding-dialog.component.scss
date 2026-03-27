@@ -37,7 +37,7 @@
   gap: var(--space-sm);
   padding: var(--space-md);
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-overlay-light);
   min-width: 90px;
 
   mat-icon {
@@ -49,7 +49,7 @@
 
   span {
     font-size: 12px;
-    color: #cbd5e1;
+    color: var(--color-text-secondary);
   }
 }
 
@@ -128,7 +128,7 @@
   align-items: center;
   padding: var(--space-sm) var(--space-sm);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-overlay-light);
   cursor: pointer;
   transition: background var(--transition-fast);
   min-height: 48px;
@@ -230,14 +230,14 @@
   gap: var(--space-md);
   padding: var(--space-md);
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-overlay-light);
   margin-bottom: var(--space-sm);
   cursor: pointer;
   transition: background var(--transition-fast);
   min-height: 48px;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--color-overlay-medium);
   }
 }
 
@@ -281,7 +281,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  color: #64748b;
+  color: var(--color-text-hint);
   font-size: 13px;
   margin-top: var(--space-sm);
 
@@ -308,7 +308,7 @@
 
 .ready-message {
   font-size: 16px;
-  color: #cbd5e1;
+  color: var(--color-text-secondary);
   margin-bottom: var(--space-xl);
   line-height: 1.6;
 }
@@ -326,9 +326,9 @@
   gap: var(--space-sm);
   padding: 10px var(--space-md);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-overlay-light);
   font-size: 13px;
-  color: #cbd5e1;
+  color: var(--color-text-secondary);
 
   mat-icon {
     font-size: 18px;
@@ -350,7 +350,7 @@
   width: 8px;
   height: 8px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-overlay-heavy);
   transition: background var(--transition-normal);
 
   &.active {
