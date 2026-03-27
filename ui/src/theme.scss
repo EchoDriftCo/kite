@@ -177,13 +177,24 @@ body {
 
 // --- Chips ---
 .mat-mdc-chip {
-  background-color: rgba(124, 152, 133, 0.2) !important;
-  color: var(--color-accent) !important;
+  background-color: rgba(124, 152, 133, 0.15) !important;
+  color: var(--color-accent-active) !important;
+  border: 1px solid rgba(124, 152, 133, 0.3);
   border-radius: 16px;
   
   &:hover {
-    background-color: rgba(124, 152, 133, 0.3) !important;
+    background-color: rgba(124, 152, 133, 0.25) !important;
   }
+
+  mat-icon {
+    color: var(--color-accent) !important;
+  }
+}
+
+.dark-theme .mat-mdc-chip {
+  background-color: rgba(124, 152, 133, 0.2) !important;
+  color: var(--color-accent) !important;
+  border-color: rgba(124, 152, 133, 0.3);
 }
 
 // --- Snackbar ---
