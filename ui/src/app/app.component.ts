@@ -10,6 +10,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from './services/auth.service';
 import { OnboardingService } from './services/onboarding.service';
 import { TourService } from './services/tour.service';
+import { ThemeService } from './services/theme.service';
 import { FeedbackButtonComponent } from './shared/components/feedback-button/feedback-button.component';
 import { InstallPromptComponent } from './shared/components/install-prompt/install-prompt.component';
 import { OnboardingDialogComponent } from './components/onboarding/onboarding-dialog/onboarding-dialog.component';
@@ -43,7 +44,8 @@ export class AppComponent implements OnInit {
     private authService: AuthService,
     private dialog: MatDialog,
     private onboardingService: OnboardingService,
-    private tourService: TourService
+    private tourService: TourService,
+    public themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
@@ -64,6 +66,10 @@ export class AppComponent implements OnInit {
 
   logout(): void {
     this.authService.signOut();
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggle();
   }
 
   private checkOnboarding(): void {

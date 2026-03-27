@@ -1,6 +1,6 @@
 <div class="login-page">
   <div class="login-container">
-    <img src="assets/logo/logo-lockup-dark.svg"
+    <img [src]="themeService.isDark() ? 'assets/logo/logo-lockup-dark.svg' : 'assets/logo/logo-lockup-light.svg'"
          alt="RecipeVault"
          class="logo-img"
          width="300"

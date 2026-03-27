@@ -110,7 +110,7 @@
   }
 
   .accent-icon {
-    color: #14b8a6;
+    color: var(--color-accent);
     font-size: 20px;
     width: 20px;
     height: 20px;
@@ -271,7 +271,7 @@
 }
 
 .done-icon {
-  color: #14b8a6;
+  color: var(--color-accent);
   font-size: 28px;
   width: 28px;
   height: 28px;
@@ -334,7 +334,7 @@
     font-size: 18px;
     width: 18px;
     height: 18px;
-    color: #14b8a6;
+    color: var(--color-accent);
   }
 }
 
