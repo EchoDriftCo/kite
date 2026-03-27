@@ -42,7 +42,7 @@ import { BetaInviteDialogComponent } from '../../../components/settings/beta-inv
       align-items: center;
       gap: 12px;
       padding: 10px 16px;
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(20, 184, 166, 0.1));
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(124, 152, 133, 0.1));
       border-bottom: 1px solid rgba(245, 158, 11, 0.3);
 
       > mat-icon {

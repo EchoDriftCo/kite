@@ -33,17 +33,17 @@ $kite-amber: (
   )
 );
 
-$kite-teal: (
-  50: #f0fdfa,
-  100: #ccfbf1,
-  200: #99f6e4,
-  300: #5eead4,
-  400: #2dd4bf,
-  500: #14b8a6,  // Secondary teal
-  600: #0d9488,
-  700: #0f766e,
-  800: #115e59,
-  900: #134e4a,
+$kite-sage: (
+  50: #f0f4f1,
+  100: #d9e4dc,
+  200: #c1d4c7,
+  300: #a8c4b2,
+  400: #8fa896,
+  500: #7c9885,  // Secondary sage green
+  600: #6b8574,
+  700: #5a7363,
+  800: #4a6052,
+  900: #3a4d42,
   contrast: (
     50: rgba(black, 0.87),
     100: rgba(black, 0.87),
@@ -85,7 +85,7 @@ $kite-slate: (
 
 // Create the theme palettes
 $kite-primary: mat.m2-define-palette($kite-amber, 500);
-$kite-accent: mat.m2-define-palette($kite-teal, 500);
+$kite-accent: mat.m2-define-palette($kite-sage, 500);
 $kite-warn: mat.m2-define-palette(mat.$m2-red-palette);
 
 // Create the dark theme
@@ -129,7 +129,7 @@ body {
 
 // --- Toolbar ---
 .mat-toolbar {
-  background-color: var(--color-bg-primary) !important;
+  background-color: var(--color-surface-default) !important;
   box-shadow: var(--shadow-2);
   height: 56px;
   padding: 0 var(--space-md);
@@ -142,7 +142,7 @@ body {
 
 // --- Form Fields ---
 .mat-mdc-form-field {
-  // Focused label color: teal, not orange (--mat-sys-primary leaks orange)
+  // Focused label color: sage green accent
   --mdc-filled-text-field-focus-label-text-color: var(--color-accent);
   --mdc-outlined-text-field-focus-label-text-color: var(--color-accent);
   --mdc-filled-text-field-focus-active-indicator-color: var(--color-accent);
@@ -153,12 +153,12 @@ body {
   --mdc-outlined-text-field-caret-color: var(--color-accent);
 
   .mat-mdc-text-field-wrapper {
-    background-color: rgba(51, 65, 85, 0.5);
+    background-color: var(--color-surface-hover);
     border-radius: var(--radius-md);
   }
 
   &.mat-focused .mat-mdc-text-field-wrapper {
-    background-color: rgba(51, 65, 85, 0.7);
+    background-color: var(--color-surface-active);
   }
 }
 
@@ -177,12 +177,12 @@ body {
 
 // --- Chips ---
 .mat-mdc-chip {
-  background-color: rgba(20, 184, 166, 0.2) !important;
+  background-color: rgba(124, 152, 133, 0.2) !important;
   color: var(--color-accent) !important;
   border-radius: 16px;
   
   &:hover {
-    background-color: rgba(20, 184, 166, 0.3) !important;
+    background-color: rgba(124, 152, 133, 0.3) !important;
   }
 }
 
@@ -226,7 +226,7 @@ body {
   }
   
   &.active {
-    background-color: rgba(20, 184, 166, 0.15) !important;
+    background-color: rgba(124, 152, 133, 0.15) !important;
     color: var(--color-accent) !important;
 
     mat-icon {
@@ -284,7 +284,7 @@ body {
   }
 }
 
-// Secondary (teal) stroked buttons
+// Secondary (sage green) stroked buttons
 .mat-mdc-outlined-button.mat-accent {
   border-radius: var(--radius-md);
   min-height: 40px;
@@ -294,11 +294,11 @@ body {
   transition: all var(--transition-fast);
 
   &:hover:not(:disabled) {
-    background-color: rgba(20, 184, 166, 0.08);
+    background-color: rgba(124, 152, 133, 0.08);
   }
 
   &:active:not(:disabled) {
-    background-color: rgba(20, 184, 166, 0.16);
+    background-color: rgba(124, 152, 133, 0.16);
   }
 }
 
@@ -307,11 +307,11 @@ body {
   transition: background-color var(--transition-fast);
 
   &:hover {
-    background-color: rgba(241, 245, 249, 0.08);
+    background-color: var(--color-surface-hover);
   }
 
   &:active {
-    background-color: rgba(241, 245, 249, 0.16);
+    background-color: var(--color-surface-active);
     transform: scale(0.95);
   }
 }
@@ -338,8 +338,8 @@ body {
     --mdc-secondary-navigation-tab-container-color: transparent;
     --mat-tab-header-inactive-label-text-color: var(--color-text-secondary);
     --mat-tab-header-active-label-text-color: var(--color-accent);
-    --mat-tab-header-inactive-ripple-color: rgba(20, 184, 166, 0.08);
-    --mat-tab-header-active-ripple-color: rgba(20, 184, 166, 0.12);
+    --mat-tab-header-inactive-ripple-color: rgba(124, 152, 133, 0.08);
+    --mat-tab-header-active-ripple-color: rgba(124, 152, 133, 0.12);
     color: var(--color-text-secondary);
 
     &.mdc-tab--active {

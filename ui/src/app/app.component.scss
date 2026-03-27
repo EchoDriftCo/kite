@@ -58,7 +58,7 @@
     }
 
     .active-link {
-      background: rgba(20, 184, 166, 0.15);
+      background: rgba(124, 152, 133, 0.15);
       border-radius: var(--radius-md);
       color: var(--color-accent);
 
@@ -110,7 +110,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  background-color: #1e293b;
+  background-color: var(--color-bg-secondary);
   word-wrap: break-word;
   overflow-wrap: break-word;
 }

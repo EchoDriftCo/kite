@@ -326,7 +326,7 @@ mat-divider {
       width: 32px;
       height: 32px;
       border-radius: var(--radius-full);
-      background-color: rgba(20, 184, 166, 0.15);
+      background-color: rgba(124, 152, 133, 0.15);
       border: 1px solid var(--color-accent);
       color: var(--color-accent);
       display: flex;
@@ -545,7 +545,7 @@ mat-expansion-panel-header mat-icon {
           color: var(--color-text-secondary);
           font-style: italic;
           padding: var(--space-sm) var(--space-sm);
-          background: rgba(255, 255, 255, 0.04);
+          background: var(--color-overlay-subtle);
           border-radius: var(--radius-sm);
           border-left: 3px solid var(--color-primary);
         }

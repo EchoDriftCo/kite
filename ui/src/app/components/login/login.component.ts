@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
+import { ThemeService } from '../../services/theme.service';
 import { SignUpDialogComponent } from './sign-up-dialog.component';
 
 @Component({
@@ -43,7 +44,8 @@ export class LoginComponent {
     private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    public themeService: ThemeService
   ) {
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
     
