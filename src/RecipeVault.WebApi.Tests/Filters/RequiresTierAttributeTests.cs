@@ -47,7 +47,9 @@ namespace RecipeVault.WebApi.Tests.Filters {
         }
 
         [Fact]
-        public async Task OnActionExecutionAsync_FreeUserAccessingPremium_Returns403() {
+        public async Task OnActionExecutionAsync_FreeUserAccessingPremium_AllowedDuringBeta() {
+            // During beta, all authenticated users have full access regardless of tier.
+            // TODO: Revert to 403 test when premium subscriptions launch.
             // Arrange
             var (context, subjectMock, serviceMock, uowMock) = CreateContext();
 
@@ -71,13 +73,9 @@ namespace RecipeVault.WebApi.Tests.Filters {
                 return Task.FromResult<ActionExecutedContext>(null);
             });
 
-            // Assert
-            nextCalled.ShouldBeFalse();
-            context.Result.ShouldBeOfType<ObjectResult>();
-            var result = (ObjectResult)context.Result;
-            result.StatusCode.ShouldBe(StatusCodes.Status403Forbidden);
-            var problem = (ProblemDetails)result.Value;
-            problem.Detail.ShouldBe("This feature requires a premium account");
+            // Assert — beta bypass: Free users are allowed through
+            nextCalled.ShouldBeTrue();
+            context.Result.ShouldBeNull();
         }
 
         [Fact]
