@@ -25,6 +25,8 @@ import { ResetPasswordComponent } from './components/login/reset-password.compon
 import { SharedRecipeComponent } from './components/recipes/shared-recipe/shared-recipe.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { FeaturesComponent } from './components/features/features.component';
+import { TermsComponent } from './components/legal/terms.component';
+import { PrivacyComponent } from './components/legal/privacy.component';
 import { authGuard } from './guards/auth.guard';
 import { unsavedChangesGuard } from './guards/unsaved-changes.guard';
 
@@ -34,6 +36,8 @@ export const routes: Routes = [
   { path: 'reset-password', component: RequestResetComponent },
   { path: 'update-password', component: ResetPasswordComponent },
   { path: 'features', component: FeaturesComponent },
+  { path: 'terms', component: TermsComponent },
+  { path: 'privacy', component: PrivacyComponent },
   { path: 'share/:token', component: SharedRecipeComponent },
   { path: 'join/:token', component: AcceptInviteComponent, canActivate: [authGuard] },
   { path: 'discover', component: DiscoverComponent, canActivate: [authGuard] },
