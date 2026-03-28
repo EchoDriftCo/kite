@@ -52,7 +52,7 @@ import { MatIconModule } from '@angular/material/icon';
         <p>We may update this policy. Significant changes will be communicated.</p>
 
         <h2>Section 12: Contact Us</h2>
-        <p>Email: <a href="mailto:privacy@myrecipevault.io">privacy@myrecipevault.io</a></p>
+        <p>Email: <a href="mailto:privacy&#64;myrecipevault.io">privacy&#64;myrecipevault.io</a></p>
 
         <p class="disclaimer">Disclaimer: This privacy policy is provided for informational purposes and does not constitute legal advice.</p>
 

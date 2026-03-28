@@ -73,7 +73,7 @@ import { MatIconModule } from '@angular/material/icon';
         <p>We may update these Terms. Continued use constitutes acceptance.</p>
 
         <h2>Section 18: Contact Us</h2>
-        <p>Email: <a href="mailto:legal@myrecipevault.io">legal@myrecipevault.io</a></p>
+        <p>Email: <a href="mailto:legal&#64;myrecipevault.io">legal&#64;myrecipevault.io</a></p>
 
         <p class="disclaimer">Disclaimer: These terms are provided for informational purposes and do not constitute legal advice.</p>
 
