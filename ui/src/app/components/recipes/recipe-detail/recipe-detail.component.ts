@@ -477,9 +477,9 @@ export class RecipeDetailComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result: SubstitutionDialogResult | undefined) => {
       if (result && result.forkedRecipeId) {
-        this.snackBar.open('Substitutions applied! Opening new recipe...', 'OK', { duration: 3000 });
-        // Navigate to the forked recipe
-        this.router.navigate(['/recipes', result.forkedRecipeId]);
+        this.snackBar.open('Substitutions applied! Opening in edit mode...', 'OK', { duration: 3000 });
+        // Navigate to the forked recipe in edit mode
+        this.router.navigate(['/recipes', result.forkedRecipeId, 'edit']);
       }
     });
   }
@@ -509,9 +509,8 @@ export class RecipeDetailComponent implements OnInit {
     
     this.recipeService.forkRecipe(this.recipeId, newTitle).subscribe({
       next: (forkedRecipe) => {
-        this.snackBar.open('Recipe forked successfully!', 'View', { duration: 5000 }).onAction().subscribe(() => {
-          this.router.navigate(['/recipes', forkedRecipe.recipeResourceId]);
-        });
+        this.snackBar.open('Recipe forked! Opening in edit mode...', 'Close', { duration: 3000 });
+        this.router.navigate(['/recipes', forkedRecipe.recipeResourceId, 'edit']);
       },
       error: (err) => {
         this.error = err.message || 'Failed to fork recipe';
