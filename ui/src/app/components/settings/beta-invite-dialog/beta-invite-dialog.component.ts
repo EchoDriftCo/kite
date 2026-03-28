@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BetaInviteCodeService } from '../../../services/beta-invite-code.service';
 import { AuthService } from '../../../services/auth.service';
+import { WaitlistService } from '../../../services/waitlist.service';
 
 @Component({
   selector: 'app-beta-invite-dialog',
@@ -130,11 +130,39 @@ import { AuthService } from '../../../services/auth.service';
       }
     </mat-dialog-actions>
 
-    <!-- Request Access Link -->
+    <!-- Request Access -->
     @if (!redeemed) {
       <div class="request-access">
-        <span>Don't have a code?</span>
-        <a (click)="goToFeatures()">Request access →</a>
+        @if (!showRequestForm) {
+          <span>Don't have a code?</span>
+          <a (click)="showRequestForm = true">Request access →</a>
+        } @else if (requestSent) {
+          <div class="request-success">
+            <mat-icon>check_circle</mat-icon>
+            <span>You're on the list! We'll send you an invite code soon.</span>
+          </div>
+        } @else {
+          <p class="request-label">Enter your email to join the waitlist:</p>
+          <div class="request-form">
+            <mat-form-field appearance="outline" class="request-email">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" [(ngModel)]="requestEmail" 
+                     placeholder="you&#64;example.com" [disabled]="requestSending">
+            </mat-form-field>
+            <button mat-raised-button color="primary" 
+                    [disabled]="!requestEmail || requestSending"
+                    (click)="submitRequest()">
+              @if (requestSending) {
+                <mat-spinner diameter="18"></mat-spinner>
+              } @else {
+                Join Waitlist
+              }
+            </button>
+          </div>
+          @if (requestError) {
+            <p class="request-error">{{ requestError }}</p>
+          }
+        }
       </div>
     }
   `,
@@ -206,10 +234,10 @@ import { AuthService } from '../../../services/auth.service';
     }
 
     .request-access {
-      text-align: center;
       padding: 12px 24px 16px;
       font-size: 13px;
       color: var(--color-text-secondary);
+      text-align: center;
 
       a {
         color: var(--color-primary);
@@ -222,6 +250,46 @@ import { AuthService } from '../../../services/auth.service';
           text-decoration: underline;
         }
       }
+    }
+
+    .request-label {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      margin: 0 0 8px;
+      text-align: center;
+    }
+
+    .request-form {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .request-email {
+      flex: 1;
+      font-size: 13px;
+    }
+
+    .request-success {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--color-success, #059669);
+      font-size: 13px;
+      justify-content: center;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    .request-error {
+      color: var(--color-error, #dc2626);
+      font-size: 12px;
+      margin: 4px 0 0;
+      text-align: center;
     }
 
     @media (max-width: 480px) {
@@ -246,11 +314,17 @@ export class BetaInviteDialogComponent {
   redeemed = false;
   error = '';
 
+  showRequestForm = false;
+  requestEmail = '';
+  requestSending = false;
+  requestSent = false;
+  requestError = '';
+
   constructor(
     public dialogRef: MatDialogRef<BetaInviteDialogComponent>,
     private betaInviteCodeService: BetaInviteCodeService,
     private authService: AuthService,
-    private router: Router
+    private waitlistService: WaitlistService
   ) {}
 
   get fullCode(): string {
@@ -339,8 +413,29 @@ export class BetaInviteDialogComponent {
     });
   }
 
-  goToFeatures(): void {
-    this.dialogRef.close(false);
-    this.router.navigate(['/features']);
+  submitRequest(): void {
+    if (!this.requestEmail || this.requestSending) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.requestEmail)) {
+      this.requestError = 'Please enter a valid email address.';
+      return;
+    }
+
+    this.requestSending = true;
+    this.requestError = '';
+
+    this.waitlistService.joinWaitlist(this.requestEmail, 'beta-invite-dialog').subscribe({
+      next: () => {
+        this.requestSending = false;
+        this.requestSent = true;
+      },
+      error: (err) => {
+        this.requestSending = false;
+        this.requestError = err.status === 400
+          ? 'Please enter a valid email address.'
+          : 'Something went wrong. Please try again.';
+      }
+    });
   }
 }
