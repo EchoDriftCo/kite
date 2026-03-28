@@ -11,6 +11,7 @@ namespace RecipeVault.BootStrap.Installer {
             services.AddSingletonClassesBySuffix<RecipeMapper>("Mapper");
             services.AddScoped<ICookingLogFacade, CookingLogFacade>();
             services.AddSingleton<CookingLogMapper>();
+            services.AddScoped<IPremiumWaitlistFacade, PremiumWaitlistFacade>();
         }
     }
 }
