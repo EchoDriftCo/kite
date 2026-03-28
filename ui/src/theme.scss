@@ -142,6 +142,11 @@ body {
 
 // --- Form Fields ---
 .mat-mdc-form-field {
+  // Input text color — must be explicit for both filled and outline variants
+  --mdc-filled-text-field-input-text-color: var(--color-text-primary);
+  --mdc-outlined-text-field-input-text-color: var(--color-text-primary);
+  --mdc-filled-text-field-input-text-placeholder-color: var(--color-text-hint);
+  --mdc-outlined-text-field-input-text-placeholder-color: var(--color-text-hint);
   // Focused label color: sage green accent
   --mdc-filled-text-field-focus-label-text-color: var(--color-accent);
   --mdc-outlined-text-field-focus-label-text-color: var(--color-accent);
