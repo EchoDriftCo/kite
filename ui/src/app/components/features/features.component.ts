@@ -1,8 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { WaitlistService } from '../../services/waitlist.service';
 
 interface Feature {
   name: string;
@@ -27,7 +32,11 @@ interface PricingTier {
   imports: [
     CommonModule,
     RouterModule,
+    FormsModule,
     MatButtonModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatProgressSpinnerModule,
     MatIconModule
   ],
   template: `
@@ -136,11 +145,12 @@ interface PricingTier {
               <span class="tier-period">{{ tier.period }}</span>
             </div>
             <p class="tier-description">{{ tier.description }}</p>
-            <button mat-raised-button color="primary" routerLink="/login">
+            <button mat-raised-button color="primary" (click)="openWaitlistModal()">
               {{ tier.ctaText }}
             </button>
           </div>
         </div>
+        <p class="waitlist-note">Premium launching soon. Join the waitlist to lock in early pricing.</p>
       </section>
 
       <!-- Footer CTA -->
@@ -150,6 +160,51 @@ interface PricingTier {
           Sign Up Free
         </button>
       </section>
+
+      <!-- Waitlist Modal Overlay -->
+      @if (showWaitlistModal()) {
+        <div class="modal-overlay" (click)="closeWaitlistModal()">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            @if (!waitlistSuccess()) {
+              <h2 class="modal-title">Join the Premium Waitlist</h2>
+              <p class="modal-subtitle">Be first to know when Premium launches. Early supporters get priority access.</p>
+              <form (ngSubmit)="submitWaitlist()" class="waitlist-form">
+                <mat-form-field appearance="outline" class="email-field">
+                  <mat-label>Email address</mat-label>
+                  <input matInput type="email" [(ngModel)]="waitlistEmail" name="email" 
+                         required email placeholder="you@example.com"
+                         [disabled]="waitlistSubmitting()">
+                </mat-form-field>
+                @if (waitlistError()) {
+                  <p class="error-text">{{ waitlistError() }}</p>
+                }
+                <div class="modal-actions">
+                  <button mat-button type="button" (click)="closeWaitlistModal()" [disabled]="waitlistSubmitting()">
+                    Cancel
+                  </button>
+                  <button mat-raised-button color="primary" type="submit" 
+                          [disabled]="waitlistSubmitting() || !waitlistEmail">
+                    @if (waitlistSubmitting()) {
+                      <mat-spinner diameter="20"></mat-spinner>
+                    } @else {
+                      Notify Me
+                    }
+                  </button>
+                </div>
+              </form>
+            } @else {
+              <div class="success-content">
+                <mat-icon class="success-icon">check_circle</mat-icon>
+                <h2 class="modal-title">You're on the list!</h2>
+                <p class="modal-subtitle">We'll notify you when Premium launches. Thanks for your interest.</p>
+                <button mat-raised-button color="primary" (click)="closeWaitlistModal()">
+                  Got it
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -613,6 +668,83 @@ interface PricingTier {
       min-width: 200px;
       height: 48px;
     }
+
+    .waitlist-note {
+      text-align: center;
+      font: var(--font-body);
+      color: var(--color-text-secondary);
+      font-style: italic;
+      margin-top: var(--space-lg);
+    }
+
+    // Waitlist Modal
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: var(--space-md);
+    }
+
+    .modal-content {
+      background: var(--color-surface-default);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+      max-width: 440px;
+      width: 100%;
+      box-shadow: var(--shadow-3);
+    }
+
+    .modal-title {
+      font: var(--font-h3);
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-sm);
+    }
+
+    .modal-subtitle {
+      font: var(--font-body);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-lg);
+    }
+
+    .email-field {
+      width: 100%;
+    }
+
+    .error-text {
+      color: var(--color-error, #dc2626);
+      font: var(--font-body-small);
+      margin-top: calc(var(--space-xs) * -1);
+      margin-bottom: var(--space-md);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+
+    .success-content {
+      text-align: center;
+      padding: var(--space-lg) 0;
+    }
+
+    .success-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      color: var(--color-success, #059669);
+      margin-bottom: var(--space-md);
+    }
+
+    .success-content button {
+      margin-top: var(--space-lg);
+      min-width: 120px;
+    }
   `]
 })
 export class FeaturesComponent {
@@ -649,7 +781,7 @@ export class FeaturesComponent {
       price: '$2.99',
       period: '/month',
       description: 'Most flexible',
-      ctaText: 'Get Started'
+      ctaText: 'Join Premium Waitlist'
     },
     {
       name: 'Annual',
@@ -657,14 +789,63 @@ export class FeaturesComponent {
       period: '/year',
       description: 'Save 17%',
       recommended: true,
-      ctaText: 'Get Started'
+      ctaText: 'Join Premium Waitlist'
     },
     {
       name: 'Lifetime',
       price: '$79.99',
       period: 'one-time',
       description: 'Pay once, own forever',
-      ctaText: 'Get Started'
+      ctaText: 'Join Premium Waitlist'
     }
   ];
+
+  // Waitlist modal state
+  showWaitlistModal = signal(false);
+  waitlistEmail = '';
+  waitlistSubmitting = signal(false);
+  waitlistSuccess = signal(false);
+  waitlistError = signal('');
+
+  constructor(private waitlistService: WaitlistService) {}
+
+  openWaitlistModal(): void {
+    this.waitlistEmail = '';
+    this.waitlistError.set('');
+    this.waitlistSuccess.set(false);
+    this.waitlistSubmitting.set(false);
+    this.showWaitlistModal.set(true);
+  }
+
+  closeWaitlistModal(): void {
+    this.showWaitlistModal.set(false);
+  }
+
+  submitWaitlist(): void {
+    if (!this.waitlistEmail || this.waitlistSubmitting()) return;
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.waitlistEmail)) {
+      this.waitlistError.set('Please enter a valid email address.');
+      return;
+    }
+
+    this.waitlistSubmitting.set(true);
+    this.waitlistError.set('');
+
+    this.waitlistService.joinWaitlist(this.waitlistEmail, 'features-page').subscribe({
+      next: () => {
+        this.waitlistSubmitting.set(false);
+        this.waitlistSuccess.set(true);
+      },
+      error: (err) => {
+        this.waitlistSubmitting.set(false);
+        this.waitlistError.set(
+          err.status === 400 ? 'Please enter a valid email address.' :
+          'Something went wrong. Please try again.'
+        );
+      }
+    });
+  }
 }
