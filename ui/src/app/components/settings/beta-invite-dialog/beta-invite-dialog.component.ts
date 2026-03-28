@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -128,6 +129,14 @@ import { AuthService } from '../../../services/auth.service';
         </button>
       }
     </mat-dialog-actions>
+
+    <!-- Request Access Link -->
+    @if (!redeemed) {
+      <div class="request-access">
+        <span>Don't have a code?</span>
+        <a (click)="goToFeatures()">Request access →</a>
+      </div>
+    }
   `,
   styles: [`
     h2 {
@@ -142,7 +151,7 @@ import { AuthService } from '../../../services/auth.service';
 
     .description {
       margin: 0 0 20px;
-      color: #94a3b8;
+      color: var(--color-text-secondary);
       font-size: 14px;
     }
 
@@ -167,7 +176,7 @@ import { AuthService } from '../../../services/auth.service';
 
     .separator {
       font-size: 24px;
-      color: #64748b;
+      color: var(--color-text-hint);
       margin-bottom: 22px;
     }
 
@@ -179,11 +188,11 @@ import { AuthService } from '../../../services/auth.service';
       font-size: 14px;
 
       &.error {
-        color: #ef4444;
+        color: var(--color-error, #ef4444);
       }
 
       &.success {
-        color: #22c55e;
+        color: var(--color-success, #22c55e);
       }
 
       &.redeemed {
@@ -194,6 +203,25 @@ import { AuthService } from '../../../services/auth.service';
 
     mat-dialog-actions button mat-spinner {
       display: inline-block;
+    }
+
+    .request-access {
+      text-align: center;
+      padding: 12px 24px 16px;
+      font-size: 13px;
+      color: var(--color-text-secondary);
+
+      a {
+        color: var(--color-primary);
+        cursor: pointer;
+        font-weight: 500;
+        margin-left: 4px;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
     }
 
     @media (max-width: 480px) {
@@ -221,7 +249,8 @@ export class BetaInviteDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<BetaInviteDialogComponent>,
     private betaInviteCodeService: BetaInviteCodeService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   get fullCode(): string {
@@ -308,5 +337,10 @@ export class BetaInviteDialogComponent {
         this.error = err.error?.message || err.error?.detail || 'Failed to redeem code';
       }
     });
+  }
+
+  goToFeatures(): void {
+    this.dialogRef.close(false);
+    this.router.navigate(['/features']);
   }
 }

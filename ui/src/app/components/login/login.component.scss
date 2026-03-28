@@ -177,6 +177,23 @@
   }
 }
 
+.features-link {
+  text-align: center;
+  margin-top: var(--space-sm);
+  margin-bottom: 0;
+  font: var(--font-body-small);
+
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
