@@ -61,6 +61,10 @@
     align-items: center;
     gap: var(--space-sm);
 
+    button {
+      color: var(--color-text-primary);
+    }
+
     .filter-count {
       color: var(--color-accent);
       font-weight: 500;

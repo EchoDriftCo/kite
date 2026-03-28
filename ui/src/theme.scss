@@ -177,26 +177,44 @@ body {
 
 // --- Chips ---
 .mat-mdc-chip {
+  --mdc-chip-elevated-container-color: rgba(124, 152, 133, 0.1);
+  --mdc-chip-label-text-color: #4a6354;
+  --mdc-chip-with-icon-icon-color: #4a6354;
+  --mdc-chip-elevated-selected-container-color: rgba(124, 152, 133, 0.2);
+  --mdc-chip-selected-label-text-color: #4a6354;
+  --mat-chip-trailing-action-state-layer-color: #4a6354;
+  --mat-chip-selected-trailing-action-state-layer-color: #4a6354;
   background-color: rgba(124, 152, 133, 0.1) !important;
-  color: #4a6354 !important; // Dark sage — WCAG AA on light bg
+  color: #4a6354 !important;
   border: 1px solid rgba(124, 152, 133, 0.35);
   border-radius: 16px;
+
+  .mdc-evolution-chip__text-label {
+    color: #4a6354 !important;
+  }
+
+  .mat-icon, mat-icon, .mdc-evolution-chip__icon {
+    color: #4a6354 !important;
+  }
   
   &:hover {
     background-color: rgba(124, 152, 133, 0.2) !important;
   }
-
-  mat-icon {
-    color: #4a6354 !important;
-  }
 }
 
 .dark-theme .mat-mdc-chip {
+  --mdc-chip-elevated-container-color: rgba(124, 152, 133, 0.2);
+  --mdc-chip-label-text-color: var(--color-accent);
+  --mdc-chip-with-icon-icon-color: var(--color-accent);
   background-color: rgba(124, 152, 133, 0.2) !important;
   color: var(--color-accent) !important;
   border-color: rgba(124, 152, 133, 0.3);
 
-  mat-icon {
+  .mdc-evolution-chip__text-label {
+    color: var(--color-accent) !important;
+  }
+
+  .mat-icon, mat-icon, .mdc-evolution-chip__icon {
     color: var(--color-accent) !important;
   }
 }
