@@ -343,8 +343,24 @@ body {
 }
 
 // --- Slide Toggle ---
-.mat-mdc-slide-toggle .mdc-switch--selected .mdc-switch__track::after {
-  background-color: var(--color-accent) !important;
+.mat-mdc-slide-toggle {
+  // Unselected state
+  .mdc-switch--unselected .mdc-switch__track::before {
+    background-color: var(--color-border-default) !important;
+  }
+  .mdc-switch--unselected .mdc-switch__handle::after {
+    background-color: var(--color-text-hint) !important;
+  }
+  .mdc-switch--unselected .mdc-switch__icon {
+    fill: var(--color-text-hint) !important;
+  }
+  // Selected state
+  .mdc-switch--selected .mdc-switch__track::after {
+    background-color: var(--color-accent) !important;
+  }
+  .mdc-switch--selected .mdc-switch__handle::after {
+    background-color: #ffffff !important;
+  }
 }
 
 // --- Tabs ---
