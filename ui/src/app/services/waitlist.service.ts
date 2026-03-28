@@ -18,7 +18,7 @@ export class WaitlistService {
 
   joinWaitlist(email: string, source: string = 'features-page'): Observable<WaitlistResponse> {
     return this.http.post<WaitlistResponse>(
-      `${this.baseUrl}/api/v1/waitlist`,
+      `${this.baseUrl}/waitlist`,
       { email, source },
       { headers: { 'Content-Type': 'application/json' } }
     );
