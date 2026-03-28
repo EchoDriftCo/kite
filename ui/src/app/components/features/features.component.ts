@@ -206,6 +206,26 @@ interface PricingTier {
       padding: var(--space-lg);
       box-shadow: var(--shadow-3);
       color: #1a2230;
+      position: relative;
+
+      // White overlay — lightens the sage end for better text contrast
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, 
+          rgba(255, 255, 255, 0.05) 0%, 
+          rgba(255, 255, 255, 0.2) 100%
+        );
+        border-radius: var(--radius-xl);
+        pointer-events: none;
+      }
+
+      // Ensure all content sits above the overlay
+      > * {
+        position: relative;
+        z-index: 1;
+      }
 
       @media (min-width: 768px) {
         padding: var(--space-xl);
