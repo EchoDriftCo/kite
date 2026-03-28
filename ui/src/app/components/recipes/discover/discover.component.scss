@@ -209,12 +209,39 @@
 
       mat-chip {
         font-size: 0.75rem;
+        --mdc-chip-label-text-color: #4a6354;
+        --mdc-chip-with-icon-icon-color: #4a6354;
+        --mdc-chip-elevated-container-color: rgba(124, 152, 133, 0.1);
+        color: #4a6354 !important;
+        background-color: rgba(124, 152, 133, 0.1) !important;
+        border: 1px solid rgba(124, 152, 133, 0.35);
 
         mat-icon {
           font-size: 16px;
           width: 16px;
           height: 16px;
           margin-right: var(--space-xs);
+          color: #4a6354 !important;
+        }
+
+        ::ng-deep .mdc-evolution-chip__text-label {
+          color: #4a6354 !important;
+        }
+      }
+
+      :host-context(.dark-theme) mat-chip {
+        --mdc-chip-label-text-color: var(--color-accent);
+        --mdc-chip-with-icon-icon-color: var(--color-accent);
+        color: var(--color-accent) !important;
+        background-color: rgba(124, 152, 133, 0.2) !important;
+        border-color: rgba(124, 152, 133, 0.3);
+
+        mat-icon {
+          color: var(--color-accent) !important;
+        }
+
+        ::ng-deep .mdc-evolution-chip__text-label {
+          color: var(--color-accent) !important;
         }
       }
 
