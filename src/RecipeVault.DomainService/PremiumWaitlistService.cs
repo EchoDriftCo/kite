@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -31,6 +33,12 @@ namespace RecipeVault.DomainService {
 
             logger.LogInformation("New waitlist signup: {Email} from {Source}", email, source);
             return entry;
+        }
+
+        public async Task<List<PremiumWaitlist>> GetAllAsync() {
+            return await db.PremiumWaitlists
+                .OrderByDescending(w => w.CreatedDate)
+                .ToListAsync();
         }
     }
 }

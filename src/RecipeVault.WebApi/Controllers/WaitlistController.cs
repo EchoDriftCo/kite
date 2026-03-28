@@ -1,9 +1,12 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RecipeVault.Dto;
 using RecipeVault.Facade;
+using RecipeVault.WebApi.Filters;
 using RecipeVault.WebApi.Models.Requests;
 using RecipeVault.WebApi.Models.Responses;
 
@@ -39,6 +42,18 @@ namespace RecipeVault.WebApi.Controllers {
                 Message = "You're on the list! We'll notify you when Premium launches.",
                 ResourceId = result.PremiumWaitlistResourceId
             });
+        }
+
+        /// <summary>
+        /// List all waitlist signups (Admin only)
+        /// </summary>
+        [HttpGet("")]
+        [Authorize]
+        [AdminOnly]
+        [ProducesResponseType(typeof(List<PremiumWaitlistDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<PremiumWaitlistDto>>> GetAll() {
+            var results = await facade.GetAllAsync();
+            return Ok(results);
         }
     }
 }

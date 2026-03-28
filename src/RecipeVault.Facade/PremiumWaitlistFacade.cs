@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using RecipeVault.Domain.Entities;
 using RecipeVault.DomainService;
@@ -14,6 +16,11 @@ namespace RecipeVault.Facade {
         public async Task<PremiumWaitlistDto> JoinWaitlistAsync(string email, string source) {
             var entry = await service.JoinWaitlistAsync(email, source);
             return MapToDto(entry);
+        }
+
+        public async Task<List<PremiumWaitlistDto>> GetAllAsync() {
+            var entries = await service.GetAllAsync();
+            return entries.Select(MapToDto).ToList();
         }
 
         private static PremiumWaitlistDto MapToDto(PremiumWaitlist entity) {
