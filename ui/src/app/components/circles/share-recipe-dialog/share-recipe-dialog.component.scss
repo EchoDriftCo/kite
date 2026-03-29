@@ -23,19 +23,19 @@ mat-dialog-content {
 .empty-state {
   text-align: center;
   padding: var(--space-xl) var(--space-md);
-  color: #757575;
+  color: var(--mat-sys-on-surface-variant, #757575);
 }
 
 .circles-list {
   .help-text {
-    color: #616161;
+    color: var(--mat-sys-on-surface-variant, #616161);
     margin: 0 0 var(--space-md) 0;
     font-size: 14px;
   }
 
   .circle-item {
     padding: var(--space-sm) 0;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
 
     &:last-child {
       border-bottom: none;
@@ -49,10 +49,11 @@ mat-dialog-content {
       .circle-name {
         font-weight: 500;
         margin-bottom: 2px;
+        color: var(--mat-sys-on-surface, inherit);
       }
 
       .circle-description {
-        color: #757575;
+        color: var(--mat-sys-on-surface-variant, #757575);
         font-size: 12px;
       }
     }
