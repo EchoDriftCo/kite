@@ -51,8 +51,8 @@ export class NutritionPanelComponent implements OnInit {
       error: (err) => {
         console.error('Error loading nutrition:', err);
         this.loading = false;
-        // Not found is okay - just means it hasn't been analyzed yet
-        if (err.status !== 404) {
+        // 404 = not analyzed yet, 401/403 = auth/tier issue (shouldn't happen if gated)
+        if (err.status !== 404 && err.status !== 401 && err.status !== 403) {
           this.error = 'Failed to load nutrition data';
         }
       }
