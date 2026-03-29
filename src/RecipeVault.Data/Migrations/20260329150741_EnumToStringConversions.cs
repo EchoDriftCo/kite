@@ -20,7 +20,8 @@ namespace RecipeVault.Data.Migrations
             migrationBuilder.Sql(@"ALTER TABLE public.""Unit"" ALTER COLUMN ""Type"" TYPE varchar(50) USING CASE ""Type"" WHEN 1 THEN 'Volume' WHEN 2 THEN 'Weight' WHEN 3 THEN 'Count' WHEN 4 THEN 'Descriptive' ELSE 'Volume' END;");
 
             // Tag.SourceType (nullable): 1=Family, 2=Chef, 3=Restaurant, 4=Cookbook, 5=Website, 6=Original
-            migrationBuilder.Sql(@"ALTER TABLE public.""Tag"" ALTER COLUMN ""SourceType"" TYPE varchar(50) USING CASE ""SourceType"" WHEN 1 THEN 'Family' WHEN 2 THEN 'Chef' WHEN 3 THEN 'Restaurant' WHEN 4 THEN 'Cookbook' WHEN 5 THEN 'Website' WHEN 6 THEN 'Original' ELSE NULL END;");
+            // Only convert if column exists (may not be present in all environments)
+            migrationBuilder.Sql(@"DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='Tag' AND column_name='SourceType') THEN EXECUTE 'ALTER TABLE public.""Tag"" ALTER COLUMN ""SourceType"" TYPE varchar(50) USING CASE ""SourceType"" WHEN 1 THEN ''Family'' WHEN 2 THEN ''Chef'' WHEN 3 THEN ''Restaurant'' WHEN 4 THEN ''Cookbook'' WHEN 5 THEN ''Website'' WHEN 6 THEN ''Original'' ELSE NULL END'; END IF; END $$;");
 
             // Tag.Category: 1=Dietary, 2=Cuisine, 3=MealType, 4=Source, 5=Custom
             migrationBuilder.Sql(@"ALTER TABLE public.""Tag"" ALTER COLUMN ""Category"" TYPE varchar(50) USING CASE ""Category"" WHEN 1 THEN 'Dietary' WHEN 2 THEN 'Cuisine' WHEN 3 THEN 'MealType' WHEN 4 THEN 'Source' WHEN 5 THEN 'Custom' ELSE 'Custom' END;");
@@ -63,7 +64,7 @@ namespace RecipeVault.Data.Migrations
             // Note: this loses the string values and maps back to ordinal positions
             migrationBuilder.Sql(@"ALTER TABLE public.""UserAccount"" ALTER COLUMN ""AccountTier"" TYPE integer USING CASE ""AccountTier"" WHEN 'Free' THEN 0 WHEN 'Premium' THEN 1 WHEN 'Beta' THEN 2 ELSE 0 END;");
             migrationBuilder.Sql(@"ALTER TABLE public.""Unit"" ALTER COLUMN ""Type"" TYPE integer USING CASE ""Type"" WHEN 'Volume' THEN 1 WHEN 'Weight' THEN 2 WHEN 'Count' THEN 3 WHEN 'Descriptive' THEN 4 ELSE 1 END;");
-            migrationBuilder.Sql(@"ALTER TABLE public.""Tag"" ALTER COLUMN ""SourceType"" TYPE integer USING CASE ""SourceType"" WHEN 'Family' THEN 1 WHEN 'Chef' THEN 2 WHEN 'Restaurant' THEN 3 WHEN 'Cookbook' THEN 4 WHEN 'Website' THEN 5 WHEN 'Original' THEN 6 ELSE NULL END;");
+            migrationBuilder.Sql(@"DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='Tag' AND column_name='SourceType') THEN EXECUTE 'ALTER TABLE public.""Tag"" ALTER COLUMN ""SourceType"" TYPE integer USING CASE ""SourceType"" WHEN ''Family'' THEN 1 WHEN ''Chef'' THEN 2 WHEN ''Restaurant'' THEN 3 WHEN ''Cookbook'' THEN 4 WHEN ''Website'' THEN 5 WHEN ''Original'' THEN 6 ELSE NULL END'; END IF; END $$;");
             migrationBuilder.Sql(@"ALTER TABLE public.""Tag"" ALTER COLUMN ""Category"" TYPE integer USING CASE ""Category"" WHEN 'Dietary' THEN 1 WHEN 'Cuisine' THEN 2 WHEN 'MealType' THEN 3 WHEN 'Source' THEN 4 WHEN 'Custom' THEN 5 ELSE 5 END;");
             migrationBuilder.Sql(@"ALTER TABLE public.""RecipeTag"" ALTER COLUMN ""NormalizedEntityType"" TYPE integer USING CASE ""NormalizedEntityType"" WHEN 'Family' THEN 1 WHEN 'Chef' THEN 2 WHEN 'Restaurant' THEN 3 WHEN 'Cookbook' THEN 4 WHEN 'Website' THEN 5 WHEN 'Original' THEN 6 ELSE NULL END;");
             migrationBuilder.Sql(@"ALTER TABLE public.""MealPlanEntry"" ALTER COLUMN ""MealSlot"" TYPE integer USING CASE ""MealSlot"" WHEN 'Breakfast' THEN 1 WHEN 'Lunch' THEN 2 WHEN 'Dinner' THEN 3 WHEN 'Snack' THEN 4 ELSE 3 END;");
