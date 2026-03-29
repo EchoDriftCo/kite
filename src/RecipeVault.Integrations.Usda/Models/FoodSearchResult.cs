@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace RecipeVault.Integrations.Usda.Models {
     public class FoodSearchResponse {
         [JsonPropertyName("foods")]
-        public List<FoodSearchResult> Foods { get; set; }
+        public List<FoodSearchResult>? Foods { get; set; }
 
         [JsonPropertyName("totalHits")]
         public int TotalHits { get; set; }
@@ -15,16 +15,16 @@ namespace RecipeVault.Integrations.Usda.Models {
         public int FdcId { get; set; }
 
         [JsonPropertyName("description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [JsonPropertyName("dataType")]
-        public string DataType { get; set; }
+        public string? DataType { get; set; }
 
         [JsonPropertyName("brandOwner")]
-        public string BrandOwner { get; set; }
+        public string? BrandOwner { get; set; }
 
         [JsonPropertyName("foodNutrients")]
-        public List<FoodNutrient> FoodNutrients { get; set; }
+        public List<FoodNutrient>? FoodNutrients { get; set; }
     }
 
     public class FoodNutrient {
@@ -32,13 +32,13 @@ namespace RecipeVault.Integrations.Usda.Models {
         public int NutrientId { get; set; }
 
         [JsonPropertyName("nutrientName")]
-        public string NutrientName { get; set; }
+        public string? NutrientName { get; set; }
 
         [JsonPropertyName("nutrientNumber")]
-        public string NutrientNumber { get; set; }
+        public string? NutrientNumber { get; set; }
 
         [JsonPropertyName("unitName")]
-        public string UnitName { get; set; }
+        public string? UnitName { get; set; }
 
         [JsonPropertyName("value")]
         public decimal Value { get; set; }

@@ -24,7 +24,7 @@ namespace RecipeVault.Integrations.Usda {
             return !string.IsNullOrWhiteSpace(configuration.ApiKey);
         }
 
-        public async Task<FoodSearchResponse> SearchFoodsAsync(string query, int pageSize = 10) {
+        public async Task<FoodSearchResponse?> SearchFoodsAsync(string query, int pageSize = 10) {
             if (!IsAvailable()) {
                 logger.LogWarning("USDA API key not configured");
                 return new FoodSearchResponse { Foods = new System.Collections.Generic.List<FoodSearchResult>(), TotalHits = 0 };
@@ -57,7 +57,7 @@ namespace RecipeVault.Integrations.Usda {
             }
         }
 
-        public async Task<FoodDetails> GetFoodDetailsAsync(int fdcId) {
+        public async Task<FoodDetails?> GetFoodDetailsAsync(int fdcId) {
             if (!IsAvailable()) {
                 logger.LogWarning("USDA API key not configured");
                 return null;

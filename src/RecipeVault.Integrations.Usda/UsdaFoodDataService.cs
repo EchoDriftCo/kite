@@ -63,7 +63,7 @@ namespace RecipeVault.Integrations.Usda {
 
         public async Task<List<FoodSearchResult>> SearchWithBestMatchAsync(string ingredientText, int maxResults = 5) {
             var searchResponse = await SearchFoodsAsync(ingredientText, maxResults);
-            return searchResponse.Foods.Take(maxResults).ToList();
+            return (searchResponse?.Foods ?? new List<FoodSearchResult>()).Take(maxResults).ToList();
         }
 
         // Mock data for development/testing
