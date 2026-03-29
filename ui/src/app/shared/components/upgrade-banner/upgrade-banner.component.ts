@@ -115,11 +115,11 @@ export class UpgradeBannerComponent implements OnInit, OnDestroy {
         return;
       }
 
-      // Fetch server-side account state to check beta code redemption and tier
+      // Fetch server-side account state to check tier
+      // Only show banner for Free tier users - tier matters, not how they got there
       this.userAccountService.getAccount().subscribe({
         next: (account) => {
-          this.showBanner = !account.betaCodeRedeemedDate
-            && account.accountTier === 'Free';
+          this.showBanner = account.accountTier === 'Free';
         },
         error: () => {
           // Fallback to JWT tier if backend is unreachable
