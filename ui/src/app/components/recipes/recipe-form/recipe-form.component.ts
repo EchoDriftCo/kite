@@ -196,33 +196,57 @@ export class RecipeFormComponent implements OnInit {
 
   moveIngredientUp(index: number) {
     if (index === 0) return;
-    const ingredient = this.ingredients.at(index);
-    this.ingredients.removeAt(index);
-    this.ingredients.insert(index - 1, ingredient);
+    const currentControl = this.ingredients.at(index);
+    const prevControl = this.ingredients.at(index - 1);
+    if (!currentControl || !prevControl) return;
+    
+    // Swap values instead of removing/inserting (prevents control destruction)
+    const currentValue = currentControl.value;
+    const prevValue = prevControl.value;
+    currentControl.patchValue(prevValue);
+    prevControl.patchValue(currentValue);
     this.updateIngredientSortOrders();
   }
 
   moveIngredientDown(index: number) {
     if (index === this.ingredients.length - 1) return;
-    const ingredient = this.ingredients.at(index);
-    this.ingredients.removeAt(index);
-    this.ingredients.insert(index + 1, ingredient);
+    const currentControl = this.ingredients.at(index);
+    const nextControl = this.ingredients.at(index + 1);
+    if (!currentControl || !nextControl) return;
+    
+    // Swap values instead of removing/inserting (prevents control destruction)
+    const currentValue = currentControl.value;
+    const nextValue = nextControl.value;
+    currentControl.patchValue(nextValue);
+    nextControl.patchValue(currentValue);
     this.updateIngredientSortOrders();
   }
 
   moveInstructionUp(index: number) {
     if (index === 0) return;
-    const instruction = this.instructions.at(index);
-    this.instructions.removeAt(index);
-    this.instructions.insert(index - 1, instruction);
+    const currentControl = this.instructions.at(index);
+    const prevControl = this.instructions.at(index - 1);
+    if (!currentControl || !prevControl) return;
+    
+    // Swap values instead of removing/inserting (prevents control destruction)
+    const currentValue = currentControl.value;
+    const prevValue = prevControl.value;
+    currentControl.patchValue(prevValue);
+    prevControl.patchValue(currentValue);
     this.updateInstructionStepNumbers();
   }
 
   moveInstructionDown(index: number) {
     if (index === this.instructions.length - 1) return;
-    const instruction = this.instructions.at(index);
-    this.instructions.removeAt(index);
-    this.instructions.insert(index + 1, instruction);
+    const currentControl = this.instructions.at(index);
+    const nextControl = this.instructions.at(index + 1);
+    if (!currentControl || !nextControl) return;
+    
+    // Swap values instead of removing/inserting (prevents control destruction)
+    const currentValue = currentControl.value;
+    const nextValue = nextControl.value;
+    currentControl.patchValue(nextValue);
+    nextControl.patchValue(currentValue);
     this.updateInstructionStepNumbers();
   }
 

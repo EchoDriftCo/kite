@@ -220,13 +220,21 @@
 
   .instruction-field {
     flex: 1;
-    margin-bottom: -1.25em;
+    // Don't use negative margin — it clips error text below the textarea
+    // Allow mat-error to display with proper spacing
+    margin-bottom: var(--space-md);
 
     textarea {
       -webkit-appearance: none;
       touch-action: auto;
       -webkit-user-select: text;
       user-select: text;
+    }
+    
+    // Ensure error text has enough space to display
+    mat-error {
+      margin-top: var(--space-xs);
+      display: block;
     }
   }
 
