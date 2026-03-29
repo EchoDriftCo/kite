@@ -6,6 +6,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
+import { UserAccountService } from '../../../services/user-account.service';
 import { BetaInviteDialogComponent } from '../../../components/settings/beta-invite-dialog/beta-invite-dialog.component';
 
 @Component({
@@ -101,18 +102,30 @@ export class UpgradeBannerComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
+    private userAccountService: UserAccountService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
     this.dismissed = sessionStorage.getItem('upgrade-banner-dismissed') === 'true';
-    const hasRedeemedCode = localStorage.getItem('beta-code-redeemed') === 'true';
     this.sub = this.authService.currentUser$.subscribe(() => {
-      this.showBanner = !this.dismissed
-        && !hasRedeemedCode
-        && this.authService.isAuthenticated()
-        && this.authService.getUserTier() === 'Free';
+      if (!this.authService.isAuthenticated() || this.dismissed) {
+        this.showBanner = false;
+        return;
+      }
+
+      // Fetch server-side account state to check beta code redemption and tier
+      this.userAccountService.getAccount().subscribe({
+        next: (account) => {
+          this.showBanner = !account.betaCodeRedeemedDate
+            && account.accountTier === 'Free';
+        },
+        error: () => {
+          // Fallback to JWT tier if backend is unreachable
+          this.showBanner = this.authService.getUserTier() === 'Free';
+        }
+      });
     });
   }
 

@@ -1788,6 +1788,9 @@ namespace RecipeVault.Data.Migrations
                     b.Property<int>("AccountTier")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime?>("BetaCodeRedeemedDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone")
                         .HasComment("Date and time entity was created");

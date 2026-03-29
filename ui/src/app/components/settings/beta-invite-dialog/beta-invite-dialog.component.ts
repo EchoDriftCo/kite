@@ -401,10 +401,10 @@ export class BetaInviteDialogComponent {
       next: () => {
         this.redeeming = false;
         this.redeemed = true;
-        // Persist redemption state so the upgrade banner stays hidden
-        localStorage.setItem('beta-code-redeemed', 'true');
-        // Refresh session to pick up updated user tier
+        // Refresh session to pick up updated user tier in JWT
         this.authService.refreshSession().catch(() => {});
+        // Note: upgrade-banner now checks server-side BetaCodeRedeemedDate,
+        // so no localStorage flag needed. The banner will re-check on next render.
       },
       error: (err) => {
         this.redeeming = false;

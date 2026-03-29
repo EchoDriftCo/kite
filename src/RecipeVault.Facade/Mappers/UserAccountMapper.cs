@@ -13,7 +13,8 @@ namespace RecipeVault.Facade.Mappers {
                 SubjectId = entity.SubjectId,
                 AccountTier = entity.AccountTier.ToString(),
                 CreatedDate = entity.CreatedDate,
-                TierChangedDate = entity.TierChangedDate
+                TierChangedDate = entity.TierChangedDate,
+                BetaCodeRedeemedDate = entity.BetaCodeRedeemedDate
             };
         }
     }
