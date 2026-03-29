@@ -16,6 +16,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { RecipeService } from '../../../services/recipe.service';
+import { UserAccountService } from '../../../services/user-account.service';
 import { Recipe } from '../../../models/recipe.model';
 import { FractionPipe } from '../../../pipes/fraction.pipe';
 import { TagSelectorComponent } from '../../shared/tag-selector/tag-selector.component';
@@ -92,10 +93,14 @@ export class RecipeDetailComponent implements OnInit {
   loadingGroceryOptions = false;
   groceryError = '';
 
+  // Tier-based feature gating
+  isPremiumUser = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private recipeService: RecipeService,
+    private userAccountService: UserAccountService,
     private cookingLogService: CookingLogService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
@@ -106,11 +111,24 @@ export class RecipeDetailComponent implements OnInit {
 
   ngOnInit() {
     this.recipeId = this.route.snapshot.paramMap.get('id');
+    this.checkUserTier();
     
     if (this.recipeId) {
       this.loadRecipe();
       this.loadPersonalStats();
     }
+  }
+
+  checkUserTier() {
+    this.userAccountService.getAccount().subscribe({
+      next: (account) => {
+        this.isPremiumUser = account.accountTier !== 'Free';
+      },
+      error: () => {
+        // If unable to fetch account, assume free tier
+        this.isPremiumUser = false;
+      }
+    });
   }
 
   loadRecipe() {
