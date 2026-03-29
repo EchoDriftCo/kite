@@ -164,6 +164,29 @@ namespace RecipeVault.DomainService {
             return invite;
         }
 
+        public async Task<PagedList<CircleMember>> GetCircleMembersAsync(Guid circleResourceId, int pageNumber = 1, int pageSize = 50) {
+            using (logger.PushProperty("CircleResourceId", circleResourceId)) {
+                var circle = await GetCircleAsync(circleResourceId).ConfigureAwait(false);
+                
+                // Get active members, ordered by join date (most recent first)
+                var members = circle.Members
+                    .Where(m => m.Status == MemberStatus.Active)
+                    .OrderBy(m => m.JoinedDate ?? DateTime.MaxValue)
+                    .ToList();
+                
+                var result = new PagedList<CircleMember> {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalItems = members.Count,
+                    Items = members.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList()
+                };
+                
+                logger.LogInformation("Retrieved {Count} members for circle, page {PageNumber}/{Pages}", 
+                    result.Items.Count, pageNumber, (result.TotalItems + pageSize - 1) / pageSize);
+                return result;
+            }
+        }
+
         public async Task RemoveMemberAsync(Guid circleResourceId, Guid subjectId) {
             var circle = await GetCircleAsync(circleResourceId).ConfigureAwait(false);
             

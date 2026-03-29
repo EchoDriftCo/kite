@@ -144,6 +144,29 @@ namespace RecipeVault.WebApi.Controllers {
         }
 
         /// <summary>
+        /// Get members of a circle
+        /// </summary>
+        /// <param name="id">the resource id of the circle</param>
+        /// <param name="pageNumber">page number</param>
+        /// <param name="pageSize">page size</param>
+        [HttpGet("{id}/members")]
+        [ProducesResponseType(typeof(PagedList<CircleMemberModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetCircleMembersAsync(Guid id, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50) {
+            using (LogContext.PushProperty("CircleResourceId", id)) {
+                var results = await facade.GetCircleMembersAsync(id, pageNumber, pageSize).ConfigureAwait(false);
+                // Map CircleMemberDto to CircleMemberModel
+                var models = results.Convert(x => new CircleMemberModel {
+                    SubjectId = x.SubjectId,
+                    Email = x.Email,
+                    Role = x.Role,
+                    Status = x.Status,
+                    JoinedDate = x.JoinedDate
+                });
+                return Ok(models);
+            }
+        }
+
+        /// <summary>
         /// Remove a member from the circle
         /// </summary>
         /// <param name="id">the resource id of the circle</param>

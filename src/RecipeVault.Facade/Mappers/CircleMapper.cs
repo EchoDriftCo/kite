@@ -57,6 +57,20 @@ namespace RecipeVault.Facade.Mappers {
             };
         }
 
+        public CircleMemberDto MapToDto(CircleMember entity) {
+            if (entity == null) {
+                return null;
+            }
+
+            return new CircleMemberDto {
+                SubjectId = entity.SubjectId,
+                Email = null, // Email not available from CircleMember entity
+                Role = entity.Role.ToString(),
+                Status = entity.Status.ToString(),
+                JoinedDate = entity.JoinedDate
+            };
+        }
+
         public CircleInviteDto MapToDto(CircleInvite entity) {
             if (entity == null) {
                 return null;

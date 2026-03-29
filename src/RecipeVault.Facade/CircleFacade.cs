@@ -110,6 +110,13 @@ namespace RecipeVault.Facade {
             }
         }
 
+        public async Task<PagedList<CircleMemberDto>> GetCircleMembersAsync(Guid circleResourceId, int pageNumber = 1, int pageSize = 50) {
+            await using (var tx = uow.BeginNoTracking()) {
+                var members = await circleService.GetCircleMembersAsync(circleResourceId, pageNumber, pageSize).ConfigureAwait(false);
+                return members.Convert(m => mapper.MapToDto(m));
+            }
+        }
+
         public async Task RemoveMemberAsync(Guid circleResourceId, Guid subjectId) {
             var lockName = GetLockName(circleResourceId);
 
