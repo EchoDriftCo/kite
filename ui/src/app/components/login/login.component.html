@@ -41,7 +41,7 @@
                     matSuffix
                     type="button"
                     (click)="hidePassword = !hidePassword"
-                    attr.aria-label="Toggle password visibility">
+                    aria-label="Toggle password visibility">
               <mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon>
             </button>
             @if (loginForm.get('password')?.hasError('required')) {
