@@ -211,6 +211,77 @@ namespace RecipeVault.Data {
                 .WithMany()
                 .HasForeignKey(r => r.MixedFromRecipeBId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Store all enums as strings for readability and safety
+            modelBuilder.Entity<UserAccount>()
+                .Property(e => e.AccountTier)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<BetaInviteCodeRedemption>()
+                .Property(e => e.PreviousTier)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<BetaInviteCodeRedemption>()
+                .Property(e => e.NewTier)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<CircleMember>()
+                .Property(e => e.Role)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<CircleMember>()
+                .Property(e => e.Status)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<CircleInvite>()
+                .Property(e => e.Status)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<Equipment>()
+                .Property(e => e.Category)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<ImportJob>()
+                .Property(e => e.Type)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<ImportJob>()
+                .Property(e => e.Status)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<MealPlanEntry>()
+                .Property(e => e.MealSlot)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<Tag>()
+                .Property(e => e.Category)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<Tag>()
+                .Property(e => e.SourceType)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<Unit>()
+                .Property(e => e.Type)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<RecipeTag>()
+                .Property(e => e.NormalizedEntityType)
+                .HasConversion<string>()
+                .HasMaxLength(50);
         }
     }
 }
