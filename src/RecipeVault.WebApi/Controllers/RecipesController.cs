@@ -18,6 +18,8 @@ using RecipeVault.WebApi.Mappers;
 using RecipeVault.WebApi.Models.Requests;
 using RecipeVault.WebApi.Models.Responses;
 using Serilog.Context;
+using RecipeVault.WebApi.Authentication;
+using RecipeVault.WebApi.Filters;
 
 namespace RecipeVault.WebApi.Controllers {
     /// <summary>
@@ -93,8 +95,12 @@ namespace RecipeVault.WebApi.Controllers {
         /// </summary>
         /// <param name="input"></param>
         [HttpPost("")]
+        [GuestQuota(GuestQuotaAttribute.Save, 50)]
         [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateRecipeAsync([FromBody] UpdateRecipeModel input) {
+            if (input?.IsPublic == true && User.IsGuest()) {
+                return GuestAccess.RegistrationRequired("Create a free account to publish recipes");
+            }
             var inputDto = recipeMapper.MapToDto(input);
             var dto = await facade.CreateRecipeAsync(inputDto).ConfigureAwait(false);
             return CreatedAtAction(nameof(GetRecipeAsync), new { id = dto.RecipeResourceId }, recipeMapper.Map(dto));
@@ -106,8 +112,12 @@ namespace RecipeVault.WebApi.Controllers {
         /// <param name="id">the resource id of the recipe to update</param>
         /// <param name="input"></param>
         [HttpPut("{id}")]
+        [GuestQuota(GuestQuotaAttribute.Save, 50)]
         [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateRecipeAsync(Guid id, [FromBody] UpdateRecipeModel input) {
+            if (input?.IsPublic == true && User.IsGuest()) {
+                return GuestAccess.RegistrationRequired("Create a free account to publish recipes");
+            }
             using (LogContext.PushProperty("RecipeResourceId", id)) {
                 var inputDto = recipeMapper.MapToDto(input);
                 var dto = await facade.UpdateRecipeAsync(id, inputDto).ConfigureAwait(false);
@@ -134,6 +144,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// <param name="id">the resource id of the recipe</param>
         /// <param name="input"></param>
         [HttpPut("{id}/visibility")]
+        [RegisteredUserOnly]
         [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> SetRecipeVisibilityAsync(Guid id, [FromBody] SetVisibilityModel input) {
             using (LogContext.PushProperty("RecipeResourceId", id)) {
@@ -147,6 +158,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// </summary>
         /// <param name="input"></param>
         [HttpPost("parse")]
+        [GuestQuota(GuestQuotaAttribute.Ai, 10)]
         [ProducesResponseType(typeof(ParseRecipeResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
@@ -195,6 +207,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// </summary>
         /// <param name="id">the resource id of the recipe</param>
         [HttpPost("{id}/analyze-tags")]
+        [GuestQuota(GuestQuotaAttribute.Ai, 10)]
         [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> AnalyzeTagsAsync(Guid id) {
             using (LogContext.PushProperty("RecipeResourceId", id)) {
@@ -236,6 +249,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// </summary>
         /// <param name="id">the resource id of the recipe</param>
         [HttpPost("{id}/share-token")]
+        [RegisteredUserOnly]
         [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> GenerateShareTokenAsync(Guid id) {
             using (LogContext.PushProperty("RecipeResourceId", id)) {
@@ -273,6 +287,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// Upload a recipe image
         /// </summary>
         [HttpPost("images")]
+        [GuestQuota(GuestQuotaAttribute.Save, 50)]
         [ProducesResponseType(typeof(UploadImageResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestSizeLimit(15_000_000)] // 15MB to cover base64 overhead
@@ -303,6 +318,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// <param name="id">the resource id of the recipe to fork</param>
         /// <param name="input">optional customization for the fork</param>
         [HttpPost("{id}/fork")]
+        [GuestQuota(GuestQuotaAttribute.Save, 50)]
         [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status201Created)]
         public async Task<IActionResult> ForkRecipeAsync(Guid id, [FromBody] ForkRecipeModel input) {
             using (LogContext.PushProperty("RecipeResourceId", id)) {
@@ -333,6 +349,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// <param name="id">the resource id of the recipe</param>
         /// <param name="request">substitution request with ingredient indices and/or dietary constraints</param>
         [HttpPost("{id}/substitutions")]
+        [GuestQuota(GuestQuotaAttribute.Ai, 10)]
         [ProducesResponseType(typeof(SubstitutionResponseModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetSubstitutionsAsync(Guid id, [FromBody] SubstitutionRequestModel request) {
             using (LogContext.PushProperty("RecipeResourceId", id)) {
@@ -349,6 +366,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// <param name="id">the resource id of the recipe</param>
         /// <param name="request">substitution selections to apply</param>
         [HttpPost("{id}/substitutions/apply")]
+        [GuestQuota(GuestQuotaAttribute.Save, 50)]
         [ProducesResponseType(typeof(RecipeModel), StatusCodes.Status201Created)]
         public async Task<IActionResult> ApplySubstitutionsAsync(Guid id, [FromBody] ApplySubstitutionsModel request) {
             using (LogContext.PushProperty("RecipeResourceId", id)) {

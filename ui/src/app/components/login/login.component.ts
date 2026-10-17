@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
-import { SignUpDialogComponent } from './sign-up-dialog.component';
+import { SignUpDialogComponent, SignUpDialogResult } from './sign-up-dialog.component';
 
 @Component({
   selector: 'app-login',
@@ -37,6 +37,7 @@ export class LoginComponent {
   successMessage = '';
   returnUrl = '/';
   hidePassword = true;
+  readonly isGuest: boolean;
 
   constructor(
     private fb: FormBuilder,
@@ -46,6 +47,7 @@ export class LoginComponent {
     private dialog: MatDialog
   ) {
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    this.isGuest = this.authService.isGuest();
     
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -94,14 +96,30 @@ export class LoginComponent {
     }
   }
 
+  async onContinueAsGuest() {
+    this.error = '';
+    this.loading = true;
+
+    try {
+      await this.authService.signInAsGuest();
+      this.router.navigateByUrl(this.returnUrl);
+    } catch (err: any) {
+      this.error = err.message || 'Guest access is unavailable right now';
+    } finally {
+      this.loading = false;
+    }
+  }
+
   onSignUp() {
-    const dialogRef = this.dialog.open(SignUpDialogComponent, {
+    const dialogRef = this.dialog.open<SignUpDialogComponent, unknown, SignUpDialogResult>(SignUpDialogComponent, {
       width: '480px',
       maxWidth: '95vw'
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result?.success) {
+      if (result?.converted && !result.needsEmailConfirmation) {
+        this.router.navigateByUrl(this.returnUrl);
+      } else if (result?.success) {
         this.successMessage = 'Account created! Check your email to confirm your account.';
       }
     });

@@ -10,25 +10,38 @@
       </mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <div class="setting-row">
-        <div class="setting-info">
-          <h3>Email</h3>
-          <p>{{ userEmail || 'Not available' }}</p>
+      @if (isGuest) {
+        <div class="setting-row">
+          <div class="setting-info">
+            <h3>Guest account</h3>
+            <p>Create a free account to keep your recipes and use them on other devices</p>
+          </div>
+          <button mat-raised-button color="primary" (click)="createAccount()">
+            <mat-icon>person_add</mat-icon>
+            Create Account
+          </button>
         </div>
-      </div>
-
-      <mat-divider></mat-divider>
-
-      <div class="setting-row">
-        <div class="setting-info">
-          <h3>Change password</h3>
-          <p>Update your account password</p>
+      } @else {
+        <div class="setting-row">
+          <div class="setting-info">
+            <h3>Email</h3>
+            <p>{{ userEmail || 'Not available' }}</p>
+          </div>
         </div>
-        <button mat-stroked-button color="accent" (click)="changePassword()">
-          <mat-icon>lock</mat-icon>
-          Change Password
-        </button>
-      </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h3>Change password</h3>
+            <p>Update your account password</p>
+          </div>
+          <button mat-stroked-button color="accent" (click)="changePassword()">
+            <mat-icon>lock</mat-icon>
+            Change Password
+          </button>
+        </div>
+      }
 
       <mat-divider></mat-divider>
 
@@ -99,26 +112,28 @@
   </mat-card>
 
   <!-- Beta Access Section -->
-  <mat-card class="settings-card" role="region" aria-label="Beta Access settings">
-    <mat-card-header>
-      <mat-card-title>
-        <mat-icon>vpn_key</mat-icon>
-        Beta Access
-      </mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="setting-row">
-        <div class="setting-info">
-          <h3>Redeem invite code</h3>
-          <p>Have a beta invite code? Redeem it to unlock additional features</p>
+  @if (!isGuest) {
+    <mat-card class="settings-card" role="region" aria-label="Beta Access settings">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>vpn_key</mat-icon>
+          Beta Access
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="setting-row">
+          <div class="setting-info">
+            <h3>Redeem invite code</h3>
+            <p>Have a beta invite code? Redeem it to unlock additional features</p>
+          </div>
+          <button mat-raised-button color="primary" (click)="openBetaInviteDialog()">
+            <mat-icon>redeem</mat-icon>
+            Enter Code
+          </button>
         </div>
-        <button mat-raised-button color="primary" (click)="openBetaInviteDialog()">
-          <mat-icon>redeem</mat-icon>
-          Enter Code
-        </button>
-      </div>
-    </mat-card-content>
-  </mat-card>
+      </mat-card-content>
+    </mat-card>
+  }
 
   <!-- Data Section -->
   <mat-card class="settings-card" role="region" aria-label="Data settings">

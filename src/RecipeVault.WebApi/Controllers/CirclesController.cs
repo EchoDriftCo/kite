@@ -11,6 +11,7 @@ using RecipeVault.WebApi.Mappers;
 using RecipeVault.WebApi.Models.Requests;
 using RecipeVault.WebApi.Models.Responses;
 using Serilog.Context;
+using RecipeVault.WebApi.Filters;
 
 namespace RecipeVault.WebApi.Controllers {
     /// <summary>
@@ -107,6 +108,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// <param name="id">the resource id of the circle</param>
         /// <param name="input"></param>
         [HttpPost("{id}/invite")]
+        [RegisteredUserOnly]
         [ProducesResponseType(typeof(CircleInviteModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> InviteToCircleAsync(Guid id, [FromBody] InviteToCircleModel input) {
             using (LogContext.PushProperty("CircleResourceId", id)) {

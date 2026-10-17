@@ -13,6 +13,17 @@ export const authGuard: CanActivateFn = async (route, state) => {
     return true;
   }
 
+  // New visitors explore as a guest (Supabase anonymous sign-in). Browsers that have used a
+  // real account before go to login, so an expired session doesn't land them in an empty guest account.
+  if (!authService.hasSignedInBefore()) {
+    try {
+      await authService.signInAsGuest();
+      return true;
+    } catch {
+      // Anonymous sign-ins disabled or rate limited — fall back to login
+    }
+  }
+
   // Redirect to login with return url
   router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
   return false;

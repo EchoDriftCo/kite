@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, Inject, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,6 +9,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../services/auth.service';
+
+export interface SignUpDialogData {
+  /** Why we're asking, e.g. the guest action that needs an account */
+  reason?: string;
+}
+
+export interface SignUpDialogResult {
+  success: boolean;
+  /** True when a guest was turned into a full account (their data is kept) */
+  converted?: boolean;
+  needsEmailConfirmation?: boolean;
+}
 
 // Custom validator for password match
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -47,6 +59,12 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
     </div>
 
     <mat-dialog-content>
+      @if (data?.reason) {
+        <p class="reason">{{ data?.reason }}</p>
+      }
+      @if (isGuest) {
+        <p class="guest-note">Everything you've made as a guest will be kept.</p>
+      }
       <form [formGroup]="signUpForm">
         <mat-form-field appearance="outline">
           <mat-label>Email</mat-label>
@@ -156,6 +174,13 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
       }
     }
 
+    .reason,
+    .guest-note {
+      margin: 0 0 16px;
+      font: var(--font-body);
+      color: var(--color-text-secondary);
+    }
+
     .terms-checkbox {
       margin: 16px 0;
       display: block;
@@ -214,12 +239,15 @@ export class SignUpDialogComponent {
   error = '';
   hidePassword = true;
   hideConfirmPassword = true;
+  readonly isGuest: boolean;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private dialogRef: MatDialogRef<SignUpDialogComponent>
+    private dialogRef: MatDialogRef<SignUpDialogComponent, SignUpDialogResult>,
+    @Optional() @Inject(MAT_DIALOG_DATA) public data: SignUpDialogData | null
   ) {
+    this.isGuest = this.authService.isGuest();
     this.signUpForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -238,8 +266,13 @@ export class SignUpDialogComponent {
 
     try {
       const { email, password } = this.signUpForm.value;
-      await this.authService.signUp(email, password);
-      this.dialogRef.close({ success: true });
+      if (this.isGuest) {
+        const { needsEmailConfirmation } = await this.authService.convertGuest(email, password);
+        this.dialogRef.close({ success: true, converted: true, needsEmailConfirmation });
+      } else {
+        await this.authService.signUp(email, password);
+        this.dialogRef.close({ success: true });
+      }
     } catch (err: any) {
       this.error = err.message || 'Failed to create account';
     } finally {

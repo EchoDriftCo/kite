@@ -6,6 +6,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
+import { GuestPromptService } from '../../../services/guest-prompt.service';
 import { BetaInviteDialogComponent } from '../../../components/settings/beta-invite-dialog/beta-invite-dialog.component';
 
 @Component({
@@ -19,7 +20,22 @@ import { BetaInviteDialogComponent } from '../../../components/settings/beta-inv
     MatSnackBarModule
   ],
   template: `
-    @if (showBanner) {
+    @if (showGuestBanner) {
+      <div class="upgrade-banner">
+        <mat-icon>person_outline</mat-icon>
+        <span class="banner-text">
+          You're exploring as a <strong>guest</strong>.
+          Create a free account to keep your recipes and unlock sharing.
+        </span>
+        <button mat-stroked-button (click)="createAccount()">
+          <mat-icon>person_add</mat-icon>
+          Create account
+        </button>
+        <button mat-icon-button class="dismiss-btn" (click)="dismiss()" aria-label="Dismiss banner">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    } @else if (showBanner) {
       <div class="upgrade-banner">
         <mat-icon>star</mat-icon>
         <span class="banner-text">
@@ -96,21 +112,26 @@ import { BetaInviteDialogComponent } from '../../../components/settings/beta-inv
 })
 export class UpgradeBannerComponent implements OnInit, OnDestroy {
   showBanner = false;
+  showGuestBanner = false;
   private dismissed = false;
   private sub?: Subscription;
 
   constructor(
     private authService: AuthService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private guestPrompt: GuestPromptService
   ) {}
 
   ngOnInit(): void {
     this.dismissed = sessionStorage.getItem('upgrade-banner-dismissed') === 'true';
     const hasRedeemedCode = localStorage.getItem('beta-code-redeemed') === 'true';
     this.sub = this.authService.currentUser$.subscribe(() => {
+      const isGuest = this.authService.isGuest();
+      this.showGuestBanner = !this.dismissed && isGuest;
       this.showBanner = !this.dismissed
         && !hasRedeemedCode
+        && !isGuest
         && this.authService.isAuthenticated()
         && this.authService.getUserTier() === 'Free';
     });
@@ -123,7 +144,12 @@ export class UpgradeBannerComponent implements OnInit, OnDestroy {
   dismiss(): void {
     this.dismissed = true;
     this.showBanner = false;
+    this.showGuestBanner = false;
     sessionStorage.setItem('upgrade-banner-dismissed', 'true');
+  }
+
+  createAccount(): void {
+    this.guestPrompt.promptSignUp();
   }
 
   openInviteDialog(): void {

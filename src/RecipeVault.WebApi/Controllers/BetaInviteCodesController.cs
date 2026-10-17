@@ -93,6 +93,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// Redeem a beta invite code to upgrade account to Beta tier
         /// </summary>
         [HttpPost("redeem")]
+        [RegisteredUserOnly]
         [ProducesResponseType(typeof(RedeemCodeResultModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RedeemCodeAsync([FromBody] RedeemInviteCodeModel input) {

@@ -1,13 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { Subscription, distinctUntilChanged, filter, map } from 'rxjs';
 import { AuthService } from './services/auth.service';
+import { GuestPromptService } from './services/guest-prompt.service';
 import { OnboardingService } from './services/onboarding.service';
 import { TourService } from './services/tour.service';
 import { FeedbackButtonComponent } from './shared/components/feedback-button/feedback-button.component';
@@ -38,31 +40,58 @@ import { UpgradeBannerComponent } from './shared/components/upgrade-banner/upgra
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
+  private userSub?: Subscription;
+
   constructor(
     private authService: AuthService,
     private dialog: MatDialog,
     private onboardingService: OnboardingService,
-    private tourService: TourService
+    private tourService: TourService,
+    private guestPrompt: GuestPromptService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.authService.ready.then(() => {
-      if (this.authService.isAuthenticated()) {
-        this.checkOnboarding();
-      }
-    });
+    // Check onboarding whenever someone signs in, including guests whose session starts in the auth guard
+    this.userSub = this.authService.currentUser$.pipe(
+      map(user => user?.id),
+      distinctUntilChanged(),
+      filter(id => !!id)
+    ).subscribe(() => this.checkOnboarding());
+  }
+
+  ngOnDestroy(): void {
+    this.userSub?.unsubscribe();
   }
 
   isAuthenticated(): boolean {
     return this.authService.isAuthenticated();
   }
 
+  isGuest(): boolean {
+    return this.authService.isGuest();
+  }
+
   userEmail(): string {
+    if (this.isGuest()) {
+      return 'Guest';
+    }
     return this.authService.currentUser?.email || 'User';
   }
 
+  createAccount(): void {
+    this.guestPrompt.promptSignUp();
+  }
+
+  signIn(): void {
+    this.router.navigate(['/login']);
+  }
+
   logout(): void {
+    if (this.isGuest() && !confirm('Signing out of a guest session discards your recipes and data. Create an account first to keep them. Sign out anyway?')) {
+      return;
+    }
     this.authService.signOut();
   }
 

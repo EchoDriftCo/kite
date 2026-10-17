@@ -13,6 +13,7 @@ using RecipeVault.WebApi.Mappers;
 using RecipeVault.WebApi.Models.Requests;
 using RecipeVault.WebApi.Models.Responses;
 using Serilog.Context;
+using RecipeVault.WebApi.Authentication;
 
 namespace RecipeVault.WebApi.Controllers {
     /// <summary>
@@ -130,6 +131,9 @@ namespace RecipeVault.WebApi.Controllers {
         [HttpPost("")]
         [ProducesResponseType(typeof(CollectionModel), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateCollectionAsync([FromBody] UpdateCollectionModel input) {
+            if (input?.IsPublic == true && User.IsGuest()) {
+                return GuestAccess.RegistrationRequired("Create a free account to publish collections");
+            }
             try {
                 var inputDto = mapper.MapToDto(input);
                 var dto = await facade.CreateCollectionAsync(inputDto).ConfigureAwait(false);
@@ -148,6 +152,9 @@ namespace RecipeVault.WebApi.Controllers {
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(CollectionModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateCollectionAsync(Guid id, [FromBody] UpdateCollectionModel input) {
+            if (input?.IsPublic == true && User.IsGuest()) {
+                return GuestAccess.RegistrationRequired("Create a free account to publish collections");
+            }
             using (LogContext.PushProperty("CollectionResourceId", id)) {
                 try {
                     var inputDto = mapper.MapToDto(input);
