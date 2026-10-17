@@ -53,22 +53,9 @@ namespace RecipeVault.WebApi.Filters {
         }
 
         private bool MeetsTierRequirement(AccountTier userTier) {
-            // Beta has access to everything
-            if (userTier == AccountTier.Beta) {
-                return true;
-            }
-
-            // Premium has access to Premium-required features
-            if (requiredTier == AccountTier.Premium && userTier == AccountTier.Premium) {
-                return true;
-            }
-
-            // Free has access only to Free-required features
-            if (requiredTier == AccountTier.Free) {
-                return true;
-            }
-
-            return false;
+            // During beta, all authenticated users have full access.
+            // TODO: Re-enable tier gating when premium subscriptions launch.
+            return true;
         }
     }
 }

@@ -7,6 +7,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { GuestPromptService } from '../../../services/guest-prompt.service';
+import { UserAccountService } from '../../../services/user-account.service';
 import { BetaInviteDialogComponent } from '../../../components/settings/beta-invite-dialog/beta-invite-dialog.component';
 
 @Component({
@@ -70,7 +71,7 @@ import { BetaInviteDialogComponent } from '../../../components/settings/beta-inv
     .banner-text {
       flex: 1;
       font-size: 13px;
-      color: #cbd5e1;
+      color: var(--color-text-primary);
 
       strong {
         color: #f59e0b;
@@ -86,7 +87,7 @@ import { BetaInviteDialogComponent } from '../../../components/settings/beta-inv
 
     .dismiss-btn {
       flex-shrink: 0;
-      color: #64748b;
+      color: var(--color-text-hint);
       width: 28px;
       height: 28px;
       line-height: 28px;
@@ -118,6 +119,7 @@ export class UpgradeBannerComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
+    private userAccountService: UserAccountService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private guestPrompt: GuestPromptService
@@ -125,15 +127,27 @@ export class UpgradeBannerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.dismissed = sessionStorage.getItem('upgrade-banner-dismissed') === 'true';
-    const hasRedeemedCode = localStorage.getItem('beta-code-redeemed') === 'true';
     this.sub = this.authService.currentUser$.subscribe(() => {
       const isGuest = this.authService.isGuest();
       this.showGuestBanner = !this.dismissed && isGuest;
-      this.showBanner = !this.dismissed
-        && !hasRedeemedCode
-        && !isGuest
-        && this.authService.isAuthenticated()
-        && this.authService.getUserTier() === 'Free';
+
+      // Guests see the create-account banner instead
+      if (!this.authService.isAuthenticated() || this.dismissed || isGuest) {
+        this.showBanner = false;
+        return;
+      }
+
+      // Fetch server-side account state to check tier
+      // Only show banner for Free tier users - tier matters, not how they got there
+      this.userAccountService.getAccount().subscribe({
+        next: (account) => {
+          this.showBanner = account.accountTier === 'Free';
+        },
+        error: () => {
+          // Fallback to JWT tier if backend is unreachable
+          this.showBanner = this.authService.getUserTier() === 'Free';
+        }
+      });
     });
   }
 

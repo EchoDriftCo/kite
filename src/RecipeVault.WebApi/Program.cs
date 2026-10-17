@@ -28,15 +28,21 @@ namespace RecipeVault.WebApi {
             // Initialize Sentry for error tracking (before app starts)
             var sentryDsn = Environment.GetEnvironmentVariable("SENTRY_DSN");
             if (!string.IsNullOrEmpty(sentryDsn)) {
-                SentrySdk.Init(options => {
-                    options.Dsn = sentryDsn;
-                    options.Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
-                    options.Release = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0";
-                    options.SendDefaultPii = false;
-                    options.AttachStacktrace = true;
-                    // Disable tracing since we're using basic SDK init
-                    options.TracesSampleRate = 0;
-                });
+                try {
+                    SentrySdk.Init(options => {
+                        options.Dsn = sentryDsn;
+                        options.Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+                        options.Release = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0";
+                        options.SendDefaultPii = false;
+                        options.AttachStacktrace = true;
+                        // Disable tracing since we're using basic SDK init
+                        options.TracesSampleRate = 0;
+                    });
+                } catch (Exception ex) {
+                    // Invalid Sentry DSN — log to console but don't crash
+                    Console.Error.WriteLine($"[WARN] Sentry initialization failed (invalid DSN): {ex.Message}");
+                    Console.Error.WriteLine("[WARN] Continuing without error monitoring. Set a valid SENTRY_DSN to enable Sentry.");
+                }
             }
 
             var builder = WebApiHost.CreateBuilder(args)

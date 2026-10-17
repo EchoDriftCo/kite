@@ -45,5 +45,17 @@ namespace RecipeVault.DomainService {
             var tier = await GetTierAsync(subjectId).ConfigureAwait(false);
             return tier == AccountTier.Premium || tier == AccountTier.Beta;
         }
+
+        public async Task<UserAccount> MarkBetaCodeRedeemedAsync(Guid subjectId) {
+            var account = await GetOrCreateAccountAsync(subjectId).ConfigureAwait(false);
+            account.SetBetaCodeRedeemed();
+            logger.LogInformation("Marked beta code as redeemed for subject {SubjectId}", subjectId);
+            return account;
+        }
+
+        public async Task<bool> HasRedeemedBetaCodeAsync(Guid subjectId) {
+            var account = await userAccountRepository.GetBySubjectIdAsync(subjectId).ConfigureAwait(false);
+            return account?.BetaCodeRedeemedDate.HasValue ?? false;
+        }
     }
 }

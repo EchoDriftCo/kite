@@ -7,5 +7,6 @@ namespace RecipeVault.Dto.Output {
         public string AccountTier { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? TierChangedDate { get; set; }
+        public DateTime? BetaCodeRedeemedDate { get; set; }
     }
 }

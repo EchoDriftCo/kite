@@ -39,6 +39,8 @@ namespace RecipeVault.Domain.Entities {
 
         public string OnboardingProgressJson { get; private set; }
 
+        public DateTime? BetaCodeRedeemedDate { get; private set; }
+
         public void CompleteOnboarding() {
             HasCompletedOnboarding = true;
             OnboardingCompletedDate = DateTime.UtcNow;
@@ -58,6 +60,12 @@ namespace RecipeVault.Domain.Entities {
             if (AccountTier != tier) {
                 AccountTier = tier;
                 TierChangedDate = DateTime.UtcNow;
+            }
+        }
+
+        public void SetBetaCodeRedeemed() {
+            if (!BetaCodeRedeemedDate.HasValue) {
+                BetaCodeRedeemedDate = DateTime.UtcNow;
             }
         }
     }

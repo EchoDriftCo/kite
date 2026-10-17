@@ -252,11 +252,15 @@ namespace RecipeVault.Data.Migrations
                     b.Property<int>("BetaInviteCodeId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("NewTier")
-                        .HasColumnType("integer");
+                    b.Property<string>("NewTier")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
-                    b.Property<int>("PreviousTier")
-                        .HasColumnType("integer");
+                    b.Property<string>("PreviousTier")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("RedeemedDate")
                         .HasColumnType("timestamp with time zone");
@@ -355,8 +359,10 @@ namespace RecipeVault.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("CircleInviteId");
 
@@ -388,11 +394,15 @@ namespace RecipeVault.Data.Migrations
                     b.Property<DateTime?>("JoinedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<Guid>("SubjectId")
                         .HasColumnType("uuid");
@@ -749,8 +759,10 @@ namespace RecipeVault.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("EquipmentId"));
 
-                    b.Property<int>("Category")
-                        .HasColumnType("integer");
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -840,8 +852,10 @@ namespace RecipeVault.Data.Migrations
                         .HasMaxLength(2147483647)
                         .HasColumnType("text");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int>("SuccessCount")
                         .HasColumnType("integer");
@@ -849,8 +863,10 @@ namespace RecipeVault.Data.Migrations
                     b.Property<int>("TotalItems")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("ImportJobId");
 
@@ -1048,8 +1064,10 @@ namespace RecipeVault.Data.Migrations
                     b.Property<int>("MealPlanId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("MealSlot")
-                        .HasColumnType("integer");
+                    b.Property<string>("MealSlot")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int>("RecipeId")
                         .HasColumnType("integer");
@@ -1066,6 +1084,58 @@ namespace RecipeVault.Data.Migrations
                     b.ToTable("MealPlanEntry", "public", t =>
                         {
                             t.HasTrigger("trMealPlanEntry");
+                        });
+                });
+
+            modelBuilder.Entity("RecipeVault.Domain.Entities.PremiumWaitlist", b =>
+                {
+                    b.Property<int>("PremiumWaitlistId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PremiumWaitlistId"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was created");
+
+                    b.Property<Guid>("CreatedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Date and time entity was last modified");
+
+                    b.Property<Guid>("LastModifiedSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PremiumWaitlistResourceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Source")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("PremiumWaitlistId");
+
+                    b.HasIndex("CreatedSubjectId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("LastModifiedSubjectId");
+
+                    b.HasIndex("PremiumWaitlistResourceId")
+                        .IsUnique();
+
+                    b.ToTable("PremiumWaitlist", "public", t =>
+                        {
+                            t.HasTrigger("trPremiumWaitlist");
                         });
                 });
 
@@ -1522,8 +1592,9 @@ namespace RecipeVault.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<int?>("NormalizedEntityType")
-                        .HasColumnType("integer");
+                    b.Property<string>("NormalizedEntityType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int>("RecipeId")
                         .HasColumnType("integer");
@@ -1552,8 +1623,10 @@ namespace RecipeVault.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TagId"));
 
-                    b.Property<int>("Category")
-                        .HasColumnType("integer");
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone")
@@ -1580,8 +1653,9 @@ namespace RecipeVault.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<int?>("SourceType")
-                        .HasColumnType("integer");
+                    b.Property<string>("SourceType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<Guid>("TagResourceId")
                         .HasColumnType("uuid");
@@ -1652,8 +1726,10 @@ namespace RecipeVault.Data.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<Guid>("UnitResourceId")
                         .HasColumnType("uuid");
@@ -1733,8 +1809,13 @@ namespace RecipeVault.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserAccountId"));
 
-                    b.Property<int>("AccountTier")
-                        .HasColumnType("integer");
+                    b.Property<string>("AccountTier")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("BetaCodeRedeemedDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone")
@@ -2254,6 +2335,25 @@ namespace RecipeVault.Data.Migrations
                     b.Navigation("MealPlan");
 
                     b.Navigation("Recipe");
+                });
+
+            modelBuilder.Entity("RecipeVault.Domain.Entities.PremiumWaitlist", b =>
+                {
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "CreatedSubject")
+                        .WithMany()
+                        .HasForeignKey("CreatedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Cortside.AspNetCore.Auditable.Entities.Subject", "LastModifiedSubject")
+                        .WithMany()
+                        .HasForeignKey("LastModifiedSubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("CreatedSubject");
+
+                    b.Navigation("LastModifiedSubject");
                 });
 
             modelBuilder.Entity("RecipeVault.Domain.Entities.Recipe", b =>

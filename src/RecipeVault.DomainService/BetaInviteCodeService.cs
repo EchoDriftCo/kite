@@ -127,6 +127,9 @@ namespace RecipeVault.DomainService {
                     account.SetTier(AccountTier.Beta);
                 }
 
+                // Mark beta code as redeemed in UserAccount (persistent server-side tracking)
+                account.SetBetaCodeRedeemed();
+
                 // Create redemption record
                 var redemption = new BetaInviteCodeRedemption(
                     entity.BetaInviteCodeId,
@@ -137,7 +140,7 @@ namespace RecipeVault.DomainService {
                 entity.AddRedemption(redemption);
                 entity.IncrementUseCount();
 
-                logger.LogInformation("Successfully redeemed code {Code} for subject {SubjectId}, upgraded from {PreviousTier} to Beta",
+                logger.LogInformation("Successfully redeemed code {Code} for subject {SubjectId}, upgraded from {PreviousTier} to Beta, marked BetaCodeRedeemedDate",
                     code, subjectId, previousTier);
 
                 return new RedeemCodeResultDto {

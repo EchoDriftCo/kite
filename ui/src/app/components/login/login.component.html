@@ -1,6 +1,6 @@
 <div class="login-page">
   <div class="login-container">
-    <img src="assets/logo/logo-lockup-dark.svg"
+    <img [src]="themeService.isDark() ? 'assets/logo/logo-lockup-dark.svg' : 'assets/logo/logo-lockup-light.svg'"
          alt="RecipeVault"
          class="logo-img"
          width="300"
@@ -98,6 +98,10 @@
             <button mat-button (click)="onContinueAsGuest()" [disabled]="loading">Continue as guest</button>
           </p>
         }
+
+        <p class="features-link">
+          <a routerLink="/features">See what's included →</a>
+        </p>
       </mat-card-content>
     </mat-card>
   </div>

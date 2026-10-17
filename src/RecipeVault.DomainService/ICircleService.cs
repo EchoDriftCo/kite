@@ -17,6 +17,7 @@ namespace RecipeVault.DomainService {
         Task<CircleInvite> InviteToCircleAsync(Guid circleResourceId, InviteToCircleDto dto);
         Task<Circle> AcceptInviteAsync(Guid inviteToken);
         Task<CircleInvite> GetInviteDetailsAsync(Guid inviteToken);
+        Task<PagedList<CircleMember>> GetCircleMembersAsync(Guid circleResourceId, int pageNumber = 1, int pageSize = 50);
         Task RemoveMemberAsync(Guid circleResourceId, Guid subjectId);
         Task LeaveCircleAsync(Guid circleResourceId);
         

@@ -110,7 +110,7 @@ mat-accordion {
       align-items: center;
       gap: var(--space-sm);
       padding: 10px var(--space-md);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      border-bottom: 1px solid var(--color-overlay-light);
       transition: opacity var(--transition-fast);
 
       &:last-child {
@@ -138,14 +138,14 @@ mat-accordion {
         line-height: 1.4;
 
         strong {
-          color: rgba(255, 255, 255, 0.87);
+          color: var(--color-text-high-emphasis);
           margin-right: var(--space-xs);
         }
       }
 
       .item-sources {
         font: var(--font-caption);
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--color-text-low-emphasis);
         font-style: italic;
       }
 

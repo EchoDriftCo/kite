@@ -15,7 +15,8 @@ namespace RecipeVault.WebApi.Mappers {
                 SubjectId = dto.SubjectId,
                 AccountTier = dto.AccountTier,
                 CreatedDate = dto.CreatedDate,
-                TierChangedDate = dto.TierChangedDate
+                TierChangedDate = dto.TierChangedDate,
+                BetaCodeRedeemedDate = dto.BetaCodeRedeemedDate
             };
         }
 

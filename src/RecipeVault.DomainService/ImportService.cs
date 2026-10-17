@@ -268,6 +268,162 @@ namespace RecipeVault.DomainService {
             return imageUrl;
         }
 
+        /// <summary>
+        /// Attempts to download the recipe image from OriginalImageUrl or fallback sources in HTML,
+        /// upload it to storage, and set SourceImageUrl on the recipe.
+        /// </summary>
+        private async Task TryDownloadAndStoreImageAsync(Recipe recipe, string html, string sourceUrl) {
+            // First, try the image URL already on the recipe (from schema.org or Gemini)
+            var imageUrl = recipe.OriginalImageUrl;
+
+            // If no image URL from structured data, try fallback extraction from HTML
+            if (string.IsNullOrWhiteSpace(imageUrl)) {
+                imageUrl = ExtractFallbackImageUrl(html, sourceUrl);
+                if (!string.IsNullOrWhiteSpace(imageUrl)) {
+                    logger.LogInformation("Found fallback image URL from HTML: {ImageUrl}", imageUrl);
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(imageUrl)) {
+                logger.LogInformation("No image URL found for recipe: {Title}", recipe.Title);
+                return;
+            }
+
+            try {
+                var storedUrl = await DownloadAndUploadImageAsync(imageUrl, recipe.Title).ConfigureAwait(false);
+                if (!string.IsNullOrWhiteSpace(storedUrl)) {
+                    recipe.SetSourceImageUrl(storedUrl);
+                    logger.LogInformation("Successfully downloaded and stored image for recipe: {Title}", recipe.Title);
+                }
+            } catch (Exception ex) {
+                logger.LogWarning(ex, "Failed to download image from {ImageUrl} for recipe: {Title}", imageUrl, recipe.Title);
+                // Non-fatal: recipe is still valid without an image
+            }
+        }
+
+        /// <summary>
+        /// Downloads an image from a URL and uploads it to storage.
+        /// Returns the stored image URL, or null on failure.
+        /// </summary>
+        private async Task<string> DownloadAndUploadImageAsync(string imageUrl, string recipeName) {
+            if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri)) {
+                logger.LogWarning("Invalid image URL: {ImageUrl}", imageUrl);
+                return null;
+            }
+
+            using var httpClient = httpClientFactory.CreateClient();
+            httpClient.Timeout = TimeSpan.FromSeconds(15);
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "RecipeVault/1.0 (Recipe Importer)");
+
+            var response = await httpClient.GetAsync(uri).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            var contentType = response.Content.Headers.ContentType?.MediaType ?? "image/jpeg";
+
+            // Validate it's actually an image
+            if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)) {
+                logger.LogWarning("URL returned non-image content type: {ContentType} from {ImageUrl}", contentType, imageUrl);
+                return null;
+            }
+
+            var imageBytes = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+
+            // Sanity check: image should be at least 1KB (skip tiny tracking pixels)
+            if (imageBytes.Length < 1024) {
+                logger.LogWarning("Image too small ({Size} bytes), likely a tracking pixel: {ImageUrl}", imageBytes.Length, imageUrl);
+                return null;
+            }
+
+            // Determine file extension from content type
+            var extension = contentType switch {
+                "image/png" => ".png",
+                "image/gif" => ".gif",
+                "image/webp" => ".webp",
+                "image/svg+xml" => ".svg",
+                _ => ".jpg"
+            };
+
+            var fileName = $"{SanitizeFileName(recipeName)}_{Guid.NewGuid()}{extension}";
+            var storedUrl = await imageStorage.UploadAsync(imageBytes, fileName, contentType).ConfigureAwait(false);
+
+            return storedUrl;
+        }
+
+        /// <summary>
+        /// Extracts an image URL from HTML using fallback sources:
+        /// 1. og:image meta tag
+        /// 2. twitter:image meta tag
+        /// 3. First large img tag in the page
+        /// Resolves relative URLs against the source URL.
+        /// </summary>
+        public static string ExtractFallbackImageUrl(string html, string sourceUrl) {
+            if (string.IsNullOrWhiteSpace(html)) {
+                return null;
+            }
+
+            // Try og:image
+            var ogMatch = Regex.Match(html, @"<meta[^>]*property\s*=\s*[""']og:image[""'][^>]*content\s*=\s*[""']([^""']+)[""']", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            if (!ogMatch.Success) {
+                // Try reversed attribute order: content before property
+                ogMatch = Regex.Match(html, @"<meta[^>]*content\s*=\s*[""']([^""']+)[""'][^>]*property\s*=\s*[""']og:image[""']", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            }
+            if (ogMatch.Success) {
+                return ResolveUrl(ogMatch.Groups[1].Value.Trim(), sourceUrl);
+            }
+
+            // Try twitter:image
+            var twitterMatch = Regex.Match(html, @"<meta[^>]*(?:name|property)\s*=\s*[""']twitter:image[""'][^>]*content\s*=\s*[""']([^""']+)[""']", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            if (!twitterMatch.Success) {
+                twitterMatch = Regex.Match(html, @"<meta[^>]*content\s*=\s*[""']([^""']+)[""'][^>]*(?:name|property)\s*=\s*[""']twitter:image[""']", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            }
+            if (twitterMatch.Success) {
+                return ResolveUrl(twitterMatch.Groups[1].Value.Trim(), sourceUrl);
+            }
+
+            // Try first img with a reasonable src (skip data URIs, tracking pixels, etc.)
+            var imgMatches = Regex.Matches(html, @"<img[^>]*src\s*=\s*[""']([^""']+)[""']", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            foreach (Match imgMatch in imgMatches) {
+                var src = imgMatch.Groups[1].Value.Trim();
+                // Skip data URIs, tracking pixels, tiny icons
+                if (src.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) continue;
+                if (src.Contains("1x1", StringComparison.OrdinalIgnoreCase)) continue;
+                if (src.Contains("pixel", StringComparison.OrdinalIgnoreCase)) continue;
+                if (src.Contains("spacer", StringComparison.OrdinalIgnoreCase)) continue;
+                if (src.EndsWith(".svg", StringComparison.OrdinalIgnoreCase)) continue;
+                if (src.EndsWith(".ico", StringComparison.OrdinalIgnoreCase)) continue;
+
+                return ResolveUrl(src, sourceUrl);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Resolves a potentially relative URL against a base URL.
+        /// </summary>
+        private static string ResolveUrl(string url, string baseUrl) {
+            if (string.IsNullOrWhiteSpace(url)) return null;
+
+            // Already absolute
+            if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) {
+                return url;
+            }
+
+            // Protocol-relative
+            if (url.StartsWith("//", StringComparison.Ordinal)) {
+                return "https:" + url;
+            }
+
+            // Relative URL — resolve against base
+            if (Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri) &&
+                Uri.TryCreate(baseUri, url, out var resolved)) {
+                return resolved.ToString();
+            }
+
+            return null;
+        }
+
         private static string SanitizeFileName(string fileName) {
             // Remove invalid filename characters
             var invalid = Path.GetInvalidFileNameChars();
@@ -327,6 +483,9 @@ namespace RecipeVault.DomainService {
                     logger.LogInformation("No schema.org markup found, falling back to Gemini AI parsing");
                     recipe = await ParseWithGeminiAsync(html, url).ConfigureAwait(false);
                 }
+
+                // Download and store the recipe image
+                await TryDownloadAndStoreImageAsync(recipe, html, url).ConfigureAwait(false);
 
                 // Save recipe
                 await recipeRepository.AddAsync(recipe).ConfigureAwait(false);

@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BetaInviteCodeService } from '../../../services/beta-invite-code.service';
 import { AuthService } from '../../../services/auth.service';
+import { WaitlistService } from '../../../services/waitlist.service';
 
 @Component({
   selector: 'app-beta-invite-dialog',
@@ -128,6 +129,42 @@ import { AuthService } from '../../../services/auth.service';
         </button>
       }
     </mat-dialog-actions>
+
+    <!-- Request Access -->
+    @if (!redeemed) {
+      <div class="request-access">
+        @if (!showRequestForm) {
+          <span>Don't have a code?</span>
+          <a (click)="showRequestForm = true">Request access →</a>
+        } @else if (requestSent) {
+          <div class="request-success">
+            <mat-icon>check_circle</mat-icon>
+            <span>You're on the list! We'll send you an invite code soon.</span>
+          </div>
+        } @else {
+          <p class="request-label">Enter your email to join the waitlist:</p>
+          <div class="request-form">
+            <mat-form-field appearance="outline" class="request-email">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" [(ngModel)]="requestEmail" 
+                     placeholder="you&#64;example.com" [disabled]="requestSending">
+            </mat-form-field>
+            <button mat-raised-button color="primary" 
+                    [disabled]="!requestEmail || requestSending"
+                    (click)="submitRequest()">
+              @if (requestSending) {
+                <mat-spinner diameter="18"></mat-spinner>
+              } @else {
+                Join Waitlist
+              }
+            </button>
+          </div>
+          @if (requestError) {
+            <p class="request-error">{{ requestError }}</p>
+          }
+        }
+      </div>
+    }
   `,
   styles: [`
     h2 {
@@ -142,7 +179,7 @@ import { AuthService } from '../../../services/auth.service';
 
     .description {
       margin: 0 0 20px;
-      color: #94a3b8;
+      color: var(--color-text-secondary);
       font-size: 14px;
     }
 
@@ -167,7 +204,7 @@ import { AuthService } from '../../../services/auth.service';
 
     .separator {
       font-size: 24px;
-      color: #64748b;
+      color: var(--color-text-hint);
       margin-bottom: 22px;
     }
 
@@ -179,11 +216,11 @@ import { AuthService } from '../../../services/auth.service';
       font-size: 14px;
 
       &.error {
-        color: #ef4444;
+        color: var(--color-error, #ef4444);
       }
 
       &.success {
-        color: #22c55e;
+        color: var(--color-success, #22c55e);
       }
 
       &.redeemed {
@@ -194,6 +231,65 @@ import { AuthService } from '../../../services/auth.service';
 
     mat-dialog-actions button mat-spinner {
       display: inline-block;
+    }
+
+    .request-access {
+      padding: 12px 24px 16px;
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      text-align: center;
+
+      a {
+        color: var(--color-primary);
+        cursor: pointer;
+        font-weight: 500;
+        margin-left: 4px;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .request-label {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      margin: 0 0 8px;
+      text-align: center;
+    }
+
+    .request-form {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .request-email {
+      flex: 1;
+      font-size: 13px;
+    }
+
+    .request-success {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--color-success, #059669);
+      font-size: 13px;
+      justify-content: center;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    .request-error {
+      color: var(--color-error, #dc2626);
+      font-size: 12px;
+      margin: 4px 0 0;
+      text-align: center;
     }
 
     @media (max-width: 480px) {
@@ -218,10 +314,17 @@ export class BetaInviteDialogComponent {
   redeemed = false;
   error = '';
 
+  showRequestForm = false;
+  requestEmail = '';
+  requestSending = false;
+  requestSent = false;
+  requestError = '';
+
   constructor(
     public dialogRef: MatDialogRef<BetaInviteDialogComponent>,
     private betaInviteCodeService: BetaInviteCodeService,
-    private authService: AuthService
+    private authService: AuthService,
+    private waitlistService: WaitlistService
   ) {}
 
   get fullCode(): string {
@@ -298,14 +401,40 @@ export class BetaInviteDialogComponent {
       next: () => {
         this.redeeming = false;
         this.redeemed = true;
-        // Persist redemption state so the upgrade banner stays hidden
-        localStorage.setItem('beta-code-redeemed', 'true');
-        // Refresh session to pick up updated user tier
+        // Refresh session to pick up updated user tier in JWT
         this.authService.refreshSession().catch(() => {});
+        // Note: upgrade-banner now checks server-side BetaCodeRedeemedDate,
+        // so no localStorage flag needed. The banner will re-check on next render.
       },
       error: (err) => {
         this.redeeming = false;
         this.error = err.error?.message || err.error?.detail || 'Failed to redeem code';
+      }
+    });
+  }
+
+  submitRequest(): void {
+    if (!this.requestEmail || this.requestSending) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.requestEmail)) {
+      this.requestError = 'Please enter a valid email address.';
+      return;
+    }
+
+    this.requestSending = true;
+    this.requestError = '';
+
+    this.waitlistService.joinWaitlist(this.requestEmail, 'beta-invite-dialog').subscribe({
+      next: () => {
+        this.requestSending = false;
+        this.requestSent = true;
+      },
+      error: (err) => {
+        this.requestSending = false;
+        this.requestError = err.status === 400
+          ? 'Please enter a valid email address.'
+          : 'Something went wrong. Please try again.';
       }
     });
   }

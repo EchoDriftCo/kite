@@ -16,6 +16,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { RecipeService } from '../../../services/recipe.service';
+import { UserAccountService } from '../../../services/user-account.service';
 import { Recipe } from '../../../models/recipe.model';
 import { FractionPipe } from '../../../pipes/fraction.pipe';
 import { TagSelectorComponent } from '../../shared/tag-selector/tag-selector.component';
@@ -92,10 +93,14 @@ export class RecipeDetailComponent implements OnInit {
   loadingGroceryOptions = false;
   groceryError = '';
 
+  // Tier-based feature gating
+  isPremiumUser = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private recipeService: RecipeService,
+    private userAccountService: UserAccountService,
     private cookingLogService: CookingLogService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
@@ -106,11 +111,24 @@ export class RecipeDetailComponent implements OnInit {
 
   ngOnInit() {
     this.recipeId = this.route.snapshot.paramMap.get('id');
+    this.checkUserTier();
     
     if (this.recipeId) {
       this.loadRecipe();
       this.loadPersonalStats();
     }
+  }
+
+  checkUserTier() {
+    this.userAccountService.getAccount().subscribe({
+      next: (account) => {
+        this.isPremiumUser = account.accountTier !== 'Free';
+      },
+      error: () => {
+        // If unable to fetch account, assume free tier
+        this.isPremiumUser = false;
+      }
+    });
   }
 
   loadRecipe() {
@@ -477,9 +495,9 @@ export class RecipeDetailComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result: SubstitutionDialogResult | undefined) => {
       if (result && result.forkedRecipeId) {
-        this.snackBar.open('Substitutions applied! Opening new recipe...', 'OK', { duration: 3000 });
-        // Navigate to the forked recipe
-        this.router.navigate(['/recipes', result.forkedRecipeId]);
+        this.snackBar.open('Substitutions applied! Opening in edit mode...', 'OK', { duration: 3000 });
+        // Navigate to the forked recipe in edit mode
+        this.router.navigate(['/recipes', result.forkedRecipeId, 'edit']);
       }
     });
   }
@@ -509,9 +527,8 @@ export class RecipeDetailComponent implements OnInit {
     
     this.recipeService.forkRecipe(this.recipeId, newTitle).subscribe({
       next: (forkedRecipe) => {
-        this.snackBar.open('Recipe forked successfully!', 'View', { duration: 5000 }).onAction().subscribe(() => {
-          this.router.navigate(['/recipes', forkedRecipe.recipeResourceId]);
-        });
+        this.snackBar.open('Recipe forked! Opening in edit mode...', 'Close', { duration: 3000 });
+        this.router.navigate(['/recipes', forkedRecipe.recipeResourceId, 'edit']);
       },
       error: (err) => {
         this.error = err.message || 'Failed to fork recipe';

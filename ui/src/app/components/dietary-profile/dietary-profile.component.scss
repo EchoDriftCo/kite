@@ -134,7 +134,7 @@
   gap: var(--space-sm);
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-overlay-light);
 
   .restriction-label {
     font-weight: 500;
@@ -173,7 +173,7 @@
   justify-content: space-between;
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-overlay-light);
 
   .ingredient-info {
     display: flex;
@@ -188,7 +188,7 @@
 }
 
 .no-items {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-low-emphasis);
   font-style: italic;
   text-align: center;
   padding: var(--space-md);
@@ -208,7 +208,7 @@
     font-size: 64px;
     width: 64px;
     height: 64px;
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--color-text-low-emphasis);
   }
 
   h3 {

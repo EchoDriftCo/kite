@@ -313,6 +313,6 @@
     --text-primary: #ffffff;
     --text-secondary: #b3b3b3;
     --border-color: #333333;
-    --hover-background: rgba(255, 255, 255, 0.05);
+    --hover-background: var(--color-overlay-light);
   }
 }

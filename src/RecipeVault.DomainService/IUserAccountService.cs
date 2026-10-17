@@ -9,5 +9,7 @@ namespace RecipeVault.DomainService {
         Task<UserAccount> SetTierAsync(Guid subjectId, AccountTier tier);
         Task<AccountTier> GetTierAsync(Guid subjectId);
         Task<bool> IsPremiumOrBetaAsync(Guid subjectId);
+        Task<UserAccount> MarkBetaCodeRedeemedAsync(Guid subjectId);
+        Task<bool> HasRedeemedBetaCodeAsync(Guid subjectId);
     }
 }

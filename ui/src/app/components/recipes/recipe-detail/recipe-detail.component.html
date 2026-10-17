@@ -288,8 +288,8 @@
       }
     </div>
 
-    <!-- Nutrition Panel -->
-    @if (recipe.recipeResourceId) {
+    <!-- Nutrition Panel (Premium only) -->
+    @if (recipe.recipeResourceId && isPremiumUser) {
       <app-nutrition-panel 
         [recipeResourceId]="recipe.recipeResourceId" 
         [recipeYield]="recipe.yield">

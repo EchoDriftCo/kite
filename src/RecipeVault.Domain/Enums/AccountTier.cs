@@ -1,7 +1,7 @@
 namespace RecipeVault.Domain.Enums {
     public enum AccountTier {
         Free = 0,
-        Premium = 1,
-        Beta = 2
+        Beta = 1,
+        Premium = 2
     }
 }

@@ -33,7 +33,7 @@ mat-dialog-content {
     align-items: center;
     gap: var(--space-sm);
     padding: var(--space-sm) var(--space-md);
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--color-overlay-light);
     border-radius: var(--radius-sm);
     font-size: 0.875rem;
     color: var(--color-text-secondary);

@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { ApiService } from './api.service';
 import {
   RecipeNutrition,
   IngredientNutrition,
@@ -13,16 +12,15 @@ import {
   providedIn: 'root'
 })
 export class NutritionService {
-  private readonly apiUrl = `${environment.apiUrl}`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private api: ApiService) {}
 
   /**
    * Trigger nutrition analysis for a recipe
    */
   analyzeRecipeNutrition(recipeResourceId: string): Observable<RecipeNutrition> {
-    return this.http.post<RecipeNutrition>(
-      `${this.apiUrl}/recipes/${recipeResourceId}/nutrition/analyze`,
+    return this.api.post<RecipeNutrition>(
+      `recipes/${recipeResourceId}/nutrition/analyze`,
       {}
     );
   }
@@ -31,8 +29,8 @@ export class NutritionService {
    * Get cached nutrition data for a recipe
    */
   getRecipeNutrition(recipeResourceId: string): Observable<RecipeNutrition> {
-    return this.http.get<RecipeNutrition>(
-      `${this.apiUrl}/recipes/${recipeResourceId}/nutrition`
+    return this.api.get<RecipeNutrition>(
+      `recipes/${recipeResourceId}/nutrition`
     );
   }
 
@@ -44,8 +42,8 @@ export class NutritionService {
     ingredientIndex: number,
     request: UpdateIngredientNutritionRequest
   ): Observable<IngredientNutrition> {
-    return this.http.put<IngredientNutrition>(
-      `${this.apiUrl}/recipes/${recipeResourceId}/ingredients/${ingredientIndex}/nutrition`,
+    return this.api.put<IngredientNutrition>(
+      `recipes/${recipeResourceId}/ingredients/${ingredientIndex}/nutrition`,
       request
     );
   }
@@ -54,10 +52,8 @@ export class NutritionService {
    * Search USDA FoodData Central
    */
   searchFoods(query: string): Observable<FoodSearchResult[]> {
-    const params = new HttpParams().set('query', query);
-    return this.http.get<FoodSearchResult[]>(
-      `${this.apiUrl}/nutrition/search`,
-      { params }
+    return this.api.get<FoodSearchResult[]>(
+      `nutrition/search?query=${encodeURIComponent(query)}`
     );
   }
 }

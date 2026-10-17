@@ -74,8 +74,8 @@
           }
 
           .alias-input {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: var(--color-overlay-heavy);
+            border: 1px solid var(--color-text-low-emphasis);
             border-radius: var(--radius-sm);
             padding: 2px 6px;
             font-size: 0.875rem;
@@ -85,7 +85,7 @@
             &:focus {
               outline: none;
               background: var(--color-text-hint);
-              border-color: rgba(255, 255, 255, 0.6);
+              border-color: var(--color-text-medium-emphasis);
             }
 
             &::placeholder {

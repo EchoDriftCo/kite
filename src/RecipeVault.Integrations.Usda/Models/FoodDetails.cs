@@ -7,21 +7,21 @@ namespace RecipeVault.Integrations.Usda.Models {
         public int FdcId { get; set; }
 
         [JsonPropertyName("description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [JsonPropertyName("dataType")]
-        public string DataType { get; set; }
+        public string? DataType { get; set; }
 
         [JsonPropertyName("foodNutrients")]
-        public List<DetailedFoodNutrient> FoodNutrients { get; set; }
+        public List<DetailedFoodNutrient>? FoodNutrients { get; set; }
 
         [JsonPropertyName("foodPortions")]
-        public List<FoodPortion> FoodPortions { get; set; }
+        public List<FoodPortion>? FoodPortions { get; set; }
     }
 
     public class DetailedFoodNutrient {
         [JsonPropertyName("nutrient")]
-        public Nutrient Nutrient { get; set; }
+        public Nutrient? Nutrient { get; set; }
 
         [JsonPropertyName("amount")]
         public decimal Amount { get; set; }
@@ -32,13 +32,13 @@ namespace RecipeVault.Integrations.Usda.Models {
         public int Id { get; set; }
 
         [JsonPropertyName("number")]
-        public string Number { get; set; }
+        public string? Number { get; set; }
 
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonPropertyName("unitName")]
-        public string UnitName { get; set; }
+        public string? UnitName { get; set; }
     }
 
     public class FoodPortion {
@@ -46,10 +46,10 @@ namespace RecipeVault.Integrations.Usda.Models {
         public int Id { get; set; }
 
         [JsonPropertyName("measureUnit")]
-        public MeasureUnit MeasureUnit { get; set; }
+        public MeasureUnit? MeasureUnit { get; set; }
 
         [JsonPropertyName("modifier")]
-        public string Modifier { get; set; }
+        public string? Modifier { get; set; }
 
         [JsonPropertyName("gramWeight")]
         public decimal GramWeight { get; set; }
@@ -63,9 +63,9 @@ namespace RecipeVault.Integrations.Usda.Models {
         public int Id { get; set; }
 
         [JsonPropertyName("abbreviation")]
-        public string Abbreviation { get; set; }
+        public string? Abbreviation { get; set; }
 
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

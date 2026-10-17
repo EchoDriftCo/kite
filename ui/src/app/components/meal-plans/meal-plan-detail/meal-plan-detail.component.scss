@@ -101,7 +101,7 @@
 .calendar-row {
   display: grid;
   grid-template-columns: 100px repeat(auto-fit, minmax(0, 1fr));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--color-overlay-medium);
 
   &:last-child {
     border-bottom: none;
@@ -121,7 +121,7 @@
 .calendar-cell {
   padding: var(--space-sm);
   min-height: 80px;
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 1px solid var(--color-overlay-medium);
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
