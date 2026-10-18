@@ -10,6 +10,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MealPlanService } from '../../../services/meal-plan.service';
 import { MealPlan, MealPlanSearchRequest, MealPlanEntryRequest, CreateMealPlanRequest } from '../../../models/meal-plan.model';
 import { CopyMealPlanDialogComponent, CopyMealPlanResult } from '../copy-meal-plan-dialog/copy-meal-plan-dialog.component';
+import { addDays, daysBetween, formatCalendarDate, parseCalendarDate } from '../../../shared/calendar-date';
 
 @Component({
   selector: 'app-meal-plan-list',
@@ -94,15 +95,12 @@ export class MealPlanListComponent implements OnInit {
 
         dialogRef.afterClosed().subscribe((result: CopyMealPlanResult | null) => {
           if (result) {
-            const origStart = new Date(fullPlan.startDate);
-            const newStart = new Date(result.startDate);
-            const offsetMs = newStart.getTime() - origStart.getTime();
+            const offsetDays = daysBetween(parseCalendarDate(fullPlan.startDate), parseCalendarDate(result.startDate));
 
             const shiftedEntries: MealPlanEntryRequest[] = (fullPlan.entries || []).map(e => {
-              const entryDate = new Date(e.date);
-              const shiftedDate = new Date(entryDate.getTime() + offsetMs);
+              const shiftedDate = addDays(parseCalendarDate(e.date), offsetDays);
               return {
-                date: this.formatDateStr(shiftedDate),
+                date: formatCalendarDate(shiftedDate),
                 mealSlot: e.mealSlot,
                 recipeResourceId: e.recipeResourceId,
                 servings: e.servings || undefined,
@@ -139,15 +137,8 @@ export class MealPlanListComponent implements OnInit {
   }
 
   formatDateRange(plan: MealPlan): string {
-    const start = new Date(plan.startDate);
-    const end = new Date(plan.endDate);
+    const start = parseCalendarDate(plan.startDate);
+    const end = parseCalendarDate(plan.endDate);
     return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
-  }
-
-  private formatDateStr(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
   }
 }

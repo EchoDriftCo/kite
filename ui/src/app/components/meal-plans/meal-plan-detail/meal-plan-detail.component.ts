@@ -14,6 +14,7 @@ import { MealPlanService } from '../../../services/meal-plan.service';
 import { MealPlan, MealPlanEntry, MealSlot, MEAL_SLOT_LABELS, MealPlanEntryRequest, CreateMealPlanRequest } from '../../../models/meal-plan.model';
 import { RecipePickerDialogComponent } from '../recipe-picker-dialog/recipe-picker-dialog.component';
 import { CopyMealPlanDialogComponent, CopyMealPlanResult } from '../copy-meal-plan-dialog/copy-meal-plan-dialog.component';
+import { addDays, daysBetween, formatCalendarDate, parseCalendarDate } from '../../../shared/calendar-date';
 
 interface CalendarDay {
   date: Date;
@@ -86,14 +87,14 @@ export class MealPlanDetailComponent implements OnInit {
     if (!this.plan) return;
 
     this.calendarDays = [];
-    const start = new Date(this.plan.startDate);
-    const end = new Date(this.plan.endDate);
+    const start = parseCalendarDate(this.plan.startDate);
+    const end = parseCalendarDate(this.plan.endDate);
 
     const current = new Date(start);
     while (current <= end) {
-      const dateStr = this.formatDateStr(current);
+      const dateStr = formatCalendarDate(current);
       const dayEntries = (this.plan.entries || []).filter(e => {
-        const entryDate = this.formatDateStr(new Date(e.date));
+        const entryDate = formatCalendarDate(parseCalendarDate(e.date));
         return entryDate === dateStr;
       });
 
@@ -131,7 +132,7 @@ export class MealPlanDetailComponent implements OnInit {
 
         // Build full entries list for update
         const existingEntries: MealPlanEntryRequest[] = (this.plan.entries || []).map(e => ({
-          date: this.formatDateStr(new Date(e.date)),
+          date: formatCalendarDate(parseCalendarDate(e.date)),
           mealSlot: e.mealSlot,
           recipeResourceId: e.recipeResourceId,
           servings: e.servings || undefined,
@@ -150,7 +151,7 @@ export class MealPlanDetailComponent implements OnInit {
     const updatedEntries: MealPlanEntryRequest[] = (this.plan.entries || [])
       .filter(e => e !== entry)
       .map(e => ({
-        date: this.formatDateStr(new Date(e.date)),
+        date: formatCalendarDate(parseCalendarDate(e.date)),
         mealSlot: e.mealSlot,
         recipeResourceId: e.recipeResourceId,
         servings: e.servings || undefined,
@@ -164,7 +165,7 @@ export class MealPlanDetailComponent implements OnInit {
     if (!this.plan) return;
 
     const updatedEntries: MealPlanEntryRequest[] = (this.plan.entries || []).map(e => ({
-      date: this.formatDateStr(new Date(e.date)),
+      date: formatCalendarDate(parseCalendarDate(e.date)),
       mealSlot: e.mealSlot,
       recipeResourceId: e.recipeResourceId,
       servings: e.servings || undefined,
@@ -179,8 +180,8 @@ export class MealPlanDetailComponent implements OnInit {
 
     const request: CreateMealPlanRequest = {
       name: this.plan.name,
-      startDate: this.formatDateStr(new Date(this.plan.startDate)),
-      endDate: this.formatDateStr(new Date(this.plan.endDate)),
+      startDate: formatCalendarDate(parseCalendarDate(this.plan.startDate)),
+      endDate: formatCalendarDate(parseCalendarDate(this.plan.endDate)),
       entries
     };
 
@@ -206,15 +207,12 @@ export class MealPlanDetailComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result: CopyMealPlanResult | null) => {
       if (result && this.plan) {
-        const origStart = new Date(this.plan.startDate);
-        const newStart = new Date(result.startDate);
-        const offsetMs = newStart.getTime() - origStart.getTime();
+        const offsetDays = daysBetween(parseCalendarDate(this.plan.startDate), parseCalendarDate(result.startDate));
 
         const shiftedEntries: MealPlanEntryRequest[] = (this.plan.entries || []).map(e => {
-          const entryDate = new Date(e.date);
-          const shiftedDate = new Date(entryDate.getTime() + offsetMs);
+          const shiftedDate = addDays(parseCalendarDate(e.date), offsetDays);
           return {
-            date: this.formatDateStr(shiftedDate),
+            date: formatCalendarDate(shiftedDate),
             mealSlot: e.mealSlot,
             recipeResourceId: e.recipeResourceId,
             servings: e.servings || undefined,
@@ -266,12 +264,5 @@ export class MealPlanDetailComponent implements OnInit {
 
   goBack() {
     this.router.navigate(['/meal-plans']);
-  }
-
-  private formatDateStr(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
   }
 }
