@@ -1,0 +1,122 @@
+name: CI
+
+# Runs on every pull request, and is called by deploy.yml so production deploys
+# go through exactly the same checks.
+on:
+  pull_request:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Supersede stale PR runs, but never cancel a run that a deploy is waiting on
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DOTNET_VERSION: '8.0.x'
+
+jobs:
+  api:
+    name: API build, tests and migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # dotnet-ef is pinned in dotnet-tools.json to match the EF Core packages
+      - name: Restore tools
+        run: dotnet tool restore
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests
+        run: |
+          dotnet test src/RecipeVault.Domain.Tests --configuration Release --no-build --verbosity normal
+          dotnet test src/RecipeVault.DomainService.Tests --configuration Release --no-build --verbosity normal
+          dotnet test src/RecipeVault.Facade.Tests --configuration Release --no-build --verbosity normal
+          dotnet test src/RecipeVault.WebApi.Tests --configuration Release --no-build --verbosity normal
+          dotnet test src/RecipeVault.WebApi.IntegrationTests --configuration Release --no-build --verbosity normal
+          dotnet test src/RecipeVault.Integrations.Gemini.Tests --configuration Release --no-build --verbosity normal
+
+      # EF only discovers a migration through its [Migration("<id>")] attribute,
+      # normally in the generated .Designer.cs. A hand-written file without one is
+      # silently skipped and never applies (FixAccountTierSwap, SeedUnitData).
+      - name: Check every migration file is discoverable
+        working-directory: src/RecipeVault.Data/Migrations
+        run: |
+          # Known to be undiscovered today. SeedUnitData was never applied, so the
+          # Unit table is empty in production; enabling it is a data decision.
+          allowed="20260203002542_SeedUnitData"
+          missing=0
+          for f in [0-9]*_*.cs; do
+            case "$f" in *.Designer.cs) continue ;; esac
+            id="${f%.cs}"
+            case " $allowed " in *" $id "*) continue ;; esac
+            if ! grep -qs "\[Migration(\"$id\")\]" "$f" "$id.Designer.cs"; then
+              echo "::error file=src/RecipeVault.Data/Migrations/$f::$id has no [Migration(\"$id\")] attribute, so EF never applies it. Create migrations with 'dotnet ef migrations add'."
+              missing=1
+            fi
+          done
+          exit $missing
+
+      - name: Check the model has no unmigrated changes
+        run: |
+          dotnet ef migrations has-pending-model-changes \
+            --project src/RecipeVault.Data \
+            --startup-project src/RecipeVault.WebApi \
+            --configuration Release --no-build
+
+      - name: Generate migration SQL
+        run: |
+          dotnet ef migrations script \
+            --idempotent \
+            --project src/RecipeVault.Data \
+            --startup-project src/RecipeVault.WebApi \
+            --configuration Release --no-build \
+            --output migrations.sql
+
+      # deploy.yml applies this exact script, so what was reviewed is what runs
+      - name: Upload migration SQL
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: migrations-sql
+          path: migrations.sql
+          retention-days: 30
+
+  ui:
+    name: UI production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '20'
+
+      # Same commands as the Dockerfile's ui-build stage, so a UI break fails here
+      # instead of halfway through a deploy
+      - name: Install dependencies
+        working-directory: ui
+        run: npm install --ignore-scripts
+
+      - name: Build
+        working-directory: ui
+        run: npx ng build --configuration production
