@@ -11,6 +11,7 @@ using RecipeVault.Dto.Output;
 using RecipeVault.Domain.Enums;
 using RecipeVault.Facade;
 using RecipeVault.WebApi.Filters;
+using RecipeVault.WebApi.RateLimiting;
 
 namespace RecipeVault.WebApi.Controllers {
     /// <summary>
@@ -37,7 +38,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// <param name="request">Mix recipes request with recipe IDs, intent, and mode</param>
         [HttpPost("")]
         [GuestQuota(GuestQuotaAttribute.Ai, 10)]
-        [EnableRateLimiting("upload")]
+        [EnableRateLimiting(RateLimitPolicies.Upload)]
         [ProducesResponseType(typeof(MixedRecipePreviewDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -66,7 +67,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// <param name="request">Refine request with current preview and refinement notes</param>
         [HttpPost("refine")]
         [GuestQuota(GuestQuotaAttribute.Ai, 10)]
-        [EnableRateLimiting("upload")]
+        [EnableRateLimiting(RateLimitPolicies.Upload)]
         [ProducesResponseType(typeof(MixedRecipePreviewDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]

@@ -20,6 +20,7 @@ using RecipeVault.WebApi.Models.Responses;
 using Serilog.Context;
 using RecipeVault.WebApi.Authentication;
 using RecipeVault.WebApi.Filters;
+using RecipeVault.WebApi.RateLimiting;
 
 namespace RecipeVault.WebApi.Controllers {
     /// <summary>
@@ -291,7 +292,7 @@ namespace RecipeVault.WebApi.Controllers {
         [ProducesResponseType(typeof(UploadImageResponseModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestSizeLimit(15_000_000)] // 15MB to cover base64 overhead
-        [EnableRateLimiting("upload")]
+        [EnableRateLimiting(RateLimitPolicies.Upload)]
         public async Task<IActionResult> UploadImageAsync([FromBody] UploadImageRequestModel input) {
             if (string.IsNullOrWhiteSpace(input?.ImageData)) {
                 return BadRequest("Image data is required");

@@ -26,7 +26,9 @@ primary_region = 'iad'
     type = 'http'
     interval = '30s'
     timeout = '5s'
-    path = '/api/health'
+    # Liveness: the process is up. Fly (and fly deploy) judge machines by this.
+    # Readiness, including the database, is /api/health, which the deploy workflow verifies.
+    path = '/health/live'
     grace_period = '30s'
 
 [[vm]]

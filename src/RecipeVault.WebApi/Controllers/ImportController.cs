@@ -14,6 +14,7 @@ using RecipeVault.WebApi.Mappers;
 using RecipeVault.WebApi.Models.Responses;
 using Serilog.Context;
 using RecipeVault.WebApi.Filters;
+using RecipeVault.WebApi.RateLimiting;
 
 namespace RecipeVault.WebApi.Controllers {
     /// <summary>
@@ -24,7 +25,7 @@ namespace RecipeVault.WebApi.Controllers {
     [ApiController]
     [Route("api/v{version:apiVersion}/import")]
     [Authorize]
-    [EnableRateLimiting("upload")]
+    [EnableRateLimiting(RateLimitPolicies.Upload)]
     [GuestQuota(GuestQuotaAttribute.Ai, 10)]
     public class ImportController : ControllerBase {
         private readonly IImportFacade facade;

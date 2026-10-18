@@ -21,10 +21,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using RecipeVault.BootStrap;
@@ -33,6 +34,7 @@ using RecipeVault.Data;
 using RecipeVault.Health;
 using RecipeVault.WebApi.Authentication;
 using RecipeVault.WebApi.Installers;
+using RecipeVault.WebApi.RateLimiting;
 using RecipeVault.WebApi.Services;
 
 namespace RecipeVault.WebApi {
@@ -111,26 +113,19 @@ namespace RecipeVault.WebApi {
                     options.Authority = $"{supabaseUrl}/auth/v1";
                     options.Audience = jwtAudience;
 
-                    // Build OIDC configuration manually to control the JWKS endpoint URL.
-                    // Use the reachable Supabase URL for fetching keys — in Docker containers,
-                    // appsettings may have 127.0.0.1 which isn't reachable, so prefer the env var.
-                    // Skip JWKS fetch when no Supabase URL is configured (e.g. integration tests).
+                    // Signing keys come straight from the JWKS endpoint, using the reachable
+                    // Supabase URL: inside Docker the discovery document advertises 127.0.0.1,
+                    // which the container can't reach, so prefer the env var. The configuration
+                    // manager fetches lazily on the first token, caches the keys and refetches
+                    // when a token arrives with an unknown key id, so a Supabase key rotation
+                    // doesn't need a restart and a slow Supabase can't stall startup.
+                    // No Supabase URL (integration tests): the tests supply their own key.
                     var reachableSupabaseUrl = Environment.GetEnvironmentVariable("SUPABASE_URL") ?? supabaseUrl;
                     if (!string.IsNullOrWhiteSpace(reachableSupabaseUrl)) {
-                        try {
-                            var oidcConfig = new Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration {
-                                Issuer = jwtIssuer,
-                                JwksUri = $"{reachableSupabaseUrl}/auth/v1/.well-known/jwks.json"
-                            };
-                            var jwksJson = new System.Net.Http.HttpClient().GetStringAsync(oidcConfig.JwksUri).Result;
-                            var jwks = new Microsoft.IdentityModel.Tokens.JsonWebKeySet(jwksJson);
-                            foreach (var key in jwks.GetSigningKeys()) {
-                                oidcConfig.SigningKeys.Add(key);
-                            }
-                            options.Configuration = oidcConfig;
-                        } catch (Exception ex) {
-                            Console.WriteLine($"[WARN] JWKS fetch failed ({ex.InnerException?.Message ?? ex.Message}). JWT validation will use static key if configured.");
-                        }
+                        options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                            $"{reachableSupabaseUrl}/auth/v1/.well-known/jwks.json",
+                            new JwksConfigurationRetriever(jwtIssuer),
+                            new HttpDocumentRetriever { RequireHttps = options.RequireHttpsMetadata });
                     }
 
                     options.TokenValidationParameters = new TokenValidationParameters {
@@ -140,7 +135,8 @@ namespace RecipeVault.WebApi {
                         ValidAudience = jwtAudience,
                         ValidateIssuerSigningKey = true,
                         ValidateLifetime = true,
-                        // Accept multiple valid signing algorithms (HS256 for prod, ES256 for local Supabase)
+                        // Supabase signs with ES256 (its JWKS publishes one EC key); HS256 is what
+                        // the integration tests sign with
                         ValidAlgorithms = ValidJwtAlgorithms
                     };
 
@@ -153,6 +149,13 @@ namespace RecipeVault.WebApi {
                             return Task.CompletedTask;
                         },
                         OnTokenValidated = context => {
+                            // Every write is audited against the subject id, and Cortside falls back
+                            // to the shared Guid.Empty "service" subject when it can't parse one
+                            if (!Guid.TryParse(context.Principal?.FindFirst("sub")?.Value, out var subjectId) || subjectId == Guid.Empty) {
+                                context.Fail("The token's sub claim is not a user id.");
+                                return Task.CompletedTask;
+                            }
+
                             // Map Supabase "email" claim to "upn" for Cortside SubjectPrincipal
                             var identity = context.Principal?.Identity as System.Security.Claims.ClaimsIdentity;
                             var emailClaim = identity?.FindFirst("email");
@@ -192,12 +195,8 @@ namespace RecipeVault.WebApi {
             // Add memory cache for substitution caching
             services.AddMemoryCache();
 
-            // Seed health check caches before the background service starts so cold-start
-            // requests don't see 503. Must be registered before AddHealth so its StartAsync
-            // runs first (hosted services start in registration order).
-            services.AddHostedService<HealthWarmupService>();
-
-            // Sample recipes for onboarding are seeded by the SeedSampleRecipes migration.
+            // Nothing seeds or migrates at startup. Schema and reference data (including the
+            // onboarding sample recipes) are applied by migrations in the deploy workflow.
 
             // add health services
             services.AddHealth(o => {
@@ -234,17 +233,11 @@ namespace RecipeVault.WebApi {
                     .AllowCredentials());
             });
 
-            // add rate limiting
+            // add rate limiting, partitioned per caller (see RateLimitPolicies)
             services.AddRateLimiter(options => {
-                options.RejectionStatusCode = 429;
-                options.AddFixedWindowLimiter("api", opt => {
-                    opt.PermitLimit = 60;
-                    opt.Window = TimeSpan.FromMinutes(1);
-                });
-                options.AddFixedWindowLimiter("upload", opt => {
-                    opt.PermitLimit = 10;
-                    opt.Window = TimeSpan.FromMinutes(1);
-                });
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                options.AddPolicy(RateLimitPolicies.Api, context => RateLimitPolicies.FixedWindow(context, permitLimit: 60));
+                options.AddPolicy(RateLimitPolicies.Upload, context => RateLimitPolicies.FixedWindow(context, permitLimit: 10));
             });
 
             // HSTS - 1 year per OWASP recommendation
@@ -269,28 +262,6 @@ namespace RecipeVault.WebApi {
         /// <param name="env"></param>
         /// <param name="provider"></param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider) {
-            
-            // Production migrations are applied by the deploy workflow, which fails the
-            // deploy when one fails. Applying them here too only logged a warning on
-            // failure, so this is off unless Database:MigrateOnStartup is set (local dev).
-            if (!env.IsEnvironment("Testing") && Configuration.GetValue<bool>("Database:MigrateOnStartup")) {
-                try {
-                    using (var scope = app.ApplicationServices.CreateScope()) {
-                        var db = scope.ServiceProvider.GetRequiredService<RecipeVaultDbContext>();
-                        var pendingMigrations = db.Database.GetPendingMigrations().ToList();
-                        if (pendingMigrations.Count > 0) {
-                            var migrationLogger = scope.ServiceProvider.GetRequiredService<ILogger<Startup>>();
-                            migrationLogger.LogInformation("Applying {Count} pending migration(s): {Migrations}", pendingMigrations.Count, string.Join(", ", pendingMigrations));
-                            db.Database.Migrate();
-                            migrationLogger.LogInformation("Migrations applied successfully");
-                        }
-                    }
-                } catch (Exception ex) {
-                    var startupLogger = app.ApplicationServices.GetRequiredService<ILogger<Startup>>();
-                    startupLogger.LogWarning(ex, "Failed to apply migrations on startup — may need manual intervention");
-                }
-            }
-
             app.UseApiDefaults(Configuration);
             app.UseSwagger("RecipeVault Api", provider);
 
@@ -329,10 +300,13 @@ namespace RecipeVault.WebApi {
 
             // order of the following matters
             app.UseCors();
-            app.UseRateLimiter();
             app.UseAuthentication();
             app.UseSubjectPrincipal(); // intentionally set after UseAuthentication
             app.UseRouting();
+            // After UseRouting, or [EnableRateLimiting] policies are never applied: the
+            // limiter needs the endpoint to find its policy. After UseAuthentication, so
+            // requests can be partitioned per user.
+            app.UseRateLimiter();
             app.UseAuthorization(); // intentionally set after UseRouting
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
@@ -343,6 +317,11 @@ namespace RecipeVault.WebApi {
                     context.Response.Redirect("/api/health");
                     return Task.CompletedTask;
                 });
+
+                // Liveness: the process is up and serving. No dependency checks, so it
+                // answers immediately after a cold start. Fly's machine check uses this;
+                // /api/health stays the readiness check (database, Gemini).
+                endpoints.MapGet("/health/live", () => Results.Text("ok"));
                 
                 endpoints.MapFallbackToFile("index.html");
             });

@@ -10,8 +10,12 @@ namespace RecipeVault.WebApi.Services {
     /// </summary>
     public class SupabaseSubjectFactory : ISubjectFactory<Subject> {
         public Subject CreateSubject(ISubjectPrincipal subjectPrincipal) {
-            // Parse SubjectId from the "sub" claim - default to empty if parse fails
-            _ = Guid.TryParse(subjectPrincipal.SubjectId, out var subjectId);
+            // Never fall back to Guid.Empty: that is the shared "service" subject, and
+            // writes attributed to it can't be told apart. Bearer tokens with a bad sub are
+            // already rejected in OnTokenValidated; this is the backstop.
+            if (!Guid.TryParse(subjectPrincipal.SubjectId, out var subjectId)) {
+                throw new InvalidOperationException($"Subject id '{subjectPrincipal.SubjectId}' is not a GUID.");
+            }
 
             // Create Subject with all properties including UserPrincipalName
             // Subject constructor: (Guid subjectId, string name, string givenName, string familyName, string userPrincipalName)
