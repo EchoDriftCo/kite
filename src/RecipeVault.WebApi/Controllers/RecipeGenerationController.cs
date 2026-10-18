@@ -11,6 +11,7 @@ using RecipeVault.Dto.Output;
 using RecipeVault.Domain.Enums;
 using RecipeVault.Facade;
 using RecipeVault.WebApi.Filters;
+using RecipeVault.WebApi.RateLimiting;
 using Serilog.Context;
 
 namespace RecipeVault.WebApi.Controllers {
@@ -40,7 +41,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// <returns>Generated recipe(s) for preview</returns>
         [HttpPost("")]
         [GuestQuota(GuestQuotaAttribute.Ai, 10)]
-        [EnableRateLimiting("fixed")]
+        [EnableRateLimiting(RateLimitPolicies.Upload)]
         [ProducesResponseType(typeof(List<GeneratedRecipeDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
@@ -88,7 +89,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// <returns>Refined recipe</returns>
         [HttpPost("refine")]
         [GuestQuota(GuestQuotaAttribute.Ai, 10)]
-        [EnableRateLimiting("fixed")]
+        [EnableRateLimiting(RateLimitPolicies.Upload)]
         [ProducesResponseType(typeof(GeneratedRecipeDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
