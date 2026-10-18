@@ -22,8 +22,11 @@ export const guestAccessInterceptor: HttpInterceptorFn = (req, next) => {
         if (err.status === 403 && type === REGISTRATION_REQUIRED_TYPE) {
           guestPrompt.promptSignUp(err.error?.detail);
         } else if (err.status === 429 && type === GUEST_QUOTA_EXCEEDED_TYPE) {
-          snackBar.open(err.error?.detail ?? "You've reached today's guest limit.", 'Create account', { duration: 8000 })
-            .onAction().subscribe(() => guestPrompt.promptSignUp());
+          // Open after the caller's error handler runs, so its own failure snackbar doesn't replace this one
+          setTimeout(() => {
+            snackBar.open(err.error?.detail ?? "You've reached today's guest limit.", 'Create account', { duration: 8000 })
+              .onAction().subscribe(() => guestPrompt.promptSignUp());
+          });
         }
       }
       return throwError(() => err);

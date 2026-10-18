@@ -90,12 +90,17 @@ export class AuthService {
 
   /**
    * Start a guest session (Supabase anonymous sign-in) so a visitor can use the app without signing up.
-   * Concurrent callers share one in-flight request.
+   * Reuses any existing session (including a restored guest one), so a guest's data is never replaced
+   * by a fresh guest identity. Concurrent callers share one in-flight request.
    */
   signInAsGuest(): Promise<void> {
     if (!this.guestSignIn) {
-      this.guestSignIn = this.supabase.client.auth.signInAnonymously()
-        .then(({ data, error }) => {
+      this.guestSignIn = this.ready
+        .then(async () => {
+          if (this.currentUser) {
+            return;
+          }
+          const { data, error } = await this.supabase.client.auth.signInAnonymously();
           if (error) throw error;
           this.setSession(data.session);
         })

@@ -38,7 +38,6 @@ export class LoginComponent {
   successMessage = '';
   returnUrl = '/';
   hidePassword = true;
-  readonly isGuest: boolean;
 
   constructor(
     private fb: FormBuilder,
@@ -49,12 +48,16 @@ export class LoginComponent {
     public themeService: ThemeService
   ) {
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-    this.isGuest = this.authService.isGuest();
     
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
+  }
+
+  /** Read live: the saved session may be restored after this page renders */
+  get isGuest(): boolean {
+    return this.authService.isGuest();
   }
 
   async onSignIn() {

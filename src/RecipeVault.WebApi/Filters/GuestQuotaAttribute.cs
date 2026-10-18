@@ -27,6 +27,9 @@ namespace RecipeVault.WebApi.Filters {
         /// </summary>
         public const string Save = "Save";
 
+        // Serializes check-and-increment so concurrent requests can't both pass at limit - 1
+        private static readonly object QuotaLock = new object();
+
         private readonly string bucket;
         private readonly int defaultLimit;
 
@@ -47,8 +50,16 @@ namespace RecipeVault.WebApi.Filters {
             var limit = configuration?.GetValue<int?>($"GuestQuota:{bucket}") ?? defaultLimit;
 
             var cacheKey = $"guest_quota_{bucket}_{GuestAccess.GetClientIp(httpContext)}_{DateTime.UtcNow:yyyy-MM-dd}";
-            var count = cache.Get<int>(cacheKey);
-            if (count >= limit) {
+            bool allowed;
+            lock (QuotaLock) {
+                var count = cache.Get<int>(cacheKey);
+                allowed = count < limit;
+                if (allowed) {
+                    cache.Set(cacheKey, count + 1, TimeSpan.FromDays(1));
+                }
+            }
+
+            if (!allowed) {
                 context.Result = new ObjectResult(new ProblemDetails {
                     Type = GuestAccess.GuestQuotaExceededType,
                     Title = "Guest Limit Reached",
@@ -60,7 +71,6 @@ namespace RecipeVault.WebApi.Filters {
                 return;
             }
 
-            cache.Set(cacheKey, count + 1, TimeSpan.FromDays(1));
             await next().ConfigureAwait(false);
         }
     }

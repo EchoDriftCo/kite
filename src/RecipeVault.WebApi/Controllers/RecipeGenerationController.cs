@@ -39,6 +39,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// <param name="request">Generation request with prompt and constraints</param>
         /// <returns>Generated recipe(s) for preview</returns>
         [HttpPost("")]
+        [GuestQuota(GuestQuotaAttribute.Ai, 10)]
         [EnableRateLimiting("fixed")]
         [ProducesResponseType(typeof(List<GeneratedRecipeDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -86,6 +87,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// <param name="request">Refinement request with previous recipe and refinement instructions</param>
         /// <returns>Refined recipe</returns>
         [HttpPost("refine")]
+        [GuestQuota(GuestQuotaAttribute.Ai, 10)]
         [EnableRateLimiting("fixed")]
         [ProducesResponseType(typeof(GeneratedRecipeDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -133,6 +135,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// <param name="generatedRecipe">The generated recipe to save</param>
         /// <returns>Saved recipe</returns>
         [HttpPost("save")]
+        [GuestQuota(GuestQuotaAttribute.Save, 50)]
         [ProducesResponseType(typeof(RecipeDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> SaveGeneratedRecipeAsync([FromBody] GeneratedRecipeDto generatedRecipe) {

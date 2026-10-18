@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -103,6 +104,18 @@ namespace RecipeVault.WebApi.Tests.Filters {
             var result = context.Result.ShouldBeOfType<ObjectResult>();
             result.StatusCode.ShouldBe(StatusCodes.Status429TooManyRequests);
             result.Value.ShouldBeOfType<ProblemDetails>().Type.ShouldBe(GuestAccess.GuestQuotaExceededType);
+        }
+
+        [Fact]
+        public async Task GuestQuota_WithConcurrentGuestRequests_AllowsExactlyTheLimit() {
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            const int limit = 10;
+
+            // Separate attribute instances share the quota through the cache key, like different actions in one bucket
+            var results = await Task.WhenAll(Enumerable.Range(0, 200).Select(_ => Task.Run(() =>
+                RunAsync(new GuestQuotaAttribute(GuestQuotaAttribute.Ai, limit), CreateContext(isGuest: true, cache)))));
+
+            results.Count(allowed => allowed).ShouldBe(limit);
         }
 
         [Fact]
