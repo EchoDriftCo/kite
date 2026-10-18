@@ -38,7 +38,7 @@ namespace RecipeVault.DomainService.Tests.Services {
             var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
 
             mockRepository
-                .Setup(x => x.GetByNameAndCategoryAsync("Italian", TagCategory.Cuisine))
+                .Setup(x => x.GetByNameAndCategoryAsync("Italian", TagCategory.Cuisine, It.IsAny<Guid?>()))
                 .ReturnsAsync((Tag)null)
                 .Verifiable();
 
@@ -69,7 +69,7 @@ namespace RecipeVault.DomainService.Tests.Services {
             var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
 
             mockRepository
-                .Setup(x => x.GetByNameAndCategoryAsync("Vegan", TagCategory.Dietary))
+                .Setup(x => x.GetByNameAndCategoryAsync("Vegan", TagCategory.Dietary, It.IsAny<Guid?>()))
                 .ReturnsAsync(globalTag)
                 .Verifiable();
 
@@ -94,7 +94,7 @@ namespace RecipeVault.DomainService.Tests.Services {
             var mockSubjectPrincipal = CreateMockSubjectPrincipal(setupSubjectId: true);
 
             mockRepository
-                .Setup(x => x.GetByNameAndCategoryAsync("Italian", TagCategory.Cuisine))
+                .Setup(x => x.GetByNameAndCategoryAsync("Italian", TagCategory.Cuisine, It.IsAny<Guid?>()))
                 .ReturnsAsync(existingTag)
                 .Verifiable();
 
@@ -111,7 +111,7 @@ namespace RecipeVault.DomainService.Tests.Services {
         [Fact]
         public async Task GetTagAsync_WithValidId_ReturnsTag() {
             // Arrange
-            var tag = new TagBuilder().WithName("Italian").WithCategory(TagCategory.Cuisine).Build();
+            var tag = new TagBuilder().WithName("Italian").WithCategory(TagCategory.Cuisine).WithIsGlobal(true).Build();
             var mockRepository = MockRepository.Create<ITagRepository>();
             var mockSubjectPrincipal = CreateMockSubjectPrincipal();
 

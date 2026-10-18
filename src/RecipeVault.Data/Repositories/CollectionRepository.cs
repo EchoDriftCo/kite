@@ -25,6 +25,7 @@ namespace RecipeVault.Data.Repositories {
             return dbContext.Collections
                 .Include(c => c.CollectionRecipes)
                 .ThenInclude(cr => cr.Recipe)
+                    .ThenInclude(r => r.CreatedSubject)
                 .FirstOrDefaultAsync(c => c.CollectionResourceId == collectionResourceId);
         }
 
@@ -32,13 +33,15 @@ namespace RecipeVault.Data.Repositories {
             return dbContext.Collections
                 .Include(c => c.CollectionRecipes)
                 .ThenInclude(cr => cr.Recipe)
+                    .ThenInclude(r => r.CreatedSubject)
                 .FirstOrDefaultAsync(c => c.CollectionId == collectionId);
         }
 
         public async Task<PagedList<Collection>> SearchAsync(CollectionSearch search) {
             var query = search.Build(dbContext.Collections
                 .Include(c => c.CollectionRecipes)
-                .ThenInclude(cr => cr.Recipe));
+                .ThenInclude(cr => cr.Recipe)
+                    .ThenInclude(r => r.CreatedSubject));
 
             var result = new PagedList<Collection> {
                 PageNumber = search.PageNumber,
@@ -64,6 +67,7 @@ namespace RecipeVault.Data.Repositories {
                 .Where(c => c.SubjectId == subjectId)
                 .Include(c => c.CollectionRecipes)
                 .ThenInclude(cr => cr.Recipe)
+                    .ThenInclude(r => r.CreatedSubject)
                 .OrderBy(c => c.SortOrder)
                 .ThenBy(c => c.Name)
                 .ToListAsync();
@@ -74,6 +78,7 @@ namespace RecipeVault.Data.Repositories {
                 .Where(c => c.IsPublic)
                 .Include(c => c.CollectionRecipes)
                 .ThenInclude(cr => cr.Recipe)
+                    .ThenInclude(r => r.CreatedSubject)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchTerm)) {
@@ -96,9 +101,10 @@ namespace RecipeVault.Data.Repositories {
 
         public async Task<PagedList<Collection>> GetFeaturedCollectionsAsync(int pageNumber, int pageSize) {
             var query = dbContext.Collections
-                .Where(c => c.IsFeatured)
+                .Where(c => c.IsFeatured && c.IsPublic)
                 .Include(c => c.CollectionRecipes)
                 .ThenInclude(cr => cr.Recipe)
+                    .ThenInclude(r => r.CreatedSubject)
                 .OrderBy(c => c.SortOrder)
                 .ThenBy(c => c.Name);
 

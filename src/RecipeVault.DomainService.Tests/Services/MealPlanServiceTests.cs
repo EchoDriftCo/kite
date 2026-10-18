@@ -304,6 +304,34 @@ namespace RecipeVault.DomainService.Tests.Services {
         }
 
         [Fact]
+        public async Task GenerateGroceryListAsync_WhenRecipeBecomesPrivate_ExcludesItsIngredients() {
+            var recipe = new RecipeBuilder()
+                .WithTitle("Private Recipe")
+                .WithIsPublic(false)
+                .WithIngredients(new List<RecipeIngredient> {
+                    new RecipeIngredientBuilder().WithItem("secret ingredient").WithQuantity(1m).WithUnit("cup").Build()
+                })
+                .Build();
+            recipe.CreatedSubject = new Subject(Guid.NewGuid(), "Other User", "Other", "User", "other@example.com");
+
+            var entry = new MealPlanEntry(DateTime.UtcNow, MealSlot.Dinner, 0, null, false);
+            SetEntryRecipe(entry, recipe);
+            var mealPlan = BuildMealPlanWithOwner(new MealPlanBuilder().WithEntries(new List<MealPlanEntry> { entry }));
+            var service = CreateServiceForGroceryTests(mealPlan, out var mockGeminiClient);
+
+            mockGeminiClient
+                .Setup(x => x.ConsolidateGroceryListAsync(It.IsAny<List<GeminiGroceryItem>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new GeminiGroceryConsolidationResponse { Items = new List<GeminiConsolidatedItem>() });
+
+            var result = await service.GenerateGroceryListAsync(mealPlan.MealPlanResourceId);
+
+            result.Items.ShouldBeEmpty();
+            mockGeminiClient.Verify(x => x.ConsolidateGroceryListAsync(
+                It.Is<List<GeminiGroceryItem>>(items => items.Count == 0),
+                It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
         public async Task GenerateGroceryListAsync_WithMultipleRecipes_TracksRecipeSources() {
             // Arrange — flour appears in both recipes, sources should contain both titles
             var recipe1 = new RecipeBuilder()

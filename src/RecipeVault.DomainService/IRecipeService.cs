@@ -11,6 +11,10 @@ namespace RecipeVault.DomainService {
     public interface IRecipeService {
         Task<Recipe> CreateRecipeAsync(UpdateRecipeDto dto);
         Task<Recipe> GetRecipeAsync(Guid recipeResourceId);
+        /// <summary>
+        /// Returns the recipe only if the current user owns it; otherwise throws RecipeNotFoundException
+        /// </summary>
+        Task<Recipe> GetOwnRecipeAsync(Guid recipeResourceId);
         Task<PagedList<Recipe>> SearchRecipesAsync(RecipeSearch search);
         Task<Recipe> UpdateRecipeAsync(Guid resourceId, UpdateRecipeDto dto);
         Task DeleteRecipeAsync(Guid resourceId);

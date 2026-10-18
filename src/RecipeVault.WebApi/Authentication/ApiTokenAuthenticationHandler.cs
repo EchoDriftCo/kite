@@ -11,6 +11,16 @@ using RecipeVault.Data.Repositories;
 
 namespace RecipeVault.WebApi.Authentication {
     public class ApiTokenAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions> {
+        /// <summary>
+        /// Claim that records how the request was authenticated
+        /// </summary>
+        public const string AuthMethodClaim = "auth_method";
+
+        /// <summary>
+        /// <see cref="AuthMethodClaim"/> value for requests authenticated with an API token
+        /// </summary>
+        public const string AuthMethodApiToken = "api_token";
+
         private readonly IApiTokenRepository apiTokenRepository;
 
         public ApiTokenAuthenticationHandler(
@@ -47,7 +57,7 @@ namespace RecipeVault.WebApi.Authentication {
                 new Claim(ClaimTypes.NameIdentifier, apiToken.SubjectId.ToString()),
                 new Claim("sub", apiToken.SubjectId.ToString()),
                 new Claim("token_id", apiToken.ApiTokenResourceId.ToString()),
-                new Claim("auth_method", "api_token")
+                new Claim(AuthMethodClaim, AuthMethodApiToken)
             };
 
             var identity = new ClaimsIdentity(claims, Scheme.Name);

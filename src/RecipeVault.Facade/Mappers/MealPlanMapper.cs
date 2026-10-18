@@ -23,15 +23,22 @@ namespace RecipeVault.Facade.Mappers {
                 Name = entity.Name,
                 StartDate = entity.StartDate,
                 EndDate = entity.EndDate,
-                Entries = entity.Entries?.Select(e => new MealPlanEntryDto {
-                    MealPlanEntryId = e.MealPlanEntryId,
-                    Date = e.Date,
-                    MealSlot = (int)e.MealSlot,
-                    RecipeResourceId = e.Recipe?.RecipeResourceId ?? default,
-                    RecipeTitle = e.Recipe?.Title,
-                    RecipeYield = e.Recipe?.Yield ?? 0,
-                    Servings = e.Servings,
-                    IsLeftover = e.IsLeftover
+                Entries = entity.Entries?.Select(e => {
+                    var recipe = e.Recipe != null &&
+                        (e.Recipe.IsPublic || e.Recipe.CreatedSubject?.SubjectId == entity.CreatedSubject?.SubjectId)
+                        ? e.Recipe
+                        : null;
+
+                    return new MealPlanEntryDto {
+                        MealPlanEntryId = e.MealPlanEntryId,
+                        Date = e.Date,
+                        MealSlot = (int)e.MealSlot,
+                        RecipeResourceId = recipe?.RecipeResourceId ?? default,
+                        RecipeTitle = recipe?.Title,
+                        RecipeYield = recipe?.Yield ?? 0,
+                        Servings = e.Servings,
+                        IsLeftover = e.IsLeftover
+                    };
                 }).ToList(),
                 CreatedDate = entity.CreatedDate,
                 LastModifiedDate = entity.LastModifiedDate,

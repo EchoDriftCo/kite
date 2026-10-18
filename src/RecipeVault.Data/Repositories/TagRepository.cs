@@ -1,3 +1,4 @@
+using System.Linq;
 using System;
 using System.Threading.Tasks;
 using Cortside.AspNetCore.Common.Paging;
@@ -27,10 +28,13 @@ namespace RecipeVault.Data.Repositories {
                 .FirstOrDefaultAsync(t => t.TagResourceId == id);
         }
 
-        public Task<Tag> GetByNameAndCategoryAsync(string name, TagCategory category) {
+        public Task<Tag> GetByNameAndCategoryAsync(string name, TagCategory category, Guid? subjectId) {
             return context.Tags
                 .Include(x => x.CreatedSubject)
-                .FirstOrDefaultAsync(t => t.Name == name && t.Category == category);
+                .Where(t => t.Name == name && t.Category == category)
+                .Where(t => t.IsGlobal || (subjectId.HasValue && t.CreatedSubject.SubjectId == subjectId))
+                .OrderByDescending(t => t.IsGlobal)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<PagedList<Tag>> SearchAsync(TagSearch model) {

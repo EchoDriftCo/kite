@@ -155,8 +155,9 @@ namespace RecipeVault.Facade {
 
         public async Task<DietaryConflictCheckDto> CheckRecipeAsync(Guid recipeResourceId, Guid? profileResourceId = null) {
             await using (var tx = uow.BeginNoTracking()) {
+                // Own or public recipes only: the result quotes the recipe's ingredients
                 var recipe = await recipeRepository.GetAsync(recipeResourceId).ConfigureAwait(false);
-                if (recipe == null) {
+                if (recipe == null || (recipe.CreatedSubject?.SubjectId != CurrentSubjectId && !recipe.IsPublic)) {
                     throw new RecipeNotFoundException($"Recipe with id {recipeResourceId} not found");
                 }
 

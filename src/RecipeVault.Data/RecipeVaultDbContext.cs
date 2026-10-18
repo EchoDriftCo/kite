@@ -273,6 +273,16 @@ namespace RecipeVault.Data {
                 .HasConversion<string>()
                 .HasMaxLength(50);
 
+            modelBuilder.Entity<Tag>()
+                .HasIndex(e => new { e.Name, e.Category })
+                .IsUnique()
+                .HasFilter("\"IsGlobal\" = TRUE");
+
+            modelBuilder.Entity<Tag>()
+                .HasIndex("CreatedSubjectId", nameof(Tag.Name), nameof(Tag.Category))
+                .IsUnique()
+                .HasFilter("\"IsGlobal\" = FALSE");
+
             modelBuilder.Entity<Unit>()
                 .Property(e => e.Type)
                 .HasConversion<string>()

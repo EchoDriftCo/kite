@@ -90,6 +90,7 @@ namespace RecipeVault.DomainService {
 
         public async Task<GroceryListDto> GenerateGroceryListAsync(Guid mealPlanResourceId) {
             var entity = await GetMealPlanAsync(mealPlanResourceId).ConfigureAwait(false);
+            var currentSubjectId = Guid.Parse(subjectPrincipal.SubjectId);
 
             // Aggregate ingredients from non-leftover entries, scaling by servings
             var ingredientMap = new Dictionary<string, GroceryItemDto>();
@@ -97,7 +98,8 @@ namespace RecipeVault.DomainService {
 
             foreach (var entry in entity.Entries.Where(e => !e.IsLeftover)) {
                 var recipe = entry.Recipe;
-                if (recipe?.Ingredients == null) {
+                if (recipe?.Ingredients == null ||
+                    (recipe.CreatedSubject?.SubjectId != currentSubjectId && !recipe.IsPublic)) {
                     continue;
                 }
 
@@ -173,10 +175,13 @@ namespace RecipeVault.DomainService {
         }
 
         private async Task SetEntriesFromDtoAsync(MealPlan entity, List<UpdateMealPlanEntryDto> entryDtos) {
+            var currentSubjectId = Guid.Parse(subjectPrincipal.SubjectId);
             var entries = new List<MealPlanEntry>();
             foreach (var entryDto in entryDtos) {
                 var recipe = await recipeRepository.GetAsync(entryDto.RecipeResourceId).ConfigureAwait(false);
-                if (recipe == null) {
+                // Only the user's own recipes or public ones: the plan and its grocery list show the
+                // recipe's title and ingredients
+                if (recipe == null || (recipe.CreatedSubject?.SubjectId != currentSubjectId && !recipe.IsPublic)) {
                     throw new RecipeNotFoundException($"Recipe with id {entryDto.RecipeResourceId} not found");
                 }
                 entries.Add(new MealPlanEntry(entryDto.Date, (MealSlot)entryDto.MealSlot, recipe.RecipeId, entryDto.Servings, entryDto.IsLeftover));

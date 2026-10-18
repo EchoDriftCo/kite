@@ -18,6 +18,7 @@ namespace RecipeVault.Data.Repositories {
             var plans = model.Build(context.MealPlans
                 .Include(x => x.Entries)
                     .ThenInclude(e => e.Recipe)
+                        .ThenInclude(r => r.CreatedSubject)
                 .Include(x => x.CreatedSubject)
                 .Include(x => x.LastModifiedSubject));
 
@@ -44,6 +45,9 @@ namespace RecipeVault.Data.Repositories {
                 .Include(x => x.Entries)
                     .ThenInclude(e => e.Recipe)
                         .ThenInclude(r => r.Ingredients)
+                .Include(x => x.Entries)
+                    .ThenInclude(e => e.Recipe)
+                        .ThenInclude(r => r.CreatedSubject)
                 .Include(x => x.CreatedSubject)
                 .Include(x => x.LastModifiedSubject)
                 .FirstOrDefaultAsync(x => x.MealPlanResourceId == id);

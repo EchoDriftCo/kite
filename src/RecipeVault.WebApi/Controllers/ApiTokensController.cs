@@ -24,6 +24,7 @@ namespace RecipeVault.WebApi.Controllers {
     [Route("api/v{version:apiVersion}/user/api-tokens")]
     [Authorize]
     [RegisteredUserOnly]
+    [SessionOnly]
     public class ApiTokensController : ControllerBase {
         private readonly IApiTokenService apiTokenService;
         private readonly IUnitOfWork uow;
