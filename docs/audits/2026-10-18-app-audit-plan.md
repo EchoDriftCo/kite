@@ -30,7 +30,10 @@ The leads below are where to look first; none are confirmed findings yet.
 
 | # | Status | Report | PR |
 |---|--------|--------|----|
-| 0 | Findings reported; fix PR open | [00-database-exposure.md](00-database-exposure.md) | audit/db-exposure |
-| 1–9 | Not started | | |
+| 0 | Findings reported; fix merged | [00-database-exposure.md](00-database-exposure.md) | #8 |
+| 1 | Findings reported; fix PR open | [01-authorization.md](01-authorization.md) | audit/authorization |
+| 2–9 | Not started | | |
 
 Section 0 found that the EF migrations can't build a fresh database (see its report); Section 3 should start there.
+
+Section 1 left leads for Sections 2, 3, 4 and 5 (unused `Api` rate-limit policy, the ingredient-search SQL function that only exists in `docs/migrations`, controllers that turn "not found" into a 500 with the exception message); see "Found in passing" in its report.
