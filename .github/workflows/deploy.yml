@@ -63,40 +63,31 @@ jobs:
       - name: Apply migrations to Supabase
         if: steps.migrations.outputs.has_migrations == 'true'
         env:
+          # Must be the Supavisor *session* pooler URI (port 5432). The direct
+          # db.<ref>.supabase.co host is IPv6-only and GitHub runners have no IPv6;
+          # the pooler has IPv4 and supports DDL in session mode.
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PGSSLMODE: require
         run: |
           echo "Applying migrations to Supabase..."
-          
+
           # Install psql
           sudo apt-get update && sudo apt-get install -y postgresql-client
-          
+
           # Debug: check if URL is set (don't print the actual value)
           if [ -z "$SUPABASE_DB_URL" ]; then
             echo "❌ SUPABASE_DB_URL is not set!"
             exit 1
           fi
           echo "✓ SUPABASE_DB_URL is set"
-          
-          # Extract host from URL and resolve to IPv4 using dig
-          DB_HOST=$(echo "$SUPABASE_DB_URL" | sed -n 's|.*@\([^:/]*\).*|\1|p')
-          echo "Resolving $DB_HOST to IPv4..."
-          IPV4=$(dig +short A "$DB_HOST" | head -1)
-          
-          if [ -z "$IPV4" ]; then
-            echo "⚠️ Could not resolve IPv4, trying direct connection..."
-            FINAL_URL="${SUPABASE_DB_URL}?sslmode=require"
-          else
-            echo "Using IPv4: $IPV4"
-            FINAL_URL=$(echo "$SUPABASE_DB_URL" | sed "s|@${DB_HOST}:|@${IPV4}:|")"?sslmode=require"
-          fi
-          
-          # Run migrations with timeout and SSL
-          # Using direct connection (not pooler) for DDL operations
-          psql "$FINAL_URL" \
+
+          # Connect by hostname. Don't rewrite it to a resolved address: for the pooler,
+          # `dig +short` returns a CNAME with a trailing dot, which TLS rejects as a
+          # server name ("tlsv1 unrecognized name").
+          psql "$SUPABASE_DB_URL" \
             -v ON_ERROR_STOP=1 \
-            --set=statement_timeout=60000 \
             -f migrations.sql
-          
+
           echo "✅ Migrations applied successfully"
 
       - name: Deploy to Fly.io
