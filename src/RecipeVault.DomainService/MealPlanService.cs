@@ -90,6 +90,7 @@ namespace RecipeVault.DomainService {
 
         public async Task<GroceryListDto> GenerateGroceryListAsync(Guid mealPlanResourceId) {
             var entity = await GetMealPlanAsync(mealPlanResourceId).ConfigureAwait(false);
+            var currentSubjectId = Guid.Parse(subjectPrincipal.SubjectId);
 
             // Aggregate ingredients from non-leftover entries, scaling by servings
             var ingredientMap = new Dictionary<string, GroceryItemDto>();
@@ -97,7 +98,8 @@ namespace RecipeVault.DomainService {
 
             foreach (var entry in entity.Entries.Where(e => !e.IsLeftover)) {
                 var recipe = entry.Recipe;
-                if (recipe?.Ingredients == null) {
+                if (recipe?.Ingredients == null ||
+                    (recipe.CreatedSubject?.SubjectId != currentSubjectId && !recipe.IsPublic)) {
                     continue;
                 }
 

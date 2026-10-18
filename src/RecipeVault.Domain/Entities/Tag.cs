@@ -11,7 +11,6 @@ using UUIDNext;
 
 namespace RecipeVault.Domain.Entities {
     [Index(nameof(TagResourceId), IsUnique = true)]
-    [Index(nameof(Name), nameof(Category), IsUnique = true)]
     [Table("Tag")]
     public class Tag : AuditableEntity {
         protected Tag() {

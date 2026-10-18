@@ -1662,15 +1662,18 @@ namespace RecipeVault.Data.Migrations
 
                     b.HasKey("TagId");
 
-                    b.HasIndex("CreatedSubjectId");
-
                     b.HasIndex("LastModifiedSubjectId");
 
                     b.HasIndex("TagResourceId")
                         .IsUnique();
 
                     b.HasIndex("Name", "Category")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"IsGlobal\" = TRUE");
+
+                    b.HasIndex("CreatedSubjectId", "Name", "Category")
+                        .IsUnique()
+                        .HasFilter("\"IsGlobal\" = FALSE");
 
                     b.ToTable("Tag", "public", t =>
                         {
