@@ -269,8 +269,10 @@ namespace RecipeVault.WebApi {
         /// <param name="provider"></param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider) {
             
-            // Auto-apply pending EF Core migrations on startup (skip in test/CI environments)
-            if (!env.IsEnvironment("Testing")) {
+            // Production migrations are applied by the deploy workflow, which fails the
+            // deploy when one fails. Applying them here too only logged a warning on
+            // failure, so this is off unless Database:MigrateOnStartup is set (local dev).
+            if (!env.IsEnvironment("Testing") && Configuration.GetValue<bool>("Database:MigrateOnStartup")) {
                 try {
                     using (var scope = app.ApplicationServices.CreateScope()) {
                         var db = scope.ServiceProvider.GetRequiredService<RecipeVaultDbContext>();
