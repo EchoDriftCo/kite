@@ -12,6 +12,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MealPlanService } from '../../../services/meal-plan.service';
 import { MealPlan, CreateMealPlanRequest } from '../../../models/meal-plan.model';
+import { formatCalendarDate, parseCalendarDate } from '../../../shared/calendar-date';
 
 @Component({
   selector: 'app-meal-plan-form',
@@ -87,8 +88,8 @@ export class MealPlanFormComponent implements OnInit {
       next: (plan) => {
         this.planForm.patchValue({
           name: plan.name,
-          startDate: new Date(plan.startDate),
-          endDate: new Date(plan.endDate)
+          startDate: parseCalendarDate(plan.startDate),
+          endDate: parseCalendarDate(plan.endDate)
         });
         this.loading = false;
       },
@@ -109,8 +110,8 @@ export class MealPlanFormComponent implements OnInit {
     const formValue = this.planForm.value;
     const request: CreateMealPlanRequest = {
       name: formValue.name,
-      startDate: this.formatDate(formValue.startDate),
-      endDate: this.formatDate(formValue.endDate)
+      startDate: formatCalendarDate(formValue.startDate),
+      endDate: formatCalendarDate(formValue.endDate)
     };
 
     this.saving = true;
@@ -138,9 +139,5 @@ export class MealPlanFormComponent implements OnInit {
     } else {
       this.router.navigate(['/meal-plans']);
     }
-  }
-
-  private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
   }
 }

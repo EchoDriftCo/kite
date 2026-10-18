@@ -1,5 +1,5 @@
 // Kite RecipeVault - Custom Material Theme
-// "Dark Mode Fine Dining" aesthetic
+// Light theme is the base; ThemeService adds .dark-theme to <body> for dark mode.
 
 @use '@angular/material' as mat;
 
@@ -88,8 +88,7 @@ $kite-primary: mat.m2-define-palette($kite-amber, 500);
 $kite-accent: mat.m2-define-palette($kite-sage, 500);
 $kite-warn: mat.m2-define-palette(mat.$m2-red-palette);
 
-// Create the dark theme
-$kite-theme: mat.m2-define-dark-theme((
+$kite-light-theme: mat.m2-define-light-theme((
   color: (
     primary: $kite-primary,
     accent: $kite-accent,
@@ -99,8 +98,20 @@ $kite-theme: mat.m2-define-dark-theme((
   density: 0,
 ));
 
-// Apply the theme
-@include mat.all-component-themes($kite-theme);
+$kite-dark-theme: mat.m2-define-dark-theme((
+  color: (
+    primary: $kite-primary,
+    accent: $kite-accent,
+    warn: $kite-warn,
+  ),
+));
+
+// Light everywhere; dark swaps colours only (typography and density come from the base)
+@include mat.all-component-themes($kite-light-theme);
+
+.dark-theme {
+  @include mat.all-component-colors($kite-dark-theme);
+}
 
 // ============================================
 // Component Overrides — Vega Design System v2.0
@@ -182,45 +193,27 @@ body {
 
 // --- Chips ---
 .mat-mdc-chip {
-  --mdc-chip-elevated-container-color: rgba(124, 152, 133, 0.1);
-  --mdc-chip-label-text-color: #4a6354;
-  --mdc-chip-with-icon-icon-color: #4a6354;
-  --mdc-chip-elevated-selected-container-color: rgba(124, 152, 133, 0.2);
-  --mdc-chip-selected-label-text-color: #4a6354;
-  --mat-chip-trailing-action-state-layer-color: #4a6354;
-  --mat-chip-selected-trailing-action-state-layer-color: #4a6354;
-  background-color: rgba(124, 152, 133, 0.1) !important;
-  color: #4a6354 !important;
-  border: 1px solid rgba(124, 152, 133, 0.35);
+  --mdc-chip-elevated-container-color: var(--color-accent-subtle-bg);
+  --mdc-chip-label-text-color: var(--color-accent-text);
+  --mdc-chip-with-icon-icon-color: var(--color-accent-text);
+  --mdc-chip-elevated-selected-container-color: var(--color-accent-subtle-bg-hover);
+  --mdc-chip-selected-label-text-color: var(--color-accent-text);
+  --mat-chip-trailing-action-state-layer-color: var(--color-accent-text);
+  --mat-chip-selected-trailing-action-state-layer-color: var(--color-accent-text);
+  // !important: Material's chip styles load after ours, and component styles
+  // (e.g. tag-selector's category colours) would otherwise win.
+  background-color: var(--color-accent-subtle-bg) !important;
+  color: var(--color-accent-text) !important;
+  border: 1px solid var(--color-accent-subtle-border);
   border-radius: 16px;
 
-  .mdc-evolution-chip__text-label {
-    color: #4a6354 !important;
+  .mdc-evolution-chip__text-label,
+  .mat-icon, mat-icon, .mdc-evolution-chip__icon {
+    color: var(--color-accent-text) !important;
   }
 
-  .mat-icon, mat-icon, .mdc-evolution-chip__icon {
-    color: #4a6354 !important;
-  }
-  
   &:hover {
-    background-color: rgba(124, 152, 133, 0.2) !important;
-  }
-}
-
-.dark-theme .mat-mdc-chip {
-  --mdc-chip-elevated-container-color: rgba(124, 152, 133, 0.2);
-  --mdc-chip-label-text-color: var(--color-accent);
-  --mdc-chip-with-icon-icon-color: var(--color-accent);
-  background-color: rgba(124, 152, 133, 0.2) !important;
-  color: var(--color-accent) !important;
-  border-color: rgba(124, 152, 133, 0.3);
-
-  .mdc-evolution-chip__text-label {
-    color: var(--color-accent) !important;
-  }
-
-  .mat-icon, mat-icon, .mdc-evolution-chip__icon {
-    color: var(--color-accent) !important;
+    background-color: var(--color-accent-subtle-bg-hover) !important;
   }
 }
 
@@ -274,18 +267,10 @@ body {
 }
 
 // --- Buttons ---
-// Primary (warm orange) raised buttons
-// MDC variables cannot resolve CSS var() from _tokens.scss — use hex values directly.
-// Source of truth: _tokens.scss --color-primary: #ff8c42
+// Primary (warm orange) raised buttons. Colours come from the Material theme
+// (amber 500 with a dark label); only the hover/pressed shades are customised.
 .mat-mdc-raised-button.mat-primary,
 .mat-mdc-unelevated-button.mat-primary {
-  --mdc-filled-button-container-color: #ff8c42;
-  --mdc-filled-button-label-text-color: #1a2230;
-  --mdc-protected-button-container-color: #ff8c42;
-  --mdc-protected-button-label-text-color: #1a2230;
-  --mat-mdc-button-persistent-ripple-color: #e67a30;
-  background-color: #ff8c42 !important;
-  color: #1a2230 !important;
   border-radius: var(--radius-md);
   min-height: 40px;
   text-transform: uppercase;
@@ -293,32 +278,16 @@ body {
   font: var(--font-button);
   transition: all var(--transition-fast);
 
-  .mdc-button__label {
-    color: #1a2230 !important;
-  }
-
   &:hover:not(:disabled) {
-    --mdc-filled-button-container-color: #ffa366;
-    --mdc-protected-button-container-color: #ffa366;
-    background-color: #ffa366 !important;
+    --mdc-filled-button-container-color: var(--color-primary-hover);
+    --mdc-protected-button-container-color: var(--color-primary-hover);
     box-shadow: var(--shadow-1);
   }
 
   &:active:not(:disabled) {
-    --mdc-filled-button-container-color: #e67a30;
-    --mdc-protected-button-container-color: #e67a30;
-    background-color: #e67a30 !important;
+    --mdc-filled-button-container-color: var(--color-primary-active);
+    --mdc-protected-button-container-color: var(--color-primary-active);
     transform: scale(0.98);
-  }
-
-  &:disabled {
-    --mdc-filled-button-container-color: #64748b;
-    background-color: #64748b !important;
-    color: #94a3b8 !important;
-    
-    .mdc-button__label {
-      color: #94a3b8 !important;
-    }
   }
 }
 
@@ -382,7 +351,7 @@ body {
     background-color: var(--color-accent) !important;
   }
   .mdc-switch--selected .mdc-switch__handle::after {
-    background-color: #ffffff !important;
+    background-color: var(--mat-sys-on-secondary) !important;
   }
 }
 
@@ -407,10 +376,9 @@ body {
 }
 
 // --- Button Toggle Group ---
-// Fix: black/invisible toggles on dark background
 .mat-button-toggle-group {
   --mat-standard-button-toggle-selected-state-background-color: var(--color-accent);
-  --mat-standard-button-toggle-selected-state-text-color: #ffffff;
+  --mat-standard-button-toggle-selected-state-text-color: var(--mat-sys-on-secondary);
   --mat-standard-button-toggle-text-color: var(--color-text-secondary);
   --mat-standard-button-toggle-background-color: var(--color-surface-default);
   --mat-standard-button-toggle-divider-color: var(--color-divider);
@@ -424,7 +392,7 @@ body {
 
     &.mat-button-toggle-checked {
       background-color: var(--color-accent);
-      color: #ffffff;
+      color: var(--mat-sys-on-secondary);
     }
 
     .mat-button-toggle-label-content {

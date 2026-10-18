@@ -34,12 +34,12 @@
   
   p {
     margin: 0;
-    color: rgba(0, 0, 0, 0.7);
+    color: var(--color-text-secondary);
   }
   
   .hint {
     font-size: 0.875rem;
-    color: rgba(0, 0, 0, 0.5);
+    color: var(--color-text-secondary);
   }
 }
 
@@ -49,7 +49,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 0;
-    border-bottom: 2px solid #000;
+    border-bottom: 2px solid var(--color-text-primary);
     margin-bottom: 1rem;
     
     strong {
@@ -58,7 +58,7 @@
     
     .yield-label {
       font-size: 0.875rem;
-      color: rgba(0, 0, 0, 0.6);
+      color: var(--color-text-secondary);
     }
   }
   
@@ -67,7 +67,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem;
-    background-color: #fff3cd;
+    background-color: var(--color-warning-bg);
     border: 1px solid var(--color-primary);
     border-radius: var(--radius-sm);
     margin-bottom: 1rem;
@@ -86,19 +86,20 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    background-color: #f5f5f5;
+    background-color: var(--color-surface-hover);
     border-radius: var(--radius-md);
     margin-bottom: 1.5rem;
     
     .label {
       font-size: 1.25rem;
       font-weight: 500;
+      color: var(--color-text-primary);
     }
     
     .value {
       font-size: 2rem;
       font-weight: 700;
-      color: #1976d2;
+      color: var(--color-text-primary);
     }
   }
   
@@ -120,7 +121,7 @@
         
         .value {
           font-weight: 600;
-          color: #424242;
+          color: var(--color-text-primary);
         }
       }
       
@@ -132,7 +133,7 @@
       
       .dv-label {
         font-size: 0.75rem;
-        color: rgba(0, 0, 0, 0.6);
+        color: var(--color-text-secondary);
       }
     }
   }
@@ -155,7 +156,7 @@
     &.good {
       background-color: var(--color-success-bg);
       border: 1px solid var(--color-success);
-      color: #2e7d32;
+      color: var(--color-text-primary);
       
       mat-icon {
         color: var(--color-success);
@@ -163,9 +164,9 @@
     }
     
     &.okay {
-      background-color: #fff3cd;
+      background-color: var(--color-warning-bg);
       border: 1px solid var(--color-primary);
-      color: #f57c00;
+      color: var(--color-text-primary);
       
       mat-icon {
         color: var(--color-primary);
@@ -173,9 +174,9 @@
     }
     
     &.poor {
-      background-color: #ffebee;
+      background-color: var(--color-error-bg);
       border: 1px solid var(--color-error);
-      color: #c62828;
+      color: var(--color-text-primary);
       
       mat-icon {
         color: var(--color-error);

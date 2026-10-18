@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MealPlan } from '../../../models/meal-plan.model';
+import { daysBetween, formatCalendarDate, parseCalendarDate } from '../../../shared/calendar-date';
 
 export interface CopyMealPlanResult {
   name: string;
@@ -44,9 +45,7 @@ export class CopyMealPlanDialogComponent {
   ) {
     this.name = `Copy of ${plan.name}`;
 
-    const origStart = new Date(plan.startDate);
-    const origEnd = new Date(plan.endDate);
-    this.planDurationDays = Math.round((origEnd.getTime() - origStart.getTime()) / (1000 * 60 * 60 * 24));
+    this.planDurationDays = daysBetween(parseCalendarDate(plan.startDate), parseCalendarDate(plan.endDate));
 
     // Default to next Monday
     const today = new Date();
@@ -74,8 +73,8 @@ export class CopyMealPlanDialogComponent {
 
     const result: CopyMealPlanResult = {
       name: this.name.trim(),
-      startDate: this.formatDateStr(this.startDate),
-      endDate: this.formatDateStr(this.endDate)
+      startDate: formatCalendarDate(this.startDate),
+      endDate: formatCalendarDate(this.endDate)
     };
 
     this.dialogRef.close(result);
@@ -83,12 +82,5 @@ export class CopyMealPlanDialogComponent {
 
   cancel() {
     this.dialogRef.close(null);
-  }
-
-  private formatDateStr(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
   }
 }
