@@ -37,16 +37,19 @@ namespace RecipeVault.Facade {
 
         private Guid CurrentSubjectId => Guid.Parse(subjectPrincipal.SubjectId);
 
+        // The public and featured lists allow anonymous callers, who have no subject id
+        private Guid? ViewerSubjectId => Guid.TryParse(subjectPrincipal.SubjectId, out var subjectId) ? subjectId : null;
+
         public async Task<CollectionDto> CreateCollectionAsync(UpdateCollectionDto dto) {
             var collection = await collectionService.CreateCollectionAsync(dto).ConfigureAwait(false);
             await uow.SaveChangesAsync().ConfigureAwait(false);
-            return mapper.MapToDto(collection);
+            return mapper.MapToDto(collection, CurrentSubjectId);
         }
 
         public async Task<CollectionDto> GetCollectionAsync(Guid resourceId) {
             await using (var tx = uow.BeginNoTracking()) {
                 var collection = await collectionService.GetCollectionAsync(resourceId).ConfigureAwait(false);
-                return mapper.MapToDto(collection);
+                return mapper.MapToDto(collection, CurrentSubjectId);
             }
         }
 
@@ -54,7 +57,7 @@ namespace RecipeVault.Facade {
             var collectionSearch = mapper.Map(search);
             await using (var tx = await uow.BeginReadUncommitedAsync().ConfigureAwait(false)) {
                 var collections = await collectionService.SearchCollectionsAsync(collectionSearch).ConfigureAwait(false);
-                return collections.Convert(x => mapper.MapToDto(x));
+                return collections.Convert(x => mapper.MapToDto(x, CurrentSubjectId));
             }
         }
 
@@ -67,7 +70,7 @@ namespace RecipeVault.Facade {
 
                 var collection = await collectionService.UpdateCollectionAsync(resourceId, dto).ConfigureAwait(false);
                 await uow.SaveChangesAsync().ConfigureAwait(false);
-                return mapper.MapToDto(collection);
+                return mapper.MapToDto(collection, CurrentSubjectId);
             }
         }
 
@@ -92,7 +95,7 @@ namespace RecipeVault.Facade {
 
                 var collection = await collectionService.AddRecipeToCollectionAsync(collectionResourceId, dto.RecipeResourceId, dto.SortOrder).ConfigureAwait(false);
                 await uow.SaveChangesAsync().ConfigureAwait(false);
-                return mapper.MapToDto(collection);
+                return mapper.MapToDto(collection, CurrentSubjectId);
             }
         }
 
@@ -105,7 +108,7 @@ namespace RecipeVault.Facade {
 
                 var collection = await collectionService.RemoveRecipeFromCollectionAsync(collectionResourceId, recipeResourceId).ConfigureAwait(false);
                 await uow.SaveChangesAsync().ConfigureAwait(false);
-                return mapper.MapToDto(collection);
+                return mapper.MapToDto(collection, CurrentSubjectId);
             }
         }
 
@@ -119,7 +122,7 @@ namespace RecipeVault.Facade {
                 var recipeResourceIdToSortOrder = dto.Recipes.ToDictionary(r => r.RecipeResourceId, r => r.SortOrder);
                 var collection = await collectionService.ReorderCollectionRecipesAsync(collectionResourceId, recipeResourceIdToSortOrder).ConfigureAwait(false);
                 await uow.SaveChangesAsync().ConfigureAwait(false);
-                return mapper.MapToDto(collection);
+                return mapper.MapToDto(collection, CurrentSubjectId);
             }
         }
 
@@ -132,21 +135,21 @@ namespace RecipeVault.Facade {
         public async Task<List<CollectionDto>> GetUserCollectionsAsync() {
             await using (var tx = uow.BeginNoTracking()) {
                 var collections = await collectionService.GetUserCollectionsAsync().ConfigureAwait(false);
-                return collections.Select(c => mapper.MapToDto(c)).ToList();
+                return collections.Select(c => mapper.MapToDto(c, CurrentSubjectId)).ToList();
             }
         }
 
         public async Task<PagedList<CollectionDto>> GetPublicCollectionsAsync(string searchTerm, int pageNumber, int pageSize) {
             await using (var tx = await uow.BeginReadUncommitedAsync().ConfigureAwait(false)) {
                 var collections = await collectionService.GetPublicCollectionsAsync(searchTerm, pageNumber, pageSize).ConfigureAwait(false);
-                return collections.Convert(x => mapper.MapToDto(x));
+                return collections.Convert(x => mapper.MapToDto(x, ViewerSubjectId));
             }
         }
 
         public async Task<PagedList<CollectionDto>> GetFeaturedCollectionsAsync(int pageNumber, int pageSize) {
             await using (var tx = await uow.BeginReadUncommitedAsync().ConfigureAwait(false)) {
                 var collections = await collectionService.GetFeaturedCollectionsAsync(pageNumber, pageSize).ConfigureAwait(false);
-                return collections.Convert(x => mapper.MapToDto(x));
+                return collections.Convert(x => mapper.MapToDto(x, ViewerSubjectId));
             }
         }
     }

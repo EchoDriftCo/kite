@@ -698,7 +698,7 @@ namespace RecipeVault.DomainService.Tests.Services {
 
             // Tag doesn't exist yet
             mockTagRepository
-                .Setup(x => x.GetByNameAndCategoryAsync("New Tag", Domain.Enums.TagCategory.Custom))
+                .Setup(x => x.GetByNameAndCategoryAsync("New Tag", Domain.Enums.TagCategory.Custom, It.IsAny<Guid?>()))
                 .ReturnsAsync((Tag)null);
 
             Tag capturedTag = null;
@@ -733,7 +733,7 @@ namespace RecipeVault.DomainService.Tests.Services {
         public async Task AssignTagsToRecipeAsync_WithExistingTag_AssignsWithTagId() {
             // Arrange
             var recipe = BuildRecipeWithOwner();
-            var existingTag = new TagBuilder().WithName("Existing Tag").Build();
+            var existingTag = new TagBuilder().WithName("Existing Tag").WithIsGlobal(true).Build();
 
             var mockRepository = MockRepository.Create<IRecipeRepository>();
             var mockTagRepository = MockRepository.Create<ITagRepository>();

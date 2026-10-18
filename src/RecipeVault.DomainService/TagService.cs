@@ -22,9 +22,11 @@ namespace RecipeVault.DomainService {
             this.subjectPrincipal = subjectPrincipal;
         }
 
+        private Guid CurrentSubjectId => Guid.Parse(subjectPrincipal.SubjectId);
+
         public async Task<Tag> CreateTagAsync(string name, TagCategory category) {
-            // If a global tag with the same name+category already exists, return it
-            var existing = await tagRepository.GetByNameAndCategoryAsync(name, category).ConfigureAwait(false);
+            // If a global tag, or this user's own tag, with the same name+category already exists, return it
+            var existing = await tagRepository.GetByNameAndCategoryAsync(name, category, CurrentSubjectId).ConfigureAwait(false);
             if (existing != null) {
                 return existing;
             }
@@ -39,7 +41,7 @@ namespace RecipeVault.DomainService {
         }
 
         public async Task<Tag> GetOrCreateTagAsync(string name, TagCategory category) {
-            var existing = await tagRepository.GetByNameAndCategoryAsync(name, category).ConfigureAwait(false);
+            var existing = await tagRepository.GetByNameAndCategoryAsync(name, category, CurrentSubjectId).ConfigureAwait(false);
             if (existing != null) {
                 return existing;
             }
@@ -49,7 +51,7 @@ namespace RecipeVault.DomainService {
 
         public async Task<Tag> GetTagAsync(Guid tagResourceId) {
             var entity = await tagRepository.GetAsync(tagResourceId).ConfigureAwait(false);
-            if (entity == null) {
+            if (entity == null || (!entity.IsGlobal && entity.CreatedSubject?.SubjectId != CurrentSubjectId)) {
                 throw new TagNotFoundException($"Tag with id {tagResourceId} not found");
             }
             return entity;
@@ -88,8 +90,7 @@ namespace RecipeVault.DomainService {
                 throw new TagNotFoundException($"Tag with id {tagResourceId} not found");
             }
 
-            var currentSubjectId = Guid.Parse(subjectPrincipal.SubjectId);
-            if (entity.CreatedSubject?.SubjectId != currentSubjectId) {
+            if (entity.CreatedSubject?.SubjectId != CurrentSubjectId) {
                 throw new TagNotFoundException($"Tag with id {tagResourceId} not found");
             }
 

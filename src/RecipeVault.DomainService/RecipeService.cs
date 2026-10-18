@@ -82,7 +82,7 @@ namespace RecipeVault.DomainService {
             return entity;
         }
 
-        private async Task<Recipe> GetOwnRecipeAsync(Guid recipeResourceId) {
+        public async Task<Recipe> GetOwnRecipeAsync(Guid recipeResourceId) {
             var entity = await recipeRepository.GetAsync(recipeResourceId).ConfigureAwait(false);
             if (entity == null || entity.CreatedSubject?.SubjectId != Guid.Parse(subjectPrincipal.SubjectId)) {
                 throw new RecipeNotFoundException($"Recipe with id {recipeResourceId} not found");
@@ -146,12 +146,13 @@ namespace RecipeVault.DomainService {
 
                     if (tagDto.TagResourceId.HasValue) {
                         tag = await tagRepository.GetAsync(tagDto.TagResourceId.Value).ConfigureAwait(false);
-                        if (tag == null) {
+                        // Global tags or the user's own; another user's private tag stays theirs
+                        if (tag == null || (!tag.IsGlobal && tag.CreatedSubject?.SubjectId != currentSubjectId)) {
                             throw new TagNotFoundException($"Tag with id {tagDto.TagResourceId} not found");
                         }
                     } else {
                         var category = (TagCategory)(tagDto.Category ?? (int)TagCategory.Custom);
-                        tag = await tagRepository.GetByNameAndCategoryAsync(tagDto.Name, category).ConfigureAwait(false);
+                        tag = await tagRepository.GetByNameAndCategoryAsync(tagDto.Name, category, currentSubjectId).ConfigureAwait(false);
                         if (tag == null) {
                             tag = new Tag(tagDto.Name, category, isGlobal: false);
                             await tagRepository.AddAsync(tag);
@@ -242,7 +243,7 @@ namespace RecipeVault.DomainService {
                 var analysis = await geminiClient.AnalyzeDietaryTagsAsync(ingredientTexts).ConfigureAwait(false);
 
                 foreach (var dietaryTag in analysis.Tags) {
-                    var globalTag = await tagRepository.GetByNameAndCategoryAsync(dietaryTag.Name, TagCategory.Dietary).ConfigureAwait(false);
+                    var globalTag = await tagRepository.GetByNameAndCategoryAsync(dietaryTag.Name, TagCategory.Dietary, null).ConfigureAwait(false);
                     if (globalTag == null) {
                         logger.LogWarning("AI returned dietary tag '{TagName}' which does not exist in global tags, skipping", dietaryTag.Name);
                         continue;
