@@ -4,6 +4,9 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { SupabaseService } from './supabase.service';
 import { User, Session } from '@supabase/supabase-js';
 
+/** Set once this browser has signed in with a real account, so an expired session goes to login instead of a new guest session. */
+const HAS_ACCOUNT_KEY = 'rv-has-account';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -17,20 +20,20 @@ export class AuthService {
   /** Resolves once the initial session check has completed. */
   public readonly ready: Promise<void>;
 
+  private guestSignIn?: Promise<void>;
+
   constructor(
     private supabase: SupabaseService,
     private router: Router
   ) {
     // Initialize auth state
     this.ready = this.supabase.client.auth.getSession().then(({ data: { session } }) => {
-      this.sessionSubject.next(session);
-      this.currentUserSubject.next(session?.user ?? null);
+      this.setSession(session);
     });
 
     // Listen for auth changes
     this.supabase.client.auth.onAuthStateChange((event, session) => {
-      this.sessionSubject.next(session);
-      this.currentUserSubject.next(session?.user ?? null);
+      this.setSession(session);
 
       if (event === 'PASSWORD_RECOVERY') {
         this.router.navigate(['/update-password']);
@@ -86,6 +89,75 @@ export class AuthService {
   }
 
   /**
+   * Start a guest session (Supabase anonymous sign-in) so a visitor can use the app without signing up.
+   * Reuses any existing session (including a restored guest one), so a guest's data is never replaced
+   * by a fresh guest identity. Concurrent callers share one in-flight request.
+   */
+  signInAsGuest(): Promise<void> {
+    if (!this.guestSignIn) {
+      this.guestSignIn = this.ready
+        .then(async () => {
+          if (this.currentUser) {
+            return;
+          }
+          const { data, error } = await this.supabase.client.auth.signInAnonymously();
+          if (error) throw error;
+          this.setSession(data.session);
+        })
+        .finally(() => this.guestSignIn = undefined);
+    }
+    return this.guestSignIn;
+  }
+
+  /**
+   * Turn the current guest into a full account. The user id stays the same, so everything they made is kept.
+   * When the project requires email confirmation the email change is pending until confirmed, and the
+   * password can't be set yet (they can sign in with a magic link or reset their password afterwards).
+   */
+  async convertGuest(email: string, password: string): Promise<{ needsEmailConfirmation: boolean }> {
+    const { data, error } = await this.supabase.client.auth.updateUser({ email });
+    if (error) throw error;
+
+    if (data.user?.email !== email) {
+      return { needsEmailConfirmation: true };
+    }
+
+    const { error: passwordError } = await this.supabase.client.auth.updateUser({ password });
+    if (passwordError) throw passwordError;
+
+    // Pick up a fresh token without the is_anonymous claim
+    await this.refreshSession();
+    return { needsEmailConfirmation: false };
+  }
+
+  /**
+   * True when this browser has signed in with a real account before
+   */
+  hasSignedInBefore(): boolean {
+    try {
+      return localStorage.getItem(HAS_ACCOUNT_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  private setSession(session: Session | null): void {
+    this.sessionSubject.next(session);
+    this.currentUserSubject.next(session?.user ?? null);
+    if (session?.user && !session.user.is_anonymous) {
+      this.rememberAccount();
+    }
+  }
+
+  private rememberAccount(): void {
+    try {
+      localStorage.setItem(HAS_ACCOUNT_KEY, 'true');
+    } catch {
+      // Storage unavailable (private mode) — guests will just get a new guest session
+    }
+  }
+
+  /**
    * Sign out
    */
   async signOut() {
@@ -126,8 +198,7 @@ export class AuthService {
   async refreshSession(): Promise<void> {
     const { data: { session }, error } = await this.supabase.client.auth.refreshSession();
     if (error) throw error;
-    this.sessionSubject.next(session);
-    this.currentUserSubject.next(session?.user ?? null);
+    this.setSession(session);
   }
 
   /**
@@ -135,6 +206,13 @@ export class AuthService {
    */
   isAuthenticated(): boolean {
     return !!this.currentUser;
+  }
+
+  /**
+   * Check if the current user is a guest (anonymous sign-in, no account yet)
+   */
+  isGuest(): boolean {
+    return !!this.currentUser?.is_anonymous;
   }
 
   /**

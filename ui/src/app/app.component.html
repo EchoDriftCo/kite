@@ -116,11 +116,17 @@
         </button>
       </mat-menu>
 
+      @if (isGuest()) {
+        <button mat-flat-button class="create-account-btn" (click)="createAccount()">
+          Create account
+        </button>
+      }
+
       <button mat-icon-button (click)="toggleTheme()" [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'">
         <mat-icon>{{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
       </button>
 
-      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+      <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Account menu">
         <mat-icon>account_circle</mat-icon>
       </button>
       
@@ -130,6 +136,17 @@
           <span>{{ userEmail() }}</span>
         </button>
         <mat-divider></mat-divider>
+        @if (isGuest()) {
+          <button mat-menu-item (click)="createAccount()">
+            <mat-icon>person_add</mat-icon>
+            <span>Create account</span>
+          </button>
+          <button mat-menu-item (click)="signIn()">
+            <mat-icon>login</mat-icon>
+            <span>Sign in</span>
+          </button>
+          <mat-divider></mat-divider>
+        }
         <button mat-menu-item (click)="logout()">
           <mat-icon>logout</mat-icon>
           <span>Logout</span>

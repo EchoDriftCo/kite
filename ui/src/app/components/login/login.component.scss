@@ -157,7 +157,14 @@
   }
 }
 
-.signup-prompt {
+.guest-note {
+  margin: 0 0 var(--space-md);
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+}
+
+.signup-prompt,
+.guest-prompt {
   text-align: center;
   margin-top: var(--space-lg);
   margin-bottom: 0;

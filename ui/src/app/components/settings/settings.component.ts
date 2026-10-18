@@ -11,6 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { OnboardingService } from '../../services/onboarding.service';
 import { TourService } from '../../services/tour.service';
 import { AuthService } from '../../services/auth.service';
+import { GuestPromptService } from '../../services/guest-prompt.service';
 import { RecipeService } from '../../services/recipe.service';
 import { OnboardingDialogComponent } from '../onboarding/onboarding-dialog/onboarding-dialog.component';
 import { BetaInviteDialogComponent } from './beta-invite-dialog/beta-invite-dialog.component';
@@ -35,6 +36,7 @@ export class SettingsComponent implements OnInit {
   removingSamples = false;
   exporting = false;
   userEmail = '';
+  isGuest = false;
   appVersion = '1.0.0';
 
   constructor(
@@ -44,12 +46,14 @@ export class SettingsComponent implements OnInit {
     private recipeService: RecipeService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private guestPrompt: GuestPromptService
   ) {}
 
   ngOnInit(): void {
     this.authService.session$.subscribe(session => {
       this.userEmail = session?.user?.email || '';
+      this.isGuest = !!session?.user?.is_anonymous;
     });
   }
 
@@ -114,6 +118,10 @@ export class SettingsComponent implements OnInit {
     });
   }
 
+  createAccount(): void {
+    this.guestPrompt.promptSignUp();
+  }
+
   changePassword(): void {
     // Navigate to Supabase password reset flow
     this.authService.resetPassword(this.userEmail).then(() => {
@@ -124,6 +132,9 @@ export class SettingsComponent implements OnInit {
   }
 
   async logout(): Promise<void> {
+    if (this.isGuest && !confirm('Signing out of a guest session discards your recipes and data. Create an account first to keep them. Sign out anyway?')) {
+      return;
+    }
     try {
       await this.authService.signOut();
       this.router.navigate(['/login']);

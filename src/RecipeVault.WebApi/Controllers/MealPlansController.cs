@@ -11,6 +11,7 @@ using RecipeVault.WebApi.Mappers;
 using RecipeVault.WebApi.Models.Requests;
 using RecipeVault.WebApi.Models.Responses;
 using Serilog.Context;
+using RecipeVault.WebApi.Filters;
 
 namespace RecipeVault.WebApi.Controllers {
     /// <summary>
@@ -104,6 +105,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// </summary>
         /// <param name="id">the resource id of the meal plan</param>
         [HttpGet("{id}/grocery-list")]
+        [GuestQuota(GuestQuotaAttribute.Ai, 10)]
         [ProducesResponseType(typeof(GroceryListModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetGroceryListAsync(Guid id) {
             using (LogContext.PushProperty("MealPlanResourceId", id)) {

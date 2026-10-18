@@ -11,7 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
-import { SignUpDialogComponent } from './sign-up-dialog.component';
+import { SignUpDialogComponent, SignUpDialogResult } from './sign-up-dialog.component';
 
 @Component({
   selector: 'app-login',
@@ -55,6 +55,11 @@ export class LoginComponent {
     });
   }
 
+  /** Read live: the saved session may be restored after this page renders */
+  get isGuest(): boolean {
+    return this.authService.isGuest();
+  }
+
   async onSignIn() {
     if (!this.loginForm.valid) {
       return;
@@ -96,14 +101,30 @@ export class LoginComponent {
     }
   }
 
+  async onContinueAsGuest() {
+    this.error = '';
+    this.loading = true;
+
+    try {
+      await this.authService.signInAsGuest();
+      this.router.navigateByUrl(this.returnUrl);
+    } catch (err: any) {
+      this.error = err.message || 'Guest access is unavailable right now';
+    } finally {
+      this.loading = false;
+    }
+  }
+
   onSignUp() {
-    const dialogRef = this.dialog.open(SignUpDialogComponent, {
+    const dialogRef = this.dialog.open<SignUpDialogComponent, unknown, SignUpDialogResult>(SignUpDialogComponent, {
       width: '480px',
       maxWidth: '95vw'
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result?.success) {
+      if (result?.converted && !result.needsEmailConfirmation) {
+        this.router.navigateByUrl(this.returnUrl);
+      } else if (result?.success) {
         this.successMessage = 'Account created! Check your email to confirm your account.';
       }
     });

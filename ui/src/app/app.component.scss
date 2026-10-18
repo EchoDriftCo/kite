@@ -72,6 +72,12 @@
     display: none;
   }
 
+  .create-account-btn {
+    background-color: var(--color-primary);
+    color: var(--color-primary-text);
+    white-space: nowrap;
+  }
+
   button {
     margin-left: 4px;
 

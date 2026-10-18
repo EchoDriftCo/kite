@@ -36,6 +36,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// </summary>
         /// <param name="request">Mix recipes request with recipe IDs, intent, and mode</param>
         [HttpPost("")]
+        [GuestQuota(GuestQuotaAttribute.Ai, 10)]
         [EnableRateLimiting("upload")]
         [ProducesResponseType(typeof(MixedRecipePreviewDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -64,6 +65,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// </summary>
         /// <param name="request">Refine request with current preview and refinement notes</param>
         [HttpPost("refine")]
+        [GuestQuota(GuestQuotaAttribute.Ai, 10)]
         [EnableRateLimiting("upload")]
         [ProducesResponseType(typeof(MixedRecipePreviewDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -90,6 +92,7 @@ namespace RecipeVault.WebApi.Controllers {
         /// </summary>
         /// <param name="preview">The mixed recipe preview to save</param>
         [HttpPost("save")]
+        [GuestQuota(GuestQuotaAttribute.Save, 50)]
         [ProducesResponseType(typeof(RecipeDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> SaveMixedRecipeAsync([FromBody] MixedRecipePreviewDto preview) {
