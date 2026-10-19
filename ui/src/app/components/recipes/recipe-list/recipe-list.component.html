@@ -156,29 +156,12 @@
                 </div>
               }
 
-              <div class="recipe-meta">
-                <mat-chip-set>
-                  <mat-chip>
-                    <mat-icon>schedule</mat-icon>
-                    {{ getTotalTime(recipe) }}
-                  </mat-chip>
-                  <mat-chip>
-                    <mat-icon>restaurant_menu</mat-icon>
-                    {{ recipe.yield }} servings
-                  </mat-chip>
-                </mat-chip-set>
-
-                <div class="recipe-stats">
-                  <span>
-                    <mat-icon>list</mat-icon>
-                    {{ getIngredientCount(recipe) }} ingredients
-                  </span>
-                  <span>
-                    <mat-icon>format_list_numbered</mat-icon>
-                    {{ getStepCount(recipe) }} steps
-                  </span>
-                </div>
-              </div>
+              <p class="meta-line recipe-meta">
+                <span class="meta-item"><mat-icon aria-hidden="true">schedule</mat-icon>{{ getTotalTime(recipe) }}</span>
+                <span class="meta-item"><mat-icon aria-hidden="true">restaurant_menu</mat-icon>{{ recipe.yield }} servings</span>
+                <span class="meta-item"><mat-icon aria-hidden="true">list</mat-icon>{{ getIngredientCount(recipe) }} ingredients</span>
+                <span class="meta-item"><mat-icon aria-hidden="true">format_list_numbered</mat-icon>{{ getStepCount(recipe) }} steps</span>
+              </p>
             </mat-card-content>
 
             <mat-card-actions>

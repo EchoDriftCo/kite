@@ -1,8 +1,10 @@
 # RecipeVault Design System — Foundation
 
-**Version:** 2.0 (UI Redesign)  
-**Status:** Approved by Vega  
-**Date:** 2026-03-21
+**Version:** 2.1 (light + dark themes, accessible colour roles)  
+**Status:** Current  
+**Date:** 2026-10-18 (v2.0: 2026-03-21)
+
+> **What changed in 2.1:** the app ships a light theme by default with a dark theme toggle (not dark-only), the brand colours are warm orange `#ff8c42` and sage `#7c9885` (not amber/teal), and every colour now has a role that says whether it may be used for text. Source of truth for values: [`ui/src/_tokens.scss`](../../ui/src/_tokens.scss). Rationale: [tasks/5.0](tasks/5.0-design-system-foundation.md).
 
 ---
 
@@ -13,7 +15,7 @@
 **Core Principles:**
 - **Clarity over decoration** — Every element earns its place
 - **Consistent spacing** — 4px/8px grid system, no arbitrary values
-- **Intentional color** — Dark theme with amber/teal accents, not "everything is bright"
+- **Intentional color** — Warm neutrals with orange and sage accents; bright brand colours are for fills, darker variants for text
 - **Responsive by default** — Mobile-first, scales up gracefully
 - **State completeness** — Loading, empty, error, success, hover, focus, disabled all designed
 - **Accessible always** — WCAG 2.1 AA minimum, AAA where practical
@@ -22,65 +24,45 @@
 
 ## Color System
 
-### Dark Theme (Primary)
+Two themes: **light** (default, follows the OS preference until the person picks one) and **dark** (`.dark-theme` on `<body>`). Components use tokens only, so they work in both.
 
-**Surface Colors:**
-```scss
-$background-primary: #0f172a;    // slate-900 — app background, toolbar
-$background-secondary: #1e293b;  // slate-800 — main content area
-$surface-default: #334155;       // slate-700 — cards, elevated surfaces
-$surface-hover: #475569;         // slate-600 — hover states
-$surface-active: #64748b;        // slate-500 — active states
+### Surfaces and text
 
-$divider: rgba(241, 245, 249, 0.12);  // subtle dividers
-$border-default: rgba(241, 245, 249, 0.2);  // form fields, outlines
-```
+| Token | Light | Dark | Use |
+|---|---|---|---|
+| `--color-bg-primary` | `#fdfcfa` | `#0f172a` | App chrome |
+| `--color-bg-secondary` | `#f8f6f3` | `#1e293b` | Page background |
+| `--color-surface-default` | `#ffffff` | `#334155` | Cards, dialogs |
+| `--color-surface-hover` / `-active` | `#f5f3f0` / `#eeebe7` | `#475569` / `#64748b` | Hover and pressed surfaces, filled inputs |
+| `--color-border-default` | `#e5e5e5` | `rgba(241,245,249,.2)` | Outlines, outlined buttons |
+| `--color-text-primary` | `#1a1a1a` | `#f1f5f9` | Body text, headings |
+| `--color-text-secondary` | `#6b6b6b` (5.3:1) | `#cbd5e1` (7.0:1) | Descriptions, metadata, dates, counts, helper text |
+| `--color-text-hint` / `-disabled` | `#9ca3af` | `#64748b` / `#94a3b8` | **Only** placeholders and disabled controls |
 
-**Text Colors:**
-```scss
-$text-primary: #f1f5f9;          // slate-100 — primary text, headings
-$text-secondary: #cbd5e1;        // slate-300 — secondary text, labels
-$text-disabled: #94a3b8;         // slate-400 — disabled text
-$text-hint: #64748b;             // slate-500 — placeholder, hints
-```
+### Colour roles
 
-**Brand Colors:**
-```scss
-$primary-amber: #f59e0b;         // amber-500 — primary actions, CTAs
-$primary-amber-hover: #fbbf24;   // amber-400 — hover state
-$primary-amber-active: #d97706;  // amber-600 — active/pressed state
+Bright brand colours fail as small text (orange `#ff8c42` is 2.3:1 on white), so each colour has a fill role and a text role.
 
-$accent-teal: #14b8a6;           // teal-500 — secondary actions, links
-$accent-teal-hover: #2dd4bf;     // teal-400 — hover state
-$accent-teal-active: #0d9488;    // teal-600 — active/pressed state
-```
+| Role | Token | Light | Dark | Use for |
+|---|---|---|---|---|
+| Brand orange (fill) | `--color-primary` | `#ff8c42` | `#ff8c42` | Primary buttons, decorative icons |
+| Text on orange | `--color-on-primary` | `#1a1a1a` | `#1a2230` | Labels on orange fills |
+| Orange as text | `--color-primary-text` | `#a34b15` | `#ffa366` | Prices, "Step 1", orange labels |
+| Rating stars | `--color-rating` | `#d9691f` | `#ffa366` | Filled stars |
+| Orange tint | `--color-primary-subtle-bg` | 12% orange | 18% orange | Highlights such as leftovers |
+| Sage (decorative) | `--color-accent` | `#7c9885` | `#7c9885` | Borders, focus ring, decorative icons |
+| Sage as text | `--color-accent-text` | `#4a6354` | `#c1d4c7` | **Links**, active nav, step numbers |
+| Sage fill | `--color-accent-fill` | `#5a7363` | `#a8c4b2` | Selected toggles, switches, accent buttons |
+| Text on sage fill | `--color-on-accent` | `#ffffff` | `#1a2230` | Labels on sage fills |
+| Sage tint | `--color-accent-subtle-bg` / `-border` | 10% / 35% sage | 20% / 30% sage | Chips, selected rows |
+| Error as text | `--color-error-text` | `#c62828` | `#fca5a5` | Destructive labels, error messages |
 
-**Semantic Colors:**
-```scss
-$success: #10b981;               // green-500 — success states
-$success-bg: rgba(16, 185, 129, 0.15);  // success backgrounds
+**Rules**
+- Never use `--color-primary` or `--color-accent` for text, and never use `--color-text-hint` for text people need to read.
+- Links are `--color-accent-text`.
+- Material palettes follow the same rule: accent and warn use hue 700 in light mode (white label) and hue 300 in dark mode (dark label), so Material buttons pass without overrides.
 
-$error: #ef4444;                 // red-500 — errors, destructive actions
-$error-bg: rgba(239, 68, 68, 0.15);    // error backgrounds
-
-$warning: #f59e0b;               // amber-500 — warnings
-$warning-bg: rgba(245, 158, 11, 0.15); // warning backgrounds
-
-$info: #3b82f6;                  // blue-500 — informational
-$info-bg: rgba(59, 130, 246, 0.15);    // info backgrounds
-```
-
-**Usage Rules:**
-- **Background-primary** for fixed app chrome (toolbar, nav)
-- **Background-secondary** for scrollable content areas
-- **Surface-default** for cards, dialogs, modals
-- **Primary-amber** for high-emphasis actions (save, submit, create)
-- **Accent-teal** for medium-emphasis actions (cancel, secondary CTAs, links)
-- **Never use pure white or pure black** — always use the palette
-
-### Light Theme (Future Phase — Not MVP)
-
-Light theme will be introduced in a future phase. Design system will be extended with light mode equivalents when implemented. For now, dark theme only.
+**Semantic:** `--color-success`, `--color-error`, `--color-warning`, `--color-info`, each with a `-bg` tint. See `_tokens.scss` for values.
 
 ---
 
@@ -318,26 +300,20 @@ $breakpoint-xl: 1920px;    // Desktop / large screens
 
 **WCAG 2.1 Level AA (Minimum):**
 - **Contrast ratio:** 4.5:1 for normal text, 3:1 for large text (18px+)
-- **Focus indicators:** Visible, high-contrast outline (2px solid $accent-teal)
+- **Focus indicators:** Visible outline (2px solid `--color-accent`)
 - **Touch targets:** Minimum 44x44px (48x48px preferred)
-- **Font size:** Minimum 14px (16px on mobile for no iOS zoom)
+- **Font size:** Body text minimum 14px; 13px (`--font-body-small`) for helper sentences; 12px (`--font-caption`) only for metadata such as timestamps, counts and badges. Inputs are 16px on mobile so iOS doesn't zoom.
 - **Keyboard navigation:** All interactive elements accessible via Tab/Enter/Space
 - **Screen reader support:** Semantic HTML, ARIA labels where needed
 - **Color not sole indicator:** Use icons, text, or patterns alongside color
 
-**Contrast Validation:**
-- **Text-primary (#f1f5f9) on background-primary (#0f172a):** 15.3:1 ✅ AAA
-- **Text-secondary (#cbd5e1) on background-primary (#0f172a):** 11.2:1 ✅ AAA
-- **Primary-amber (#f59e0b) on background-primary (#0f172a):** 7.8:1 ✅ AA
-- **Accent-teal (#14b8a6) on background-primary (#0f172a):** 6.2:1 ✅ AA
-- **Error (#ef4444) on background-primary (#0f172a):** 5.1:1 ✅ AA
+**Contrast validation:** every text/background pair above was measured; all body text is at least 4.5:1 in both themes. Run `docs/designs/reviews/2026-10-18-ui-review/capture.mjs` against `npm start` to re-check every screen; it writes each failing text node to `contrast.txt`.
 
 **Focus State:**
 ```scss
 :focus-visible {
-  outline: 2px solid $accent-teal;
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
-  border-radius: $radius-md;
 }
 ```
 
@@ -345,86 +321,18 @@ $breakpoint-xl: 1920px;    // Desktop / large screens
 
 ## Design Tokens (CSS Variables)
 
-All foundation values are exposed as CSS custom properties for runtime theming and consistency.
+All values are CSS custom properties defined in [`ui/src/_tokens.scss`](../../ui/src/_tokens.scss), with the dark overrides under `.dark-theme`. That file is the source of truth. It isn't copied here, so it can't drift.
 
-```scss
-:root {
-  // Colors — Surface
-  --color-bg-primary: #0f172a;
-  --color-bg-secondary: #1e293b;
-  --color-surface-default: #334155;
-  --color-surface-hover: #475569;
-  --color-surface-active: #64748b;
-  --color-divider: rgba(241, 245, 249, 0.12);
-  --color-border-default: rgba(241, 245, 249, 0.2);
-
-  // Colors — Text
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #cbd5e1;
-  --color-text-disabled: #94a3b8;
-  --color-text-hint: #64748b;
-
-  // Colors — Brand
-  --color-primary: #f59e0b;
-  --color-primary-hover: #fbbf24;
-  --color-primary-active: #d97706;
-  --color-accent: #14b8a6;
-  --color-accent-hover: #2dd4bf;
-  --color-accent-active: #0d9488;
-
-  // Colors — Semantic
-  --color-success: #10b981;
-  --color-success-bg: rgba(16, 185, 129, 0.15);
-  --color-error: #ef4444;
-  --color-error-bg: rgba(239, 68, 68, 0.15);
-  --color-warning: #f59e0b;
-  --color-warning-bg: rgba(245, 158, 11, 0.15);
-  --color-info: #3b82f6;
-  --color-info-bg: rgba(59, 130, 246, 0.15);
-
-  // Spacing
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-2xl: 48px;
-
-  // Typography
-  --font-family-base: 'Roboto', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-family-mono: 'Roboto Mono', 'Consolas', 'Monaco', monospace;
-  --font-h1: 300 32px/40px var(--font-family-base);
-  --font-h2: 400 24px/32px var(--font-family-base);
-  --font-h3: 500 20px/28px var(--font-family-base);
-  --font-h4: 500 18px/24px var(--font-family-base);
-  --font-body-large: 400 16px/24px var(--font-family-base);
-  --font-body: 400 14px/20px var(--font-family-base);
-  --font-body-small: 400 13px/18px var(--font-family-base);
-  --font-button: 500 14px/20px var(--font-family-base);
-  --font-caption: 400 12px/16px var(--font-family-base);
-  --font-overline: 500 11px/16px var(--font-family-base);
-
-  // Border Radius
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-full: 9999px;
-
-  // Shadows
-  --shadow-0: none;
-  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  --shadow-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-  --shadow-3: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
-  --shadow-4: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-  --shadow-5: 0 19px 38px rgba(0, 0, 0, 0.30), 0 15px 12px rgba(0, 0, 0, 0.22);
-
-  // Transitions
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 350ms cubic-bezier(0.0, 0, 0.2, 1);
-}
-```
+| Group | Prefix |
+|---|---|
+| Colour | `--color-*` (see the tables above) |
+| Spacing | `--space-xs` … `--space-2xl` (4, 8, 16, 24, 32, 48px) |
+| Type (shorthand) | `--font-h1` … `--font-overline` |
+| Type (size only) | `--font-size-caption` (12px), `--font-size-body-small` (13px), `--font-size-body` (14px) |
+| Radius | `--radius-sm` … `--radius-full` |
+| Elevation | `--shadow-0` … `--shadow-5` (softer in light mode) |
+| Motion | `--transition-fast` / `-normal` / `-slow` |
+| Angular Material | `--mat-sys-*`, kept in sync with the colour roles |
 
 ---
 

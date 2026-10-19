@@ -648,7 +648,7 @@
 
 **Specs:**
 - **Upload area:** Dashed border, 200px height, center-aligned icon + text
-- **Drag & drop:** Highlight border on drag-over (`$accent-teal` border, 2px solid)
+- **Drag & drop:** Highlight border on drag-over (`--color-accent` border, 2px solid)
 - **Accepted formats:** JPEG, PNG, HEIC (client-side validation)
 - **Max file size:** 10MB (client-side validation, server enforces)
 - **Progress bar:** Indeterminate during upload, determinate during parse (if progress available)
@@ -848,7 +848,7 @@
 **Specs:**
 - **Category headers:** 500 18px/24px, `$text-primary`, margin-top 24px, margin-bottom 12px
 - **List items:** Checkbox + label (400 14px/20px), 8px gap, 4px margin-bottom
-- **Checkbox:** Material checkbox, color `$accent-teal`, persistent checked state (local storage or API)
+- **Checkbox:** Material checkbox, color `--color-accent-fill`, persistent checked state (local storage or API)
 - **Print button:** Text button (toolbar), triggers print-friendly CSS (`@media print`)
 
 **Print Styles:**
@@ -929,7 +929,7 @@
 - **Section layout:** Content cards, 24px margin-bottom
 - **Section headers:** 500 20px/28px, `$text-primary`, margin-bottom 12px
 - **Settings cards:** Background `$surface-default`, padding 16px, border-radius 12px
-- **Toggle switches:** Material slide-toggle, color `$accent-teal`
+- **Toggle switches:** Material slide-toggle, color `--color-accent-fill`
 - **Destructive actions:** Warn color button, confirmation dialog before action
 
 **Angular Structure:**

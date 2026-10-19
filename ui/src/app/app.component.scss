@@ -60,10 +60,10 @@
     .active-link {
       background: rgba(124, 152, 133, 0.15);
       border-radius: var(--radius-md);
-      color: var(--color-accent);
+      color: var(--color-accent-text);
 
       mat-icon {
-        color: var(--color-accent);
+        color: var(--color-accent-text);
       }
     }
   }
@@ -74,7 +74,7 @@
 
   .create-account-btn {
     background-color: var(--color-primary);
-    color: var(--color-primary-text);
+    color: var(--color-on-primary);
     white-space: nowrap;
   }
 

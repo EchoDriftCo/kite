@@ -5,7 +5,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -37,6 +36,7 @@ import { LinkedRecipe, UsedInRecipe } from '../../../models/recipe-link.model';
 import { RecipeLinksComponent } from '../../../shared/components/recipe-links/recipe-links.component';
 import { GroceryService } from '../../../services/grocery.service';
 import { GroceryCheckoutOptions, GroceryCheckoutUrl } from '../../../models/grocery.model';
+import { ConfirmService } from '../../../services/confirm.service';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -48,7 +48,6 @@ import { GroceryCheckoutOptions, GroceryCheckoutUrl } from '../../../models/groc
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatChipsModule,
     MatDividerModule,
     MatDialogModule,
     MatSnackBarModule,
@@ -106,7 +105,8 @@ export class RecipeDetailComponent implements OnInit {
     private snackBar: MatSnackBar,
     private equipmentService: EquipmentService,
     private recipeLinkService: RecipeLinkService,
-    private groceryService: GroceryService
+    private groceryService: GroceryService,
+    private confirm: ConfirmService
   ) {}
 
   ngOnInit() {
@@ -277,10 +277,15 @@ export class RecipeDetailComponent implements OnInit {
     }
   }
 
-  deleteRecipe() {
+  async deleteRecipe() {
     if (!this.recipeId || !this.recipe) return;
 
-    const confirmed = confirm(`Are you sure you want to delete "${this.recipe.title}"?`);
+    const confirmed = await this.confirm.ask({
+      title: 'Delete recipe?',
+      message: `"${this.recipe.title}" will be deleted. This can't be undone.`,
+      confirmText: 'Delete',
+      destructive: true,
+    });
     
     if (confirmed) {
       this.recipeService.deleteRecipe(this.recipeId).subscribe({

@@ -133,7 +133,7 @@ import { RecipeService } from '../../../services/recipe.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: var(--font-size-caption);
       font-weight: bold;
     }
 

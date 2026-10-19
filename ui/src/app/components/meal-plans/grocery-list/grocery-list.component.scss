@@ -145,13 +145,13 @@ mat-accordion {
 
       .item-sources {
         font: var(--font-caption);
-        color: var(--color-text-low-emphasis);
+        color: var(--color-text-secondary);
         font-style: italic;
       }
 
       .manual-badge {
         display: inline-block;
-        font-size: 0.65rem;
+        font-size: var(--font-size-caption);
         padding: 1px 6px;
         border-radius: var(--radius-md);
         background-color: rgba(63, 81, 181, 0.3);
@@ -289,7 +289,7 @@ mat-accordion {
 
         .item-sources {
           color: #666 !important;
-          font-size: 0.7rem;
+          font-size: var(--font-size-caption);
         }
 
         .manual-badge {

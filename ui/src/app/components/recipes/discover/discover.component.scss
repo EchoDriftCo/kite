@@ -192,7 +192,7 @@
         height: 16px;
 
         &.filled {
-          color: var(--color-primary);
+          color: var(--color-rating);
         }
       }
     }
@@ -202,35 +202,12 @@
       flex-direction: column;
       gap: var(--space-sm);
 
-      mat-chip-set {
-        display: flex;
-        gap: var(--space-sm);
-      }
-
-      mat-chip {
-        font-size: 0.75rem;
-        --mdc-chip-label-text-color: var(--color-accent-text);
-        --mdc-chip-with-icon-icon-color: var(--color-accent-text);
-        --mdc-chip-elevated-container-color: var(--color-accent-subtle-bg);
-        color: var(--color-accent-text);
-        background-color: var(--color-accent-subtle-bg);
-        border: 1px solid var(--color-accent-subtle-border);
-
-        mat-icon {
-          font-size: 16px;
-          width: 16px;
-          height: 16px;
-          margin-right: var(--space-xs);
-          color: var(--color-accent-text);
-        }
-      }
-
       .fork-count {
         display: flex;
         align-items: center;
         gap: var(--space-xs);
         font-size: 0.8rem;
-        color: var(--color-text-hint);
+        color: var(--color-text-secondary);
 
         mat-icon {
           font-size: 16px;

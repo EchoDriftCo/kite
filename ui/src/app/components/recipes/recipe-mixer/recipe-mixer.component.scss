@@ -142,7 +142,7 @@ mat-divider {
       }
 
       .attribution {
-        font-size: 0.75rem;
+        font-size: var(--font-size-body-small);
         color: var(--color-text-secondary);
         font-style: italic;
         white-space: nowrap;

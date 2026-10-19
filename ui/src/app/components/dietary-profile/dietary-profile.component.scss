@@ -35,12 +35,12 @@
   .sidebar-empty {
     text-align: center;
     padding: var(--space-lg);
-    color: var(--color-text-hint);
+    color: var(--color-text-secondary);
   }
 }
 
 .default-badge {
-  font-size: 0.7rem;
+  font-size: var(--font-size-caption);
   padding: 2px var(--space-sm);
   border-radius: 12px;
   background: rgba(255, 167, 38, 0.2);
@@ -142,7 +142,7 @@
   }
 
   .restriction-meta {
-    color: var(--color-text-hint);
+    color: var(--color-text-secondary);
     font-size: 0.85rem;
     flex: 1;
   }
@@ -182,13 +182,13 @@
   }
 
   .ingredient-reason {
-    color: var(--color-text-hint);
+    color: var(--color-text-secondary);
     font-size: 0.85rem;
   }
 }
 
 .no-items {
-  color: var(--color-text-low-emphasis);
+  color: var(--color-text-secondary);
   font-style: italic;
   text-align: center;
   padding: var(--space-md);
@@ -208,7 +208,7 @@
     font-size: 64px;
     width: 64px;
     height: 64px;
-    color: var(--color-text-low-emphasis);
+    color: var(--color-text-secondary);
   }
 
   h3 {
@@ -218,7 +218,7 @@
   }
 
   p {
-    color: var(--color-text-hint);
+    color: var(--color-text-secondary);
     max-width: 400px;
     margin: 0;
   }

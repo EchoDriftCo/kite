@@ -101,7 +101,7 @@ mat-dialog-content {
     }
 
     .file-info {
-      font-size: 0.75rem;
+      font-size: var(--font-size-caption);
       color: rgba(0, 0, 0, 0.5);
       margin: 0;
     }
@@ -157,7 +157,7 @@ mat-dialog-content {
       .toolbar-hint {
         flex: 1;
         text-align: center;
-        font-size: 12px;
+        font-size: var(--font-size-body-small);
         color: rgba(0, 0, 0, 0.6);
       }
     }
@@ -213,7 +213,7 @@ mat-dialog-content {
 
         .file-size {
           margin: 0;
-          font-size: 0.75rem;
+          font-size: var(--font-size-caption);
           color: rgba(0, 0, 0, 0.6);
         }
       }
@@ -348,7 +348,7 @@ mat-dialog-actions {
     .cropper-container {
       .cropper-toolbar {
         .toolbar-hint {
-          font-size: 10px;
+          font-size: var(--font-size-body-small);
         }
       }
     }

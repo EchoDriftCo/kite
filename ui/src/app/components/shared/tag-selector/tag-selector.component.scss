@@ -42,7 +42,7 @@
         }
 
         .tag-category-badge {
-          font-size: 0.75rem;
+          font-size: var(--font-size-caption);
           opacity: 0.7;
           margin-left: 0.25rem;
         }
@@ -144,7 +144,7 @@
 
     .alias-error {
       color: var(--color-error);
-      font-size: 0.75rem;
+      font-size: var(--font-size-body-small);
       margin-top: 0.5rem;
     }
   }
@@ -171,7 +171,7 @@
 
   .category-label {
     margin-left: auto;
-    font-size: 0.75rem;
+    font-size: var(--font-size-caption);
     opacity: 0.6;
   }
 }

@@ -607,7 +607,7 @@ interface PricingTier {
       left: 50%;
       transform: translateX(-50%);
       background: var(--color-primary);
-      color: var(--color-primary-text);
+      color: var(--color-on-primary);
       padding: var(--space-xs) var(--space-md);
       border-radius: var(--radius-full);
       font: var(--font-caption);
@@ -627,7 +627,7 @@ interface PricingTier {
     .tier-price {
       font-size: 36px;
       font-weight: 600;
-      color: var(--color-primary);
+      color: var(--color-primary-text);
       margin-bottom: var(--space-xs);
       line-height: 1.2;
     }

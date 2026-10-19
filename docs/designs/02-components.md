@@ -1,19 +1,33 @@
 # RecipeVault Design System — Components
 
-**Version:** 2.0 (UI Redesign)  
-**Status:** Approved by Vega  
-**Date:** 2026-03-21
+**Version:** 2.1 (light + dark themes, accessible colour roles)  
+**Status:** Current  
+**Date:** 2026-10-18 (v2.0: 2026-03-21)
+
+Colours here are token names from [`ui/src/_tokens.scss`](../../ui/src/_tokens.scss). [01-foundation.md](01-foundation.md#colour-roles) says which token may be used for text and which only for fills.
 
 ---
 
 ## Buttons
+
+### Button tiers
+
+At most **one primary button per view**; everything else steps down. Full rationale: [tasks/5.0](tasks/5.0-design-system-foundation.md#2-button-tiers).
+
+| Tier | Markup | Use for |
+|---|---|---|
+| Primary | `mat-flat-button color="primary"` (`mat-raised-button` renders the same: no resting shadow) | The single main action: New Recipe, Start Cooking, Save, Sign In |
+| Secondary | `mat-stroked-button` (no colour) | Other visible actions: Edit, Grocery List, Cancel in forms |
+| Accent | `mat-flat-button color="accent"` | Rare; AI features, never next to a primary |
+| Tertiary | `mat-button` | Low emphasis: Clear filters, Show more |
+| Destructive | `mat-menu-item class="destructive"` → `ConfirmService.ask({ destructive: true })` | Delete, Remove, Leave. **Never** a filled red button in a toolbar |
 
 ### Primary Button (Filled)
 
 **Use for:** High-emphasis actions (Save, Create Recipe, Submit, Continue)
 
 **Specs:**
-- **Background:** `$primary-amber` (#f59e0b)
+- **Text color:** `--color-on-primary` (#1a1a1a light, #1a2230 dark)
 - **Text color:** `#0f172a` (dark slate for contrast)
 - **Font:** 500 14px/20px, uppercase, letter-spacing 0.05em
 - **Padding:** 8px vertical, 24px horizontal
@@ -23,9 +37,9 @@
 - **Shadow:** none at rest, `$shadow-1` on hover
 
 **States:**
-- **Hover:** Background → `$primary-amber-hover` (#fbbf24), shadow → `$shadow-1`, transition 150ms
-- **Active/Pressed:** Background → `$primary-amber-active` (#d97706), scale(0.98)
-- **Focus:** 2px solid `$accent-teal` outline, 2px offset
+- **Hover:** Background → `--color-primary-hover`, shadow → `$shadow-1`, transition 150ms
+- **Active/Pressed:** Background → `--color-primary-active`, scale(0.98)
+- **Focus:** 2px solid `--color-accent` outline, 2px offset
 - **Disabled:** Background → `$surface-hover` (#475569), text → `$text-disabled` (#94a3b8), cursor not-allowed
 
 **Angular Material:**
@@ -79,8 +93,8 @@
 
 **Specs:**
 - **Background:** Transparent
-- **Border:** 1px solid `$accent-teal` (#14b8a6)
-- **Text color:** `$accent-teal` (#14b8a6)
+- **Border:** 1px solid `--color-border-default`
+- **Text color:** `--color-text-primary` (use `--color-accent-text` only for `color="accent"`)
 - **Font:** 500 14px/20px, uppercase, letter-spacing 0.05em
 - **Padding:** 7px vertical, 23px horizontal (accounts for 1px border)
 - **Border-radius:** 8px
@@ -88,9 +102,9 @@
 - **Min-height:** 40px
 
 **States:**
-- **Hover:** Background → `rgba(20, 184, 166, 0.08)`, border → `$accent-teal-hover` (#2dd4bf)
-- **Active/Pressed:** Background → `rgba(20, 184, 166, 0.16)`, border → `$accent-teal-active` (#0d9488)
-- **Focus:** 2px solid `$accent-teal` outline, 2px offset
+- **Hover:** Background → `--color-overlay-light`
+- **Active/Pressed:** Background → `--color-overlay-medium`
+- **Focus:** 2px solid `--color-accent` outline, 2px offset
 - **Disabled:** Border → `$border-default`, text → `$text-disabled`, cursor not-allowed
 
 **Angular Material:**
@@ -144,7 +158,7 @@
 
 **Specs:**
 - **Background:** Transparent
-- **Text color:** `$accent-teal` (#14b8a6)
+- **Text color:** `--color-text-primary`; coloured variants use `--color-primary-text` / `--color-accent-text` / `--color-error-text`, never the fill colour
 - **Font:** 500 14px/20px, uppercase, letter-spacing 0.05em
 - **Padding:** 8px 16px
 - **Border-radius:** 8px
@@ -153,7 +167,7 @@
 **States:**
 - **Hover:** Background → `rgba(20, 184, 166, 0.08)`
 - **Active/Pressed:** Background → `rgba(20, 184, 166, 0.16)`
-- **Focus:** 2px solid `$accent-teal` outline, 2px offset
+- **Focus:** 2px solid `--color-accent` outline, 2px offset
 - **Disabled:** Text → `$text-disabled`, cursor not-allowed
 
 **Angular Material:**
@@ -177,7 +191,7 @@
 **States:**
 - **Hover:** Background → `rgba(241, 245, 249, 0.08)`
 - **Active/Pressed:** Background → `rgba(241, 245, 249, 0.16)`, scale(0.95)
-- **Focus:** 2px solid `$accent-teal` outline, 2px offset
+- **Focus:** 2px solid `--color-accent` outline, 2px offset
 - **Disabled:** Icon color → `$text-disabled`, cursor not-allowed
 
 **Angular Material:**
@@ -196,16 +210,16 @@
 **Specs:**
 - **Size:** 56x56px (desktop), 48x48px (mobile)
 - **Icon size:** 24x24px
-- **Background:** `$primary-amber` (#f59e0b)
+- **Background:** `--color-primary` (#ff8c42)
 - **Icon color:** `#0f172a` (dark slate)
 - **Border-radius:** `$radius-full`
 - **Shadow:** `$shadow-2` at rest, `$shadow-3` on hover
 - **Position:** Fixed, bottom-right corner (16px from edge on mobile, 24px on desktop)
 
 **States:**
-- **Hover:** Background → `$primary-amber-hover`, shadow → `$shadow-3`, scale(1.05)
-- **Active/Pressed:** Background → `$primary-amber-active`, scale(0.95)
-- **Focus:** 2px solid `$accent-teal` outline, 2px offset
+- **Hover:** Background → `--color-primary-hover`, shadow → `$shadow-3`, scale(1.05)
+- **Active/Pressed:** Background → `--color-primary-active`, scale(0.95)
+- **Focus:** 2px solid `--color-accent` outline, 2px offset
 
 **Angular Material:**
 ```html
@@ -237,7 +251,7 @@
 
 **Specs:**
 - **Background:** `rgba(51, 65, 85, 0.5)` (semi-transparent slate-700)
-- **Border:** 1px solid `$border-default` at rest, `$accent-teal` on focus
+- **Border:** 1px solid `$border-default` at rest, `--color-accent` on focus
 - **Border-radius:** 8px
 - **Padding:** 12px 16px
 - **Font:** 400 14px/20px
@@ -247,7 +261,7 @@
 - **Min-height:** 48px (touch-friendly)
 
 **States:**
-- **Focus:** Border → 2px solid `$accent-teal`, background → `rgba(51, 65, 85, 0.7)`, label → `$accent-teal`
+- **Focus:** Border → 2px solid `--color-accent`, background → `--color-surface-active`, label → `--color-accent-text`
 - **Error:** Border → 2px solid `$error`, label → `$error`, helper text → `$error`
 - **Disabled:** Background → `rgba(51, 65, 85, 0.3)`, text → `$text-disabled`, cursor not-allowed
 - **Filled (with value):** Label stays floated, border `$border-default`
@@ -356,7 +370,7 @@ Same as text input, but:
 - **Dropdown icon:** `arrow_drop_down` (Material icon), 24x24px, right-aligned
 - **Dropdown panel:** Background `$surface-default`, shadow `$shadow-3`, border-radius 8px
 - **Option hover:** Background `$surface-hover`
-- **Option selected:** Background `$accent-teal` with 0.2 opacity, text bold
+- **Option selected:** Background `--color-accent-subtle-bg`, text bold
 
 **Angular Material:**
 ```html
@@ -377,15 +391,15 @@ Same as text input, but:
 **Specs:**
 - **Size:** 20x20px
 - **Border:** 2px solid `$border-default` (unchecked)
-- **Background:** Transparent (unchecked), `$accent-teal` (checked)
+- **Background:** Transparent (unchecked), `--color-accent-fill` (checked)
 - **Checkmark color:** `#0f172a` (dark slate)
 - **Border-radius:** 4px
 - **Label:** 400 14px/20px, 8px margin-left, `$text-primary`
 
 **States:**
-- **Hover:** Border → `$accent-teal-hover`
-- **Checked:** Background → `$accent-teal`, border → `$accent-teal`, checkmark visible
-- **Focus:** 2px solid `$accent-teal` outline, 2px offset
+- **Hover:** Border → `--color-accent`
+- **Checked:** Background → `--color-accent-fill`, border → `--color-accent-fill`, checkmark `--color-on-accent`
+- **Focus:** 2px solid `--color-accent` outline, 2px offset
 - **Disabled:** Border → `$text-disabled`, background → `rgba(51, 65, 85, 0.3)`, cursor not-allowed
 
 **Angular Material:**
@@ -400,13 +414,13 @@ Same as text input, but:
 **Specs:**
 - **Size:** 20x20px (outer circle)
 - **Border:** 2px solid `$border-default` (unselected)
-- **Inner circle:** 10x10px, `$accent-teal` (selected only)
+- **Inner circle:** 10x10px, `--color-accent-fill` (selected only)
 - **Label:** 400 14px/20px, 8px margin-left, `$text-primary`
 
 **States:**
-- **Hover:** Border → `$accent-teal-hover`
-- **Selected:** Border → `$accent-teal`, inner circle visible
-- **Focus:** 2px solid `$accent-teal` outline, 2px offset
+- **Hover:** Border → `--color-accent`
+- **Selected:** Border → `--color-accent-fill`, inner circle visible
+- **Focus:** 2px solid `--color-accent` outline, 2px offset
 - **Disabled:** Border → `$text-disabled`, cursor not-allowed
 
 **Angular Material:**
@@ -428,15 +442,15 @@ Same as text input, but:
 - **Track height:** 20px
 - **Thumb size:** 16x16px (circular)
 - **Track color (off):** `$surface-hover` (#475569)
-- **Track color (on):** `$accent-teal` (#14b8a6)
+- **Track color (on):** `--color-accent-fill`, thumb `--color-on-accent`
 - **Thumb color:** `#f1f5f9` (always light)
 - **Border-radius:** `$radius-full` (track and thumb fully rounded)
 
 **States:**
 - **Off:** Thumb positioned left, track color `$surface-hover`
-- **On:** Thumb positioned right, track color `$accent-teal`
+- **On:** Thumb positioned right, track color `--color-accent-fill`
 - **Hover:** Track color slightly brighter (add 10% lightness)
-- **Focus:** 2px solid `$accent-teal` outline around track, 2px offset
+- **Focus:** 2px solid `--color-accent` outline around track, 2px offset
 - **Disabled:** Track color `rgba(51, 65, 85, 0.3)`, thumb opacity 0.5, cursor not-allowed
 
 **Angular Material:**
@@ -472,7 +486,7 @@ Same as text input, but:
 **States:**
 - **Hover:** Shadow → `$shadow-2`, transform → `translateY(-4px)`, transition 250ms
 - **Active/Pressed:** Shadow → `$shadow-1`, transform → `translateY(0)`
-- **Focus:** 2px solid `$accent-teal` outline, 2px offset
+- **Focus:** 2px solid `--color-accent` outline, 2px offset
 
 **Example HTML:**
 ```html
@@ -586,11 +600,11 @@ Same as text input, but:
 
 ## Chips / Tags
 
-**Use for:** Tags, filters, removable selections
+**Use for:** Tags, filters, removable selections. **Only things you can tap.** Recipe time, servings and counts are not chips: use the `.meta-line` pattern (each item a 16px icon + text, `--space-md` apart, `--font-body-small`, `--color-text-secondary`; defined in `ui/src/styles.scss`).
 
 **Specs:**
-- **Background:** `rgba(20, 184, 166, 0.2)` (teal with opacity)
-- **Text color:** `$accent-teal` (#14b8a6)
+- **Background:** `--color-accent-subtle-bg`, 1px border `--color-accent-subtle-border`
+- **Text color:** `--color-accent-text`
 - **Font:** 500 12px/16px, letter-spacing 0.02em
 - **Padding:** 4px 12px
 - **Border-radius:** 16px (pill shape)
@@ -716,8 +730,8 @@ Same as text input, but:
 
 **States:**
 - **Hover:** Background → `$surface-default`
-- **Active/Selected:** Background → `rgba(20, 184, 166, 0.15)`, text → `$accent-teal`, icon → `$accent-teal`
-- **Focus:** 2px solid `$accent-teal` outline, 2px offset
+- **Active/Selected:** Background → `--color-accent-subtle-bg`, text and icon → `--color-accent-text`
+- **Focus:** 2px solid `--color-accent` outline, 2px offset
 
 **Angular Material:**
 ```html
@@ -795,6 +809,17 @@ Same as text input, but:
 ---
 
 ## Dialogs / Modals
+
+### Confirm dialog
+
+Every confirmation goes through `ConfirmService.ask()` (`ui/src/app/services/confirm.service.ts`); never `window.confirm()` or `prompt()`.
+
+- **Title:** a question naming the action ("Delete recipe?"). **Body:** what is lost, `--font-body-large` in `--color-text-secondary`.
+- **Buttons:** Cancel (`mat-button`) then the verb ("Delete", never "OK"). Destructive dialogs use a warn flat button and open with focus on Cancel.
+- **Type-to-confirm:** `requireText: 'DELETE'` for irreversible account-level actions; the confirm button stays disabled until it matches.
+- **Size:** 400px max, `calc(100vw - 32px)` on mobile.
+
+### General dialog specs
 
 **Specs:**
 - **Background:** `$surface-default` (#334155)
@@ -924,7 +949,7 @@ this.snackBar.open('Recipe saved successfully!', 'Dismiss', {
 
 **Specs:**
 - **Size:** 40x40px (default), 24x24px (inline)
-- **Color:** `$accent-teal` (#14b8a6)
+- **Color:** `--color-accent`
 - **Stroke width:** 4px
 - **Animation:** Rotate 1.4s linear infinite
 
@@ -942,7 +967,7 @@ this.snackBar.open('Recipe saved successfully!', 'Dismiss', {
 **Specs:**
 - **Height:** 4px
 - **Background:** `$surface-hover` (#475569)
-- **Fill color:** `$accent-teal` (#14b8a6)
+- **Fill color:** `--color-accent`
 - **Border-radius:** 2px
 - **Animation:** Smooth fill transition (250ms ease-in-out)
 

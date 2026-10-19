@@ -13,6 +13,7 @@ import { CircleService } from '../../../services/circle.service';
 import { Circle, CircleMember, CircleRecipe, CircleRole } from '../../../models/circle.model';
 import { InviteDialogComponent } from '../invite-dialog/invite-dialog.component';
 import { CircleFormDialogComponent } from '../circle-form-dialog/circle-form-dialog.component';
+import { ConfirmService } from '../../../services/confirm.service';
 
 @Component({
   selector: 'app-circle-detail',
@@ -43,7 +44,8 @@ export class CircleDetailComponent implements OnInit {
     private router: Router,
     private circleService: CircleService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private confirm: ConfirmService
   ) {}
 
   ngOnInit() {
@@ -137,10 +139,15 @@ export class CircleDetailComponent implements OnInit {
     });
   }
 
-  deleteCircle() {
+  async deleteCircle() {
     if (!this.circle || !this.circleId) return;
 
-    if (confirm(`Are you sure you want to delete "${this.circle.name}"? This cannot be undone.`)) {
+    if (await this.confirm.ask({
+      title: 'Delete circle?',
+      message: `"${this.circle.name}" will be deleted for every member. This can't be undone.`,
+      confirmText: 'Delete',
+      destructive: true,
+    })) {
       this.circleService.deleteCircle(this.circleId).subscribe({
         next: () => {
           this.snackBar.open('Circle deleted successfully', 'Close', { duration: 3000 });
@@ -154,10 +161,15 @@ export class CircleDetailComponent implements OnInit {
     }
   }
 
-  leaveCircle() {
+  async leaveCircle() {
     if (!this.circle || !this.circleId) return;
 
-    if (confirm(`Are you sure you want to leave "${this.circle.name}"?`)) {
+    if (await this.confirm.ask({
+      title: 'Leave circle?',
+      message: `You'll lose access to recipes shared in "${this.circle.name}" until someone invites you again.`,
+      confirmText: 'Leave',
+      destructive: true,
+    })) {
       this.circleService.leaveCircle(this.circleId).subscribe({
         next: () => {
           this.snackBar.open('Left circle successfully', 'Close', { duration: 3000 });
@@ -171,10 +183,15 @@ export class CircleDetailComponent implements OnInit {
     }
   }
 
-  removeMember(member: CircleMember) {
+  async removeMember(member: CircleMember) {
     if (!this.circleId) return;
 
-    if (confirm(`Remove ${member.userEmail || 'this member'} from the circle?`)) {
+    if (await this.confirm.ask({
+      title: 'Remove member?',
+      message: `${member.userEmail || 'This member'} will lose access to this circle's recipes.`,
+      confirmText: 'Remove',
+      destructive: true,
+    })) {
       this.circleService.removeMember(this.circleId, member.subjectId).subscribe({
         next: () => {
           this.snackBar.open('Member removed successfully', 'Close', { duration: 3000 });

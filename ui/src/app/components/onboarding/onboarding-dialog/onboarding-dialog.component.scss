@@ -7,7 +7,7 @@
   float: right;
   font-size: 14px;
   font-weight: 400;
-  color: var(--color-text-disabled);
+  color: var(--color-text-secondary);
 }
 
 // Welcome step
@@ -18,7 +18,7 @@
 
 .subtitle {
   font-size: 18px;
-  color: var(--color-text-disabled);
+  color: var(--color-text-secondary);
   margin-bottom: var(--space-xl);
 }
 
@@ -48,7 +48,7 @@
   }
 
   span {
-    font-size: 12px;
+    font-size: var(--font-size-caption);
     color: var(--color-text-secondary);
   }
 }
@@ -74,7 +74,7 @@
 
 .skip-btn {
   min-height: 48px;
-  color: var(--color-text-disabled) !important;
+  color: var(--color-text-secondary) !important;
 }
 
 .spacer {
@@ -83,7 +83,7 @@
 
 // Dietary step
 .section-desc {
-  color: var(--color-text-disabled);
+  color: var(--color-text-secondary);
   margin-bottom: var(--space-md);
 }
 
@@ -196,7 +196,7 @@
   gap: var(--space-sm);
   font-weight: 600;
   margin-bottom: var(--space-sm);
-  color: var(--color-primary);
+  color: var(--color-primary-text);
 }
 
 .conflict-mock {
@@ -262,7 +262,7 @@
   p {
     margin: 0;
     font-size: 13px;
-    color: var(--color-text-disabled);
+    color: var(--color-text-secondary);
   }
 }
 
@@ -281,7 +281,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  color: var(--color-text-hint);
+  color: var(--color-text-secondary);
   font-size: 13px;
   margin-top: var(--space-sm);
 

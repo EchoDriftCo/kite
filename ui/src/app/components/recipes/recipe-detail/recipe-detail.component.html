@@ -199,34 +199,22 @@
       }
 
       <div class="recipe-meta">
-        <mat-chip-set>
+        <p class="meta-line">
           @if (recipe.prepTimeMinutes) {
-            <mat-chip>
-              <mat-icon>schedule</mat-icon>
-              Prep: {{ formatTime(recipe.prepTimeMinutes) }}
-            </mat-chip>
+            <span class="meta-item"><mat-icon aria-hidden="true">schedule</mat-icon>Prep {{ formatTime(recipe.prepTimeMinutes) }}</span>
           }
           @if (recipe.cookTimeMinutes) {
-            <mat-chip>
-              <mat-icon>whatshot</mat-icon>
-              Cook: {{ formatTime(recipe.cookTimeMinutes) }}
-            </mat-chip>
+            <span class="meta-item"><mat-icon aria-hidden="true">whatshot</mat-icon>Cook {{ formatTime(recipe.cookTimeMinutes) }}</span>
           }
-          <mat-chip>
-            <mat-icon>schedule</mat-icon>
-            Total: {{ getTotalTime() }}
-          </mat-chip>
-          <mat-chip>
-            <mat-icon>restaurant_menu</mat-icon>
-            Serves: {{ scaledServings }}@if (scaleFactor !== 1) { <span class="scale-indicator">({{ recipe.yield }} original)</span> }
-          </mat-chip>
+          <span class="meta-item"><mat-icon aria-hidden="true">timer</mat-icon>Total {{ getTotalTime() }}</span>
+          <span class="meta-item">
+            <mat-icon aria-hidden="true">restaurant_menu</mat-icon>Serves {{ scaledServings }}
+            @if (scaleFactor !== 1) { <span class="scale-indicator">({{ recipe.yield }} original)</span> }
+          </span>
           @if (recipe.isPublic) {
-            <mat-chip>
-              <mat-icon>public</mat-icon>
-              Public
-            </mat-chip>
+            <span class="meta-item"><mat-icon aria-hidden="true">public</mat-icon>Public</span>
           }
-        </mat-chip-set>
+        </p>
 
         @if (recipe.source) {
           <p class="source">Source: {{ recipe.source }}</p>

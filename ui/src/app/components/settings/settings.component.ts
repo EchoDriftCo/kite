@@ -13,6 +13,7 @@ import { TourService } from '../../services/tour.service';
 import { AuthService } from '../../services/auth.service';
 import { GuestPromptService } from '../../services/guest-prompt.service';
 import { RecipeService } from '../../services/recipe.service';
+import { ConfirmService } from '../../services/confirm.service';
 import { OnboardingDialogComponent } from '../onboarding/onboarding-dialog/onboarding-dialog.component';
 import { BetaInviteDialogComponent } from './beta-invite-dialog/beta-invite-dialog.component';
 
@@ -47,7 +48,8 @@ export class SettingsComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private router: Router,
-    private guestPrompt: GuestPromptService
+    private guestPrompt: GuestPromptService,
+    private confirm: ConfirmService
   ) {}
 
   ngOnInit(): void {
@@ -96,8 +98,13 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  removeSampleRecipes(): void {
-    if (!confirm('This will delete all sample recipes from your library. Any edits you\'ve made will be lost.')) {
+  async removeSampleRecipes(): Promise<void> {
+    if (!(await this.confirm.ask({
+      title: 'Remove sample recipes?',
+      message: "All sample recipes will be deleted from your library, including any edits you've made to them.",
+      confirmText: 'Remove',
+      destructive: true,
+    }))) {
       return;
     }
 
@@ -132,7 +139,12 @@ export class SettingsComponent implements OnInit {
   }
 
   async logout(): Promise<void> {
-    if (this.isGuest && !confirm('Signing out of a guest session discards your recipes and data. Create an account first to keep them. Sign out anyway?')) {
+    if (this.isGuest && !(await this.confirm.ask({
+      title: 'Sign out of guest session?',
+      message: 'Signing out of a guest session discards your recipes and data. Create an account first to keep them.',
+      confirmText: 'Sign out',
+      destructive: true,
+    }))) {
       return;
     }
     try {
@@ -165,17 +177,15 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  deleteAccount(): void {
-    const confirmed = confirm(
-      'Are you sure you want to delete your account? This will permanently delete all your recipes, meal plans, and data. This action CANNOT be undone.'
-    );
+  async deleteAccount(): Promise<void> {
+    const confirmed = await this.confirm.ask({
+      title: 'Delete your account?',
+      message: "All your recipes, meal plans and data will be permanently deleted. This can't be undone.",
+      confirmText: 'Delete account',
+      destructive: true,
+      requireText: 'DELETE',
+    });
     if (!confirmed) return;
-
-    const doubleConfirm = prompt('Type DELETE to confirm account deletion:');
-    if (doubleConfirm !== 'DELETE') {
-      this.snackBar.open('Account deletion cancelled', 'OK', { duration: 3000 });
-      return;
-    }
 
     this.snackBar.open('Account deletion is not yet available. Contact support.', 'OK', { duration: 5000 });
   }

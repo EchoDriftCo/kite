@@ -15,6 +15,7 @@ import { MealPlan, MealPlanEntry, MealSlot, MEAL_SLOT_LABELS, MealPlanEntryReque
 import { RecipePickerDialogComponent } from '../recipe-picker-dialog/recipe-picker-dialog.component';
 import { CopyMealPlanDialogComponent, CopyMealPlanResult } from '../copy-meal-plan-dialog/copy-meal-plan-dialog.component';
 import { addDays, daysBetween, formatCalendarDate, parseCalendarDate } from '../../../shared/calendar-date';
+import { ConfirmService } from '../../../services/confirm.service';
 
 interface CalendarDay {
   date: Date;
@@ -54,7 +55,8 @@ export class MealPlanDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private mealPlanService: MealPlanService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private confirm: ConfirmService
   ) {}
 
   ngOnInit() {
@@ -245,8 +247,13 @@ export class MealPlanDetailComponent implements OnInit {
     }
   }
 
-  deletePlan() {
-    if (!this.planId || !confirm('Are you sure you want to delete this meal plan?')) return;
+  async deletePlan() {
+    if (!this.planId || !(await this.confirm.ask({
+      title: 'Delete meal plan?',
+      message: `"${this.plan?.name ?? 'This meal plan'}" will be deleted. Your recipes aren't affected.`,
+      confirmText: 'Delete',
+      destructive: true,
+    }))) return;
 
     this.mealPlanService.deleteMealPlan(this.planId).subscribe({
       next: () => this.router.navigate(['/meal-plans']),
