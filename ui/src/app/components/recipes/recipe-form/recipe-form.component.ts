@@ -336,13 +336,6 @@ export class RecipeFormComponent implements OnInit {
     }
   }
 
-  canDeactivate(): boolean {
-    if (this.hasUnsavedChanges) {
-      return confirm('You have unsaved changes. Are you sure you want to leave?');
-    }
-    return true;
-  }
-
   cancel() {
     if (this.isEditMode && this.recipeId) {
       this.router.navigate(['/recipes', this.recipeId]);

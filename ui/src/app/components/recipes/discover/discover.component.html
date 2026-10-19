@@ -80,16 +80,10 @@
               }
 
               <div class="recipe-meta">
-                <mat-chip-set>
-                  <mat-chip>
-                    <mat-icon>schedule</mat-icon>
-                    {{ getTotalTime(recipe) }}
-                  </mat-chip>
-                  <mat-chip>
-                    <mat-icon>restaurant_menu</mat-icon>
-                    {{ recipe.yield }} servings
-                  </mat-chip>
-                </mat-chip-set>
+                <p class="meta-line">
+                  <span class="meta-item"><mat-icon aria-hidden="true">schedule</mat-icon>{{ getTotalTime(recipe) }}</span>
+                  <span class="meta-item"><mat-icon aria-hidden="true">restaurant_menu</mat-icon>{{ recipe.yield }} servings</span>
+                </p>
 
                 @if ((recipe.forkCount || 0) > 0) {
                   <div class="fork-count">

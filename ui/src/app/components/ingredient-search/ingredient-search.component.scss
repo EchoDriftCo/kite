@@ -60,7 +60,7 @@
 
 .helper-text {
   text-align: center;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--color-text-secondary);
   margin: var(--space-xl) 0;
   font-style: italic;
 }
@@ -124,13 +124,13 @@
     color: rgba(0, 0, 0, 0.3);
 
     &.filled {
-      color: var(--color-primary);
+      color: var(--color-rating);
     }
   }
 }
 
 .recipe-count {
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--color-text-secondary);
   font-size: 0.85em;
   margin-left: var(--space-sm);
 }
@@ -203,7 +203,7 @@
 .no-results {
   text-align: center;
   padding: var(--space-2xl) var(--space-md);
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--color-text-secondary);
 
   mat-icon {
     font-size: 48px;
@@ -256,7 +256,7 @@
 
   .expiration {
     font-size: 0.85rem;
-    color: rgba(0, 0, 0, 0.5);
+    color: var(--color-text-secondary);
   }
 
   .item-actions {
@@ -268,7 +268,7 @@
 .empty-pantry {
   text-align: center;
   padding: var(--space-2xl) var(--space-md);
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--color-text-secondary);
 
   mat-icon {
     font-size: 48px;

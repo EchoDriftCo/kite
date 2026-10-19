@@ -9,6 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { LinkedRecipe, UsedInRecipe } from '../../../models/recipe-link.model';
 import { RecipeLinkDialogComponent } from '../recipe-link-dialog/recipe-link-dialog.component';
 import { RecipeLinkService } from '../../../services/recipe-link.service';
+import { ConfirmService } from '../../../services/confirm.service';
 
 @Component({
   selector: 'app-recipe-links',
@@ -36,7 +37,8 @@ export class RecipeLinksComponent {
 
   constructor(
     private dialog: MatDialog,
-    private recipeLinkService: RecipeLinkService
+    private recipeLinkService: RecipeLinkService,
+    private confirm: ConfirmService
   ) {}
 
   openAddLinkDialog() {
@@ -70,8 +72,13 @@ export class RecipeLinksComponent {
     });
   }
 
-  deleteLink(link: LinkedRecipe) {
-    if (confirm(`Are you sure you want to remove the link to "${link.title}"?`)) {
+  async deleteLink(link: LinkedRecipe) {
+    if (await this.confirm.ask({
+      title: 'Remove link?',
+      message: `"${link.title}" will no longer be linked to this recipe. Neither recipe is deleted.`,
+      confirmText: 'Remove',
+      destructive: true,
+    })) {
       this.recipeLinkService.deleteRecipeLink(this.recipeId, link.recipeLinkResourceId).subscribe({
         next: () => {
           this.refreshRequested.emit();

@@ -9,6 +9,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CollectionService } from '../../../services/collection.service';
 import { Collection, CreateCollectionRequest, UpdateCollectionRequest } from '../../../models/collection.model';
+import { ConfirmService } from '../../../services/confirm.service';
 
 export interface CollectionFormDialogData {
   mode: 'create' | 'edit';
@@ -92,6 +93,7 @@ export class CollectionFormDialogComponent implements OnInit {
     private collectionService: CollectionService,
     private dialogRef: MatDialogRef<CollectionFormDialogComponent>,
     private snackBar: MatSnackBar,
+    private confirm: ConfirmService,
     @Inject(MAT_DIALOG_DATA) public data: CollectionFormDialogData
   ) {
     this.form = this.fb.group({
@@ -162,8 +164,13 @@ export class CollectionFormDialogComponent implements OnInit {
     }
   }
 
-  onDelete() {
-    if (!confirm('Are you sure you want to delete this collection?')) {
+  async onDelete() {
+    if (!(await this.confirm.ask({
+      title: 'Delete collection?',
+      message: "The collection will be deleted. The recipes in it stay in your library.",
+      confirmText: 'Delete',
+      destructive: true,
+    }))) {
       return;
     }
 

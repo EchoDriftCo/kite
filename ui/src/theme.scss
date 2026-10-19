@@ -83,10 +83,14 @@ $kite-slate: (
   )
 );
 
-// Create the theme palettes
+// Create the theme palettes.
+// Accent and warn use a darker hue in light mode and a lighter hue in dark mode, so the
+// label colour Material puts on them (white / dark) passes 4.5:1. See tasks/5.0.
 $kite-primary: mat.m2-define-palette($kite-amber, 500);
-$kite-accent: mat.m2-define-palette($kite-sage, 500);
-$kite-warn: mat.m2-define-palette(mat.$m2-red-palette);
+$kite-accent: mat.m2-define-palette($kite-sage, 700, 300, 900);        // #5a7363, white label
+$kite-warn: mat.m2-define-palette(mat.$m2-red-palette, 700, 300, 900); // #d32f2f, white label
+$kite-accent-dark: mat.m2-define-palette($kite-sage, 300, 100, 500);   // #a8c4b2, dark label
+$kite-warn-dark: mat.m2-define-palette(mat.$m2-red-palette, 300, 100, 500); // #e57373, dark label
 
 $kite-light-theme: mat.m2-define-light-theme((
   color: (
@@ -101,8 +105,8 @@ $kite-light-theme: mat.m2-define-light-theme((
 $kite-dark-theme: mat.m2-define-dark-theme((
   color: (
     primary: $kite-primary,
-    accent: $kite-accent,
-    warn: $kite-warn,
+    accent: $kite-accent-dark,
+    warn: $kite-warn-dark,
   ),
 ));
 
@@ -159,8 +163,8 @@ body {
   --mdc-filled-text-field-input-text-placeholder-color: var(--color-text-hint);
   --mdc-outlined-text-field-input-text-placeholder-color: var(--color-text-hint);
   // Focused label color: sage green accent
-  --mdc-filled-text-field-focus-label-text-color: var(--color-accent);
-  --mdc-outlined-text-field-focus-label-text-color: var(--color-accent);
+  --mdc-filled-text-field-focus-label-text-color: var(--color-accent-text);
+  --mdc-outlined-text-field-focus-label-text-color: var(--color-accent-text);
   --mdc-filled-text-field-focus-active-indicator-color: var(--color-accent);
   --mdc-outlined-text-field-focus-outline-color: var(--color-accent);
   --mdc-filled-text-field-label-text-color: var(--color-text-secondary);
@@ -257,18 +261,20 @@ body {
   }
   
   &.active {
-    background-color: rgba(124, 152, 133, 0.15) !important;
-    color: var(--color-accent) !important;
+    background-color: var(--color-accent-subtle-bg) !important;
+    color: var(--color-accent-text) !important;
 
     mat-icon {
-      color: var(--color-accent) !important;
+      color: var(--color-accent-text) !important;
     }
   }
 }
 
 // --- Buttons ---
-// Primary (warm orange) raised buttons. Colours come from the Material theme
-// (amber 500 with a dark label); only the hover/pressed shades are customised.
+// Tiers (tasks/5.0 §2): one primary per view (orange fill), secondary = stroked,
+// tertiary = text, destructive = menu item + confirm dialog.
+
+// Primary: orange fill. Raised buttons render flat too; the shadow only appears on hover.
 .mat-mdc-raised-button.mat-primary,
 .mat-mdc-unelevated-button.mat-primary {
   border-radius: var(--radius-md);
@@ -291,21 +297,71 @@ body {
   }
 }
 
-// Secondary (sage green) stroked buttons
-.mat-mdc-outlined-button.mat-accent {
+.mat-mdc-raised-button {
+  --mdc-protected-button-container-elevation-shadow: none;
+  --mdc-protected-button-focus-container-elevation-shadow: none;
+  --mdc-protected-button-pressed-container-elevation-shadow: none;
+  --mdc-protected-button-hover-container-elevation-shadow: var(--shadow-1);
+}
+
+// Secondary: neutral outline, primary text colour
+.mat-mdc-outlined-button {
+  --mdc-outlined-button-outline-color: var(--color-border-default);
   border-radius: var(--radius-md);
   min-height: 40px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font: var(--font-button);
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast);
+
+  &:not(.mat-primary):not(.mat-accent):not(.mat-warn) {
+    --mdc-outlined-button-label-text-color: var(--color-text-primary);
+  }
 
   &:hover:not(:disabled) {
-    background-color: rgba(124, 152, 133, 0.08);
+    background-color: var(--color-overlay-light);
   }
 
   &:active:not(:disabled) {
-    background-color: rgba(124, 152, 133, 0.16);
+    background-color: var(--color-overlay-medium);
+  }
+}
+
+// Coloured labels on unfilled buttons use the text-safe colour, never the fill colour.
+// The .dark-theme selectors match the specificity of the dark palette's own rules.
+.mat-mdc-button.mat-primary,
+.mat-mdc-outlined-button.mat-primary,
+.dark-theme .mat-mdc-button.mat-primary,
+.dark-theme .mat-mdc-outlined-button.mat-primary {
+  --mdc-text-button-label-text-color: var(--color-primary-text);
+  --mdc-outlined-button-label-text-color: var(--color-primary-text);
+}
+
+.mat-mdc-button.mat-accent,
+.mat-mdc-outlined-button.mat-accent,
+.dark-theme .mat-mdc-button.mat-accent,
+.dark-theme .mat-mdc-outlined-button.mat-accent {
+  --mdc-text-button-label-text-color: var(--color-accent-text);
+  --mdc-outlined-button-label-text-color: var(--color-accent-text);
+}
+
+.mat-mdc-button.mat-warn,
+.mat-mdc-outlined-button.mat-warn,
+.dark-theme .mat-mdc-button.mat-warn,
+.dark-theme .mat-mdc-outlined-button.mat-warn {
+  --mdc-text-button-label-text-color: var(--color-error-text);
+  --mdc-outlined-button-label-text-color: var(--color-error-text);
+}
+
+.mat-mdc-outlined-button.mat-accent {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font: var(--font-button);
+}
+
+// Destructive menu items
+.mat-mdc-menu-item.destructive {
+  color: var(--color-error-text);
+
+  .mat-icon {
+    color: var(--color-error-text);
   }
 }
 
@@ -348,10 +404,10 @@ body {
   }
   // Selected state
   .mdc-switch--selected .mdc-switch__track::after {
-    background-color: var(--color-accent) !important;
+    background-color: var(--color-accent-fill) !important;
   }
   .mdc-switch--selected .mdc-switch__handle::after {
-    background-color: var(--mat-sys-on-secondary) !important;
+    background-color: var(--color-on-accent) !important;
   }
 }
 
@@ -360,25 +416,27 @@ body {
   .mat-mdc-tab {
     --mdc-secondary-navigation-tab-container-color: transparent;
     --mat-tab-header-inactive-label-text-color: var(--color-text-secondary);
-    --mat-tab-header-active-label-text-color: var(--color-accent);
+    --mat-tab-header-active-label-text-color: var(--color-accent-text);
+    --mat-tab-header-active-focus-label-text-color: var(--color-accent-text);
+    --mat-tab-header-active-hover-label-text-color: var(--color-accent-text);
     --mat-tab-header-inactive-ripple-color: rgba(124, 152, 133, 0.08);
     --mat-tab-header-active-ripple-color: rgba(124, 152, 133, 0.12);
     color: var(--color-text-secondary);
 
     &.mdc-tab--active {
-      color: var(--color-accent);
+      color: var(--color-accent-text);
     }
   }
 
   .mdc-tab-indicator__content--underline {
-    border-color: var(--color-accent) !important;
+    border-color: var(--color-accent-fill) !important;
   }
 }
 
 // --- Button Toggle Group ---
 .mat-button-toggle-group {
-  --mat-standard-button-toggle-selected-state-background-color: var(--color-accent);
-  --mat-standard-button-toggle-selected-state-text-color: var(--mat-sys-on-secondary);
+  --mat-standard-button-toggle-selected-state-background-color: var(--color-accent-fill);
+  --mat-standard-button-toggle-selected-state-text-color: var(--color-on-accent);
   --mat-standard-button-toggle-text-color: var(--color-text-secondary);
   --mat-standard-button-toggle-background-color: var(--color-surface-default);
   --mat-standard-button-toggle-divider-color: var(--color-divider);
@@ -391,8 +449,8 @@ body {
     color: var(--color-text-secondary);
 
     &.mat-button-toggle-checked {
-      background-color: var(--color-accent);
-      color: var(--mat-sys-on-secondary);
+      background-color: var(--color-accent-fill);
+      color: var(--color-on-accent);
     }
 
     .mat-button-toggle-label-content {

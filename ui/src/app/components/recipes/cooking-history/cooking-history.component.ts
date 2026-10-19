@@ -11,6 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
 import { CookingLogService } from '../../../services/cooking-log.service';
 import { CookingLogEntry, CalendarDay } from '../../../models/cooking-log.model';
+import { ConfirmService } from '../../../services/confirm.service';
 
 @Component({
   selector: 'app-cooking-history',
@@ -48,7 +49,10 @@ export class CookingHistoryComponent implements OnInit {
   currentYear = new Date().getFullYear();
   currentMonth = new Date().getMonth() + 1; // 1-indexed
 
-  constructor(private cookingLogService: CookingLogService) {}
+  constructor(
+    private cookingLogService: CookingLogService,
+    private confirm: ConfirmService
+  ) {}
 
   ngOnInit() {
     this.loadHistory();
@@ -96,8 +100,13 @@ export class CookingHistoryComponent implements OnInit {
     this.loadHistory();
   }
 
-  deleteEntry(entry: CookingLogEntry) {
-    if (!confirm(`Delete this cooking log for "${entry.recipeTitle}"?`)) {
+  async deleteEntry(entry: CookingLogEntry) {
+    if (!(await this.confirm.ask({
+      title: 'Delete cooking log?',
+      message: `This entry for "${entry.recipeTitle}", including its notes and photos, will be deleted.`,
+      confirmText: 'Delete',
+      destructive: true,
+    }))) {
       return;
     }
 

@@ -82,7 +82,7 @@ import { BetaInviteDialogComponent } from '../../../components/settings/beta-inv
       flex-shrink: 0;
       border-color: #f59e0b;
       color: #f59e0b;
-      font-size: 12px;
+      font-size: var(--font-size-body-small);
     }
 
     .dismiss-btn {

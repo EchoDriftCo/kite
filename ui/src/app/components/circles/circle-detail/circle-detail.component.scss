@@ -38,7 +38,7 @@
       }
 
       .description {
-        color: #616161;
+        color: var(--color-text-secondary);
         margin: 0;
       }
     }
@@ -55,7 +55,7 @@
     .empty-state {
       text-align: center;
       padding: var(--space-2xl) var(--space-lg);
-      color: #9e9e9e;
+      color: var(--color-text-secondary);
 
       mat-icon {
         font-size: 48px;
@@ -90,7 +90,7 @@
         }
 
         .shared-by {
-          color: #757575;
+          color: var(--color-text-secondary);
           font-size: 14px;
           margin: 0;
         }
@@ -117,7 +117,7 @@
           font-size: 40px;
           width: 40px;
           height: 40px;
-          color: #757575;
+          color: var(--color-text-secondary);
         }
 
         .member-info {
@@ -137,29 +137,29 @@
               display: inline-block;
               padding: 2px var(--space-sm);
               border-radius: 12px;
-              font-size: 12px;
+              font-size: var(--font-size-caption);
               font-weight: 500;
 
               &.role-owner {
-                background-color: #1976d2;
-                color: white;
+                background-color: var(--color-accent-fill);
+                color: var(--color-on-accent);
               }
 
               &.role-admin {
-                background-color: #ff9800;
-                color: white;
+                background-color: var(--color-primary);
+                color: var(--color-on-primary);
               }
 
               &.role-member {
                 background-color: #e0e0e0;
-                color: #616161;
+                color: var(--color-text-secondary);
               }
             }
 
             .status-badge {
               padding: 2px var(--space-sm);
               border-radius: 12px;
-              font-size: 12px;
+              font-size: var(--font-size-caption);
               background-color: var(--color-warning-bg);
               border: 1px solid rgba(255, 152, 0, 0.3);
               color: #ffa726; // Bright orange - visible on both themes

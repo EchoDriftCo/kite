@@ -54,7 +54,7 @@ mat-dialog-content {
 
       .circle-description {
         color: var(--mat-sys-on-surface-variant, #757575);
-        font-size: 12px;
+        font-size: var(--font-size-body-small);
       }
     }
   }

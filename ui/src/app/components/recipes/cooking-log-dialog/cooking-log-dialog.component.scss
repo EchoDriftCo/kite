@@ -51,12 +51,12 @@
         font-size: 2rem;
         width: 2rem;
         height: 2rem;
-        color: var(--text-disabled);
+        color: var(--color-text-secondary);
         transition: color var(--transition-fast);
 
         &.filled,
         &.hover {
-          color: var(--color-warning);
+          color: var(--color-rating);
         }
 
         &:hover {

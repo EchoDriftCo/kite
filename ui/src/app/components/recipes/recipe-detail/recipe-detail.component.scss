@@ -106,12 +106,8 @@
   }
 
   .recipe-meta {
-    mat-chip-set {
+    .meta-line {
       margin-bottom: var(--space-md);
-    }
-
-    mat-chip mat-icon {
-      margin-right: var(--space-xs);
     }
 
     .source {
@@ -133,13 +129,13 @@
     margin-bottom: var(--space-md);
 
     mat-icon {
-      color: var(--color-text-hint);
+      color: var(--color-text-secondary);
       font-size: 24px;
       width: 24px;
       height: 24px;
 
       &.filled {
-        color: var(--color-primary);
+        color: var(--color-rating);
       }
     }
 
@@ -154,7 +150,7 @@
 
     .rating-label {
       margin-left: var(--space-sm);
-      color: var(--color-text-hint);
+      color: var(--color-text-secondary);
       font: var(--font-body);
     }
   }
@@ -168,7 +164,7 @@
   }
 
   .revoke-share {
-    color: var(--color-text-hint);
+    color: var(--color-text-secondary);
 
     &:hover {
       color: var(--color-error);
@@ -220,15 +216,15 @@ mat-divider {
       font: var(--font-body-small);
 
       &.active {
-        background-color: var(--color-accent);
-        color: var(--color-bg-primary);
+        background-color: var(--color-accent-fill);
+        color: var(--color-on-accent);
       }
     }
   }
 
   .scale-indicator {
     font: var(--font-caption);
-    color: var(--color-text-hint);
+    color: var(--color-text-secondary);
     margin-left: var(--space-xs);
   }
 }
@@ -277,7 +273,7 @@ mat-divider {
     }
 
     .check-circle {
-      color: var(--color-text-hint);
+      color: var(--color-text-secondary);
       font-size: 20px;
       width: 20px;
       height: 20px;
@@ -286,7 +282,7 @@ mat-divider {
       transition: color var(--transition-fast);
 
       &:hover {
-        color: var(--color-accent);
+        color: var(--color-accent-text);
       }
     }
 
@@ -328,7 +324,7 @@ mat-divider {
       border-radius: var(--radius-full);
       background-color: rgba(124, 152, 133, 0.15);
       border: 1px solid var(--color-accent);
-      color: var(--color-accent);
+      color: var(--color-accent-text);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -338,9 +334,8 @@ mat-divider {
 
     p {
       margin: 0;
-      line-height: 1.8;
       padding-top: var(--space-xs);
-      font: var(--font-body);
+      font: var(--font-body-large);
     }
   }
 }
@@ -369,7 +364,7 @@ mat-expansion-panel-header mat-icon {
   justify-content: center;
 
   .meta-info {
-    color: var(--color-text-hint);
+    color: var(--color-text-secondary);
     font: var(--font-caption);
     margin: 0;
   }
@@ -465,7 +460,7 @@ mat-expansion-panel-header mat-icon {
     }
 
     a {
-      color: var(--color-primary);
+      color: var(--color-accent-text);
       text-decoration: underline;
 
       &:hover {
@@ -565,7 +560,7 @@ mat-expansion-panel-header mat-icon {
             color: var(--color-text-hint);
 
             &.filled {
-              color: var(--color-primary);
+              color: var(--color-rating);
             }
           }
 

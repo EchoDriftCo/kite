@@ -196,7 +196,7 @@ import { AuthService } from '../../services/auth.service';
         color: var(--color-text-secondary);
 
         a {
-          color: var(--color-accent);
+          color: var(--color-accent-text);
           text-transform: none;
           padding: 0;
           min-width: auto;

@@ -16,6 +16,7 @@ import {
   AddDietaryRestriction,
   AddAvoidedIngredient
 } from '../../models/dietary-profile.model';
+import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-dietary-profile',
@@ -67,7 +68,10 @@ export class DietaryProfileComponent implements OnInit {
     { code: 'kosher', type: 'DietaryChoice', label: 'Kosher' }
   ];
 
-  constructor(private dietaryProfileService: DietaryProfileService) {}
+  constructor(
+    private dietaryProfileService: DietaryProfileService,
+    private confirm: ConfirmService
+  ) {}
 
   ngOnInit(): void {
     this.loadProfiles();
@@ -117,8 +121,13 @@ export class DietaryProfileComponent implements OnInit {
     this.newProfile = { profileName: '', isDefault: false };
   }
 
-  deleteProfile(profile: DietaryProfile): void {
-    if (!confirm(`Delete profile "${profile.profileName}"?`)) return;
+  async deleteProfile(profile: DietaryProfile): Promise<void> {
+    if (!(await this.confirm.ask({
+      title: 'Delete profile?',
+      message: `"${profile.profileName}" and its restrictions will be deleted.`,
+      confirmText: 'Delete',
+      destructive: true,
+    }))) return;
 
     this.dietaryProfileService.deleteProfile(profile.dietaryProfileResourceId).subscribe({
       next: () => {

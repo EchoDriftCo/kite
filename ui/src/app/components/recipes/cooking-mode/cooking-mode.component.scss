@@ -27,7 +27,7 @@
 
     button.active {
       background-color: var(--color-primary);
-      color: white;
+      color: var(--color-on-primary);
     }
   }
 }
@@ -71,7 +71,7 @@
   .current-step {
     font-size: 32px;
     font-weight: 700;
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     margin-right: var(--space-sm);
   }
 }
@@ -189,7 +189,7 @@
       .timer-time {
         font: var(--font-h2);
         font-weight: 700;
-        color: var(--color-primary);
+        color: var(--color-primary-text);
 
         &.warning {
           color: var(--color-error);

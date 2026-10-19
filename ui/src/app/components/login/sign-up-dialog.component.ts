@@ -191,7 +191,7 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
       }
 
       a {
-        color: var(--color-accent);
+        color: var(--color-accent-text);
         text-decoration: none;
 
         &:hover {

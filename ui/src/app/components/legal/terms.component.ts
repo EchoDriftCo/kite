@@ -130,7 +130,7 @@ import { MatIconModule } from '@angular/material/icon';
       color: var(--color-text-primary);
     }
     a {
-      color: var(--color-primary);
+      color: var(--color-accent-text);
       text-decoration: none;
     }
     a:hover {
@@ -151,7 +151,7 @@ import { MatIconModule } from '@angular/material/icon';
       margin-top: var(--space-xl);
       margin-bottom: var(--space-xl);
       font: var(--font-body);
-      color: var(--color-primary);
+      color: var(--color-accent-text);
       text-decoration: none;
     }
     .back-link:hover {

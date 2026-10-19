@@ -240,7 +240,7 @@ import { WaitlistService } from '../../../services/waitlist.service';
       text-align: center;
 
       a {
-        color: var(--color-primary);
+        color: var(--color-accent-text);
         cursor: pointer;
         font-weight: 500;
         margin-left: 4px;
@@ -287,7 +287,7 @@ import { WaitlistService } from '../../../services/waitlist.service';
 
     .request-error {
       color: var(--color-error, #dc2626);
-      font-size: 12px;
+      font-size: var(--font-size-body-small);
       margin: 4px 0 0;
       text-align: center;
     }

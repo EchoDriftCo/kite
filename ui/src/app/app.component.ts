@@ -18,6 +18,7 @@ import { InstallPromptComponent } from './shared/components/install-prompt/insta
 import { OnboardingDialogComponent } from './components/onboarding/onboarding-dialog/onboarding-dialog.component';
 import { TourTooltipComponent } from './components/onboarding/tour-tooltip/tour-tooltip.component';
 import { UpgradeBannerComponent } from './shared/components/upgrade-banner/upgrade-banner.component';
+import { ConfirmService } from './services/confirm.service';
 
 @Component({
   selector: 'app-root',
@@ -51,7 +52,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private tourService: TourService,
     public themeService: ThemeService,
     private guestPrompt: GuestPromptService,
-    private router: Router
+    private router: Router,
+    private confirm: ConfirmService
   ) {}
 
   ngOnInit(): void {
@@ -90,8 +92,13 @@ export class AppComponent implements OnInit, OnDestroy {
     this.router.navigate(['/login']);
   }
 
-  logout(): void {
-    if (this.isGuest() && !confirm('Signing out of a guest session discards your recipes and data. Create an account first to keep them. Sign out anyway?')) {
+  async logout(): Promise<void> {
+    if (this.isGuest() && !(await this.confirm.ask({
+      title: 'Sign out of guest session?',
+      message: 'Signing out of a guest session discards your recipes and data. Create an account first to keep them.',
+      confirmText: 'Sign out',
+      destructive: true,
+    }))) {
       return;
     }
     this.authService.signOut();
